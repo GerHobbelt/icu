@@ -28,7 +28,11 @@
 
 
 // The ICU global mutex. Used when ICU implementation code passes NULL for the mutex pointer.
-static UMutex   globalMutex = U_MUTEX_INITIALIZER;
+UMutex* globalMutex()
+{
+  static UMutex globalMutex = U_MUTEX_INITIALIZER;
+  return &globalMutex;
+}
 
 /*
  * ICU Mutex wrappers.  Wrap operating system mutexes, giving the rest of ICU a
@@ -102,7 +106,7 @@ static void winMutexInit(CRITICAL_SECTION *cs) {
 U_CAPI void  U_EXPORT2
 umtx_lock(UMutex *mutex) {
     if (mutex == NULL) {
-        mutex = &globalMutex;
+        mutex = globalMutex();
     }
     CRITICAL_SECTION *cs = &mutex->fCS;
     umtx_initOnce(mutex->fInitOnce, winMutexInit, cs);
@@ -113,7 +117,7 @@ U_CAPI void  U_EXPORT2
 umtx_unlock(UMutex* mutex)
 {
     if (mutex == NULL) {
-        mutex = &globalMutex;
+        mutex = globalMutex();
     }
     LeaveCriticalSection(&mutex->fCS);
 }
@@ -192,7 +196,7 @@ umtx_condWait(UConditionVar *condition, UMutex *mutex) {
 U_CAPI void  U_EXPORT2
 umtx_lock(UMutex *mutex) {
     if (mutex == NULL) {
-        mutex = &globalMutex;
+        mutex = globalMutex();
     }
     int sysErr = pthread_mutex_lock(&mutex->fMutex);
     (void)sysErr;   // Suppress unused variable warnings.
@@ -204,7 +208,7 @@ U_CAPI void  U_EXPORT2
 umtx_unlock(UMutex* mutex)
 {
     if (mutex == NULL) {
-        mutex = &globalMutex;
+        mutex = globalMutex();
     }
     int sysErr = pthread_mutex_unlock(&mutex->fMutex);
     (void)sysErr;   // Suppress unused variable warnings.
@@ -215,7 +219,7 @@ umtx_unlock(UMutex* mutex)
 U_CAPI void U_EXPORT2
 umtx_condWait(UConditionVar *cond, UMutex *mutex) {
     if (mutex == NULL) {
-        mutex = &globalMutex;
+        mutex = globalMutex();
     }
     int sysErr = pthread_cond_wait(&cond->fCondition, &mutex->fMutex);
     (void)sysErr;
