@@ -57,7 +57,6 @@ LINK.c=       $(CXX) $(CXXFLAGS) $(LDFLAGS)
 #LINK.cc=      $(CXX) $(CXXFLAGS) $(LDFLAGS)
 
 ## Shared library options
-LD_SOOPTIONS= -Wl,-Bsymbolic
 
 ## Commands to make a shared library
 SHLIB.c=	$(CC) $(CFLAGS) $(LDFLAGS) -shared $(LD_SOOPTIONS) -Wl,--enable-auto-import -Wl,--out-implib=$(dir $@)lib$(notdir $(@:$(SO_TARGET_VERSION_MAJOR).$(SO)=))$(IMPORT_LIB_EXT)#M#
@@ -90,10 +89,6 @@ IMPORT_LIB_EXT = .dll.a
 
 LIBPREFIX=lib
 
-# Change the stubnames so that poorly working FAT disks and installation programs can work.
-# This is also for backwards compatibility.
-DATA_STUBNAME = dt
-I18N_STUBNAME = in
 LIBICU = $(STATIC_PREFIX_WHEN_USED)$(ICUPREFIX)
 
 #SH### copied from Makefile.inc

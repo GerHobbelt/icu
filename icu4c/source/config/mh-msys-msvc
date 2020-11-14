@@ -101,10 +101,6 @@ IMPORT_LIB_EXT = .lib
 LIBPREFIX=
 DEFAULT_LIBS = advapi32.lib
 
-# Change the stubnames so that poorly working FAT disks and installation programs can work.
-# This is also for backwards compatibility.
-DATA_STUBNAME = dt
-I18N_STUBNAME = in
 LIBICU = $(STATIC_PREFIX_WHEN_USED)$(ICUPREFIX)
 
 ## Link commands to link to ICU libs
