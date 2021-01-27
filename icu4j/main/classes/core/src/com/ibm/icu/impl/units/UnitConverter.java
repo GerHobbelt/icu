@@ -119,6 +119,8 @@ public class UnitConverter {
         private int exponentGalImpToM3 = 0;
         /** Exponent for the pound to kilogram conversion rate constant */
         private int exponentLbToKg = 0;
+        private int exponentGlucoseMolarMass = 0;
+        private int exponentItemPerMole = 0;
 
         /**
          * Creates Empty Factor
@@ -170,6 +172,8 @@ public class UnitConverter {
             result.exponentG = this.exponentG;
             result.exponentGalImpToM3 = this.exponentGalImpToM3;
             result.exponentLbToKg = this.exponentLbToKg;
+            result.exponentGlucoseMolarMass = this.exponentGlucoseMolarMass;
+            result.exponentItemPerMole = this.exponentItemPerMole;
 
             return result;
         }
@@ -195,6 +199,8 @@ public class UnitConverter {
             resultCollector.multiply(new BigDecimal("6.67408E-11"), this.exponentG);
             resultCollector.multiply(new BigDecimal("0.00454609"), this.exponentGalImpToM3);
             resultCollector.multiply(new BigDecimal("0.45359237"), this.exponentLbToKg);
+            resultCollector.multiply(new BigDecimal("180.1557"), this.exponentGlucoseMolarMass);
+            resultCollector.multiply(new BigDecimal("6.02214076E+23"), this.exponentItemPerMole);
 
             return resultCollector.factorNum.divide(resultCollector.factorDen, DECIMAL128);
         }
