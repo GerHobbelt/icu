@@ -255,6 +255,8 @@ public class UnitConverter {
             result.exponentG = this.exponentG * power;
             result.exponentGalImpToM3 = this.exponentGalImpToM3 * power;
             result.exponentLbToKg = this.exponentLbToKg * power;
+            result.exponentGlucoseMolarMass = this.exponentGlucoseMolarMass * power;
+            result.exponentItemPerMole = this.exponentItemPerMole * power;
 
             return result;
         }
@@ -270,6 +272,9 @@ public class UnitConverter {
             result.exponentG = this.exponentG - other.exponentG;
             result.exponentGalImpToM3 = this.exponentGalImpToM3 - other.exponentGalImpToM3;
             result.exponentLbToKg = this.exponentLbToKg - other.exponentLbToKg;
+            result.exponentGlucoseMolarMass =
+                this.exponentGlucoseMolarMass - other.exponentGlucoseMolarMass;
+            result.exponentItemPerMole = this.exponentItemPerMole - other.exponentItemPerMole;
 
             return result;
         }
@@ -285,6 +290,9 @@ public class UnitConverter {
             result.exponentG = this.exponentG + other.exponentG;
             result.exponentGalImpToM3 = this.exponentGalImpToM3 + other.exponentGalImpToM3;
             result.exponentLbToKg = this.exponentLbToKg + other.exponentLbToKg;
+            result.exponentGlucoseMolarMass =
+                this.exponentGlucoseMolarMass + other.exponentGlucoseMolarMass;
+            result.exponentItemPerMole = this.exponentItemPerMole + other.exponentItemPerMole;
 
             return result;
         }
@@ -324,6 +332,10 @@ public class UnitConverter {
                 this.exponentGravity += power;
             } else if ("lb_to_kg".equals(entity)) {
                 this.exponentLbToKg += power;
+            } else if ("glucose_molar_mass".equals(entity)) {
+                this.exponentGlucoseMolarMass += power;
+            } else if ("item_per_mole".equals(entity)) {
+                this.exponentItemPerMole += power;
             } else if ("PI".equals(entity)) {
                 this.exponentPi += power;
             } else {
