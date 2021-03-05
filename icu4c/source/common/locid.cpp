@@ -1576,10 +1576,8 @@ AliasReplacer::replaceTransformedExtensions(
             }
             tkey = nextTKey;
         } while (tkey != nullptr);
-        tfields.sort([](UElement e1, UElement e2) -> int8_t {
-            // uprv_strcmp return int and in some platform, such as arm64-v8a,
-            // it may return positive values > 127 which cause the casted value
-            // of int8_t negative.
+        tfields.sort([](UElement e1, UElement e2) -> int32_t {
+            // uprv_strcmp may return value other than {-1, 0, 1}.
             int res = uprv_strcmp(
                 (const char*)e1.pointer, (const char*)e2.pointer);
             return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
@@ -1621,10 +1619,8 @@ AliasReplacer::outputToString(
         if (!notEmpty(script) && !notEmpty(region)) {
           out.append(SEP_CHAR, status);
         }
-        variants.sort([](UElement e1, UElement e2) -> int8_t {
-            // uprv_strcmp return int and in some platform, such as arm64-v8a,
-            // it may return positive values > 127 which cause the casted value
-            // of int8_t negative.
+        variants.sort([](UElement e1, UElement e2) -> int32_t {
+            // uprv_strcmp may return value other than {-1, 0, 1}.
             int res = uprv_strcmp(
                 (const char*)e1.pointer, (const char*)e2.pointer);
             return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
@@ -1687,10 +1683,8 @@ AliasReplacer::replace(const Locale& locale, CharString& out, UErrorCode& status
     if (U_FAILURE(status)) { return false; }
 
     // Sort the variants
-    variants.sort([](UElement e1, UElement e2) -> int8_t {
-        // uprv_strcmp return int and in some platform, such as arm64-v8a,
-        // it may return positive values > 127 which cause the casted value
-        // of int8_t negative.
+    variants.sort([](UElement e1, UElement e2) -> int32_t {
+        // uprv_strcmp may return value other than {-1, 0, 1}.
         int res = uprv_strcmp(
             (const char*)e1.pointer, (const char*)e2.pointer);
         return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
