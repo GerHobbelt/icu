@@ -61,6 +61,13 @@ void PatternModifierTest::testBasic() {
     mod.setNumberProperties(SIGNUM_POS, StandardPlural::Form::COUNT);
     assertEquals("Pattern a0b", u"~a", getPrefix(mod, status));
     assertEquals("Pattern a0b", u"b", getSuffix(mod, status));
+    mod.setNumberProperties(SIGNUM_NEG, StandardPlural::Form::COUNT);
+    assertEquals("Pattern a0b", u"~-a", getPrefix(mod, status));
+    assertEquals("Pattern a0b", u"b", getSuffix(mod, status));
+    mod.setPatternAttributes(UNUM_SIGN_ALWAYS, false, true);
+    mod.setNumberProperties(SIGNUM_POS, StandardPlural::Form::COUNT);
+    assertEquals("Pattern a0b", u"~+a", getPrefix(mod, status));
+    assertEquals("Pattern a0b", u"b", getSuffix(mod, status));
     assertSuccess("Spot 3.5", status);
 
     ParsedPatternInfo patternInfo2;
@@ -90,6 +97,19 @@ void PatternModifierTest::testBasic() {
     assertEquals("Pattern a0b;c-0d", u"a", getPrefix(mod, status));
     assertEquals("Pattern a0b;c-0d", u"b", getSuffix(mod, status));
     assertSuccess("Spot 5", status);
+
+    mod.setPatternAttributes(UNUM_SIGN_AUTO, false, true);
+    mod.setNumberProperties(SIGNUM_POS, StandardPlural::Form::COUNT);
+    assertEquals("Pattern a0b;c-0d", u"c~", getPrefix(mod, status));
+    assertEquals("Pattern a0b;c-0d", u"d", getSuffix(mod, status));
+    mod.setNumberProperties(SIGNUM_NEG, StandardPlural::Form::COUNT);
+    assertEquals("Pattern a0b;c-0d", u"c~-", getPrefix(mod, status));
+    assertEquals("Pattern a0b;c-0d", u"d", getSuffix(mod, status));
+    mod.setPatternAttributes(UNUM_SIGN_ALWAYS, false, true);
+    mod.setNumberProperties(SIGNUM_POS, StandardPlural::Form::COUNT);
+    assertEquals("Pattern a0b;c-0d", u"c~+", getPrefix(mod, status));
+    assertEquals("Pattern a0b;c-0d", u"d", getSuffix(mod, status));
+    assertSuccess("Spot 5.5", status);
 }
 
 void PatternModifierTest::testPatternWithNoPlaceholder() {
