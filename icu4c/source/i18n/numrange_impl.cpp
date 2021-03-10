@@ -136,6 +136,7 @@ NumberRangeFormatterImpl::NumberRangeFormatterImpl(const RangeMacroProps& macros
         MacroProps approximatelyMacros(macros.formatter1.fMacros);
         approximatelyMacros.approximatelySign = true;
         // Use in-place construction because NumberFormatterImpl has internal self-pointers
+        fApproximatelyFormatter.~NumberFormatterImpl();
         new (&fApproximatelyFormatter) NumberFormatterImpl(approximatelyMacros, status);
     }
 
@@ -243,9 +244,9 @@ void NumberRangeFormatterImpl::formatApproximately (UFormattedNumberRangeData& d
     if (fSameFormatters) {
         // Re-format using the approximately formatter:
         MicroProps microsAppx;
+        data.quantity1.resetExponent();
         fApproximatelyFormatter.preProcess(data.quantity1, microsAppx, status);
         int32_t length = NumberFormatterImpl::writeNumber(microsAppx, data.quantity1, data.getStringRef(), 0, status);
-        // HEURISTIC: Desired modifier order: inner, middle, approximately, outer.
         length += microsAppx.modInner->apply(data.getStringRef(), 0, length, status);
         length += microsAppx.modMiddle->apply(data.getStringRef(), 0, length, status);
         microsAppx.modOuter->apply(data.getStringRef(), 0, length, status);

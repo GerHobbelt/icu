@@ -137,14 +137,14 @@ void NumberRangeFormatterTest::testBasic() {
             .numberFormatterBoth(NumberFormatter::with().unit(FAHRENHEIT).unitWidth(UNUM_UNIT_WIDTH_FULL_NAME)),
         Locale("fr-FR"),
         u"1–5\u00A0degrés Fahrenheit",
-        u"≈5\u00A0degrés Fahrenheit",
-        u"≈5\u00A0degrés Fahrenheit",
+        u"≃5\u00A0degrés Fahrenheit",
+        u"≃5\u00A0degrés Fahrenheit",
         u"0–3\u00A0degrés Fahrenheit",
-        u"≈0\u00A0degré Fahrenheit",
+        u"≃0\u00A0degré Fahrenheit",
         u"3–3\u202F000\u00A0degrés Fahrenheit",
         u"3\u202F000–5\u202F000\u00A0degrés Fahrenheit",
         u"4\u202F999–5\u202F001\u00A0degrés Fahrenheit",
-        u"≈5\u202F000\u00A0degrés Fahrenheit",
+        u"≃5\u202F000\u00A0degrés Fahrenheit",
         u"5\u202F000–5\u202F000\u202F000\u00A0degrés Fahrenheit");
 
     assertFormatRange(
@@ -152,14 +152,14 @@ void NumberRangeFormatterTest::testBasic() {
         NumberRangeFormatter::with(),
         Locale("ja"),
         u"1～5",
-        u"約 5",
-        u"約 5",
+        u"約5",
+        u"約5",
         u"0～3",
-        u"約 0",
+        u"約0",
         u"3～3,000",
         u"3,000～5,000",
         u"4,999～5,001",
-        u"約 5,000",
+        u"約5,000",
         u"5,000～5,000,000");
 
     assertFormatRange(
