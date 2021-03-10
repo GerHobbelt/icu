@@ -21,6 +21,7 @@ NumberRangeFormatterTest::NumberRangeFormatterTest()
 
 NumberRangeFormatterTest::NumberRangeFormatterTest(UErrorCode& status)
         : USD(u"USD", status),
+          CHF(u"CHF", status),
           GBP(u"GBP", status),
           PTE(u"PTE", status) {
 
@@ -52,6 +53,7 @@ void NumberRangeFormatterTest::runIndexedTest(int32_t index, UBool exec, const c
         TESTCASE_AUTO(testCopyMove);
         TESTCASE_AUTO(toObject);
         TESTCASE_AUTO(testGetDecimalNumbers);
+        TESTCASE_AUTO(test21358_SignPosition);
     TESTCASE_AUTO_END;
 }
 
@@ -902,6 +904,71 @@ void NumberRangeFormatterTest::testGetDecimalNumbers() {
             assertEquals("First decimal number", "3.00", decimalNumbers.first.c_str());
             assertEquals("Second decimal number", "3.00", decimalNumbers.second.c_str());
         }
+    }
+}
+
+void NumberRangeFormatterTest::test21358_SignPosition() {
+    IcuTestErrorCode status(*this, "test21358_SignPosition");
+
+    // de-CH has currency pattern "¤ #,##0.00;¤-#,##0.00"
+    assertFormatRange(
+        u"Approximately sign position with spacing from pattern",
+        NumberRangeFormatter::with()
+            .numberFormatterBoth(NumberFormatter::with().unit(CHF)),
+        Locale("de-CH"),
+        u"CHF 1.00–5.00",
+        u"CHF≈5.00",
+        u"CHF≈5.00",
+        u"CHF 0.00–3.00",
+        u"CHF≈0.00",
+        u"CHF 3.00–3’000.00",
+        u"CHF 3’000.00–5’000.00",
+        u"CHF 4’999.00–5’001.00",
+        u"CHF≈5’000.00",
+        u"CHF 5’000.00–5’000’000.00");
+
+    // TODO(CLDR-13044): Move the sign to the inside of the number
+    assertFormatRange(
+        u"Approximately sign position with currency spacing",
+        NumberRangeFormatter::with()
+            .numberFormatterBoth(NumberFormatter::with().unit(CHF)),
+        Locale("en-US"),
+        u"CHF 1.00–5.00",
+        u"~CHF 5.00",
+        u"~CHF 5.00",
+        u"CHF 0.00–3.00",
+        u"~CHF 0.00",
+        u"CHF 3.00–3,000.00",
+        u"CHF 3,000.00–5,000.00",
+        u"CHF 4,999.00–5,001.00",
+        u"~CHF 5,000.00",
+        u"CHF 5,000.00–5,000,000.00");
+
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("de-CH");
+        UnicodeString actual = lnrf.formatFormattableRange(-2, 3, status).toString(status);
+        assertEquals("Negative to positive range", u"-2 – 3", actual);
+    }
+
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("de-CH")
+            .numberFormatterBoth(NumberFormatter::forSkeleton(u"%", status));
+        UnicodeString actual = lnrf.formatFormattableRange(-2, 3, status).toString(status);
+        assertEquals("Negative to positive percent", u"-2% – 3%", actual);
+    }
+
+    {
+        // TODO(CLDR-14111): Add spacing between range separator and sign
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("de-CH");
+        UnicodeString actual = lnrf.formatFormattableRange(2, -3, status).toString(status);
+        assertEquals("Positive to negative range", u"2–-3", actual);
+    }
+
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("de-CH")
+            .numberFormatterBoth(NumberFormatter::forSkeleton(u"%", status));
+        UnicodeString actual = lnrf.formatFormattableRange(2, -3, status).toString(status);
+        assertEquals("Positive to negative percent", u"2% – -3%", actual);
     }
 }
 

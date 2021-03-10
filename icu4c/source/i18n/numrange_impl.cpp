@@ -116,7 +116,8 @@ NumberRangeFormatterImpl::NumberRangeFormatterImpl(const RangeMacroProps& macros
       formatterImpl2(macros.formatter2.fMacros, status),
       fSameFormatters(macros.singleFormatter),
       fCollapse(macros.collapse),
-      fIdentityFallback(macros.identityFallback) {
+      fIdentityFallback(macros.identityFallback),
+      fApproximatelyFormatter(status) {
 
     const char* nsName = formatterImpl1.getRawMicroProps().nsName;
     if (uprv_strcmp(nsName, formatterImpl2.getRawMicroProps().nsName) != 0) {
@@ -128,7 +129,15 @@ NumberRangeFormatterImpl::NumberRangeFormatterImpl(const RangeMacroProps& macros
     getNumberRangeData(macros.locale.getName(), nsName, data, status);
     if (U_FAILURE(status)) { return; }
     fRangeFormatter = data.rangePattern;
-    fApproximatelyModifier = {data.approximatelyPattern, kUndefinedField, false};
+
+    if (fSameFormatters && (
+            fIdentityFallback == UNUM_IDENTITY_FALLBACK_APPROXIMATELY ||
+            fIdentityFallback == UNUM_IDENTITY_FALLBACK_APPROXIMATELY_OR_SINGLE_VALUE)) {
+        MacroProps approximatelyMacros(macros.formatter1.fMacros);
+        approximatelyMacros.approximatelySign = true;
+        // Use in-place construction because NumberFormatterImpl has internal self-pointers
+        new (&fApproximatelyFormatter) NumberFormatterImpl(approximatelyMacros, status);
+    }
 
     // TODO: Get locale from PluralRules instead?
     fPluralRanges = StandardPluralRanges::forLocale(macros.locale, status);
@@ -232,12 +241,14 @@ void NumberRangeFormatterImpl::formatApproximately (UFormattedNumberRangeData& d
                                                     UErrorCode& status) const {
     if (U_FAILURE(status)) { return; }
     if (fSameFormatters) {
-        int32_t length = NumberFormatterImpl::writeNumber(micros1, data.quantity1, data.getStringRef(), 0, status);
+        // Re-format using the approximately formatter:
+        MicroProps microsAppx;
+        fApproximatelyFormatter.preProcess(data.quantity1, microsAppx, status);
+        int32_t length = NumberFormatterImpl::writeNumber(microsAppx, data.quantity1, data.getStringRef(), 0, status);
         // HEURISTIC: Desired modifier order: inner, middle, approximately, outer.
-        length += micros1.modInner->apply(data.getStringRef(), 0, length, status);
-        length += micros1.modMiddle->apply(data.getStringRef(), 0, length, status);
-        length += fApproximatelyModifier.apply(data.getStringRef(), 0, length, status);
-        micros1.modOuter->apply(data.getStringRef(), 0, length, status);
+        length += microsAppx.modInner->apply(data.getStringRef(), 0, length, status);
+        length += microsAppx.modMiddle->apply(data.getStringRef(), 0, length, status);
+        microsAppx.modOuter->apply(data.getStringRef(), 0, length, status);
     } else {
         formatRange(data, micros1, micros2, status);
     }
