@@ -346,15 +346,15 @@ class U_I18N_API Notation : public UMemory {
 
     union NotationUnion {
         // For NTN_SCIENTIFIC
-        /** @internal */
+        /** @internal (private) */
         struct ScientificSettings {
-            /** @internal */
+            /** @internal (private) */
             int8_t fEngineeringInterval;
-            /** @internal */
+            /** @internal (private) */
             bool fRequireMinInt;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMinExponentDigits;
-            /** @internal */
+            /** @internal (private) */
             UNumberSignDisplay fExponentSignDisplay;
         } scientific;
 
@@ -694,28 +694,28 @@ class U_I18N_API Precision : public UMemory {
     } fType;
 
     union PrecisionUnion {
-        /** @internal */
+        /** @internal (private) */
         struct FractionSignificantSettings {
             // For RND_FRACTION, RND_SIGNIFICANT, and RND_FRACTION_SIGNIFICANT
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMinFrac;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMaxFrac;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMinSig;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMaxSig;
-            /** @internal */
+            /** @internal (private) */
             UNumberRoundingPriority fPriority;
         } fracSig;
-        /** @internal */
+        /** @internal (private) */
         struct IncrementSettings {
             // For RND_INCREMENT, RND_INCREMENT_ONE, and RND_INCREMENT_FIVE
-            /** @internal */
+            /** @internal (private) */
             double fIncrement;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMinFrac;
-            /** @internal */
+            /** @internal (private) */
             impl::digits_t fMaxFrac;
         } increment;
         UCurrencyUsage currencyUsage; // For RND_CURRENCY
@@ -1220,7 +1220,7 @@ class U_I18N_API StringProp : public UMemory {
     StringProp() : fValue(nullptr), fLength(0), fError(U_ZERO_ERROR) {
     }
 
-    /** @internal */
+    /** @internal (private) */
     UBool copyErrorTo(UErrorCode &status) const {
         if (U_FAILURE(fError)) {
             status = fError;
@@ -2220,7 +2220,10 @@ class U_I18N_API NumberFormatterSettings {
      * @draft ICU 68
      */
     Derived usage(StringPiece usage) &&;
+#endif // U_HIDE_DRAFT_API
 
+#ifndef U_HIDE_DRAFT_API
+#ifndef U_HIDE_INTERNAL_API
     /**
      * Specifies the desired case for a unit formatter's output (e.g.
      * accusative, dative, genitive).
@@ -2235,6 +2238,7 @@ class U_I18N_API NumberFormatterSettings {
      * @internal ICU 69 technology preview
      */
     Derived unitDisplayCase(StringPiece unitDisplayCase) &&;
+#endif // U_HIDE_INTERNAL_API
 #endif // U_HIDE_DRAFT_API
 
 #ifndef U_HIDE_INTERNAL_API
@@ -2762,7 +2766,7 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
 
     /**
      * Internal constructor from data type. Adopts the data pointer.
-     * @internal
+     * @internal (private)
      */
     explicit FormattedNumber(impl::UFormattedNumberData *results)
         : fData(results), fErrorCode(U_ZERO_ERROR) {}
@@ -2779,8 +2783,6 @@ class U_I18N_API FormattedNumber : public UMemory, public FormattedValue {
     friend struct impl::UFormattedNumberImpl;
 };
 
-#ifndef U_HIDE_DRAFT_API
-// Note: This is draft ICU 65
 template<typename StringClass>
 StringClass FormattedNumber::toDecimalNumber(UErrorCode& status) const {
     StringClass result;
@@ -2788,7 +2790,6 @@ StringClass FormattedNumber::toDecimalNumber(UErrorCode& status) const {
     toDecimalNumber(sink, status);
     return result;
 }
-#endif // U_HIDE_DRAFT_API
 
 /**
  * See the main description in numberformatter.h for documentation and examples.
