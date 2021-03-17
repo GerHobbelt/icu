@@ -1922,7 +1922,8 @@ public class DecimalFormatSymbols implements Cloneable, Serializable {
     // - 7 for ICU 52, which includes the minusString and plusString fields
     // - 8 for ICU 54, which includes exponentMultiplicationSign field.
     // - 9 for ICU 58, which includes a series of String symbol fields.
-    private static final int currentSerialVersion = 8;
+    // - 10 for ICU 69, which includes the approximatelyString field.
+    private static final int currentSerialVersion = 10;
 
     /**
      * Describes the version of <code>DecimalFormatSymbols</code> present on the stream.
