@@ -144,7 +144,7 @@ NumberRangeFormatterImpl::NumberRangeFormatterImpl(const RangeMacroProps& macros
             fIdentityFallback == UNUM_IDENTITY_FALLBACK_APPROXIMATELY ||
             fIdentityFallback == UNUM_IDENTITY_FALLBACK_APPROXIMATELY_OR_SINGLE_VALUE)) {
         MacroProps approximatelyMacros(macros.formatter1.fMacros);
-        approximatelyMacros.approximatelySign = true;
+        approximatelyMacros.approximately = true;
         // Use in-place construction because NumberFormatterImpl has internal self-pointers
         fApproximatelyFormatter.~NumberFormatterImpl();
         new (&fApproximatelyFormatter) NumberFormatterImpl(approximatelyMacros, status);

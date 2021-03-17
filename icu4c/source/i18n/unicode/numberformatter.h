@@ -1518,7 +1518,7 @@ struct U_I18N_API MacroProps : public UMemory {
     UNumberSignDisplay sign = UNUM_SIGN_COUNT;
 
     /** @internal */
-    bool approximatelySign = false;
+    bool approximately = false;
 
     /** @internal */
     UNumberDecimalSeparatorDisplay decimal = UNUM_DECIMAL_SEPARATOR_COUNT;
