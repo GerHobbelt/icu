@@ -132,14 +132,14 @@ public class NumberRangeFormatterTest extends TestFmwk {
                 .numberFormatterBoth(NumberFormatter.with().unit(MeasureUnit.FAHRENHEIT).unitWidth(UnitWidth.FULL_NAME)),
             new ULocale("fr-FR"),
             "1–5\u00A0degrés Fahrenheit",
-            "≈5\u00A0degrés Fahrenheit",
-            "≈5\u00A0degrés Fahrenheit",
+            "≃5\u00A0degrés Fahrenheit",
+            "≃5\u00A0degrés Fahrenheit",
             "0–3\u00A0degrés Fahrenheit",
-            "≈0\u00A0degré Fahrenheit",
+            "≃0\u00A0degré Fahrenheit",
             "3–3\u202F000\u00A0degrés Fahrenheit",
             "3\u202F000–5\u202F000\u00A0degrés Fahrenheit",
             "4\u202F999–5\u202F001\u00A0degrés Fahrenheit",
-            "≈5\u202F000\u00A0degrés Fahrenheit",
+            "≃5\u202F000\u00A0degrés Fahrenheit",
             "5\u202F000–5\u202F000\u202F000\u00A0degrés Fahrenheit");
 
         assertFormatRange(
@@ -147,14 +147,14 @@ public class NumberRangeFormatterTest extends TestFmwk {
             NumberRangeFormatter.with(),
             new ULocale("ja"),
             "1～5",
-            "約 5",
-            "約 5",
+            "約5",
+            "約5",
             "0～3",
-            "約 0",
+            "約0",
             "3～3,000",
             "3,000～5,000",
             "4,999～5,001",
-            "約 5,000",
+            "約5,000",
             "5,000～5,000,000");
 
         assertFormatRange(

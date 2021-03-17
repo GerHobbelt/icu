@@ -256,6 +256,7 @@ class NumberRangeFormatterImpl {
             MicroProps micros1, MicroProps micros2) {
         if (fSameFormatters) {
             // Re-format using the approximately formatter:
+            quantity1.resetExponent();
             MicroProps microsAppx = fApproximatelyFormatter.preProcess(quantity1);
             int length = NumberFormatterImpl.writeNumber(microsAppx, quantity1, string, 0);
             // HEURISTIC: Desired modifier order: inner, middle, approximately, outer.

@@ -25,7 +25,7 @@ class DefaultSymbolProvider : public SymbolProvider {
             case TYPE_PLUS_SIGN:
                 return fSymbols.getConstSymbol(DecimalFormatSymbols::ENumberFormatSymbol::kPlusSignSymbol);
             case TYPE_APPROXIMATELY_SIGN:
-                return fSymbols.getConstSymbol(DecimalFormatSymbols::ENumberFormatSymbol::kApproximatelySignSymbol);
+                return u"≃";
             case TYPE_PERCENT:
                 return fSymbols.getConstSymbol(DecimalFormatSymbols::ENumberFormatSymbol::kPercentSymbol);
             case TYPE_PERMILLE:
@@ -95,7 +95,7 @@ void AffixUtilsTest::testUnescape() {
                  {u"-!", false, 2, u"−!"},
                  {u"+", false, 1, u"\u061C+"},
                  {u"+!", false, 2, u"\u061C+!"},
-                 {u"~", false, 1, u"~"},
+                 {u"~", false, 1, u"≃"},
                  {u"‰", false, 1, u"؉"},
                  {u"‰!", false, 2, u"؉!"},
                  {u"-x", false, 2, u"−x"},
