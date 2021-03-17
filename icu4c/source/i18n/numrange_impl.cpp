@@ -30,7 +30,8 @@ constexpr int8_t identity2d(UNumberRangeIdentityFallback a, UNumberRangeIdentity
 
 struct NumberRangeData {
     SimpleFormatter rangePattern;
-    SimpleFormatter approximatelyPattern;
+    // Note: approximatelyPattern is unused since ICU 69.
+    // SimpleFormatter approximatelyPattern;
 };
 
 class NumberRangeDataSink : public ResourceSink {
@@ -46,12 +47,16 @@ class NumberRangeDataSink : public ResourceSink {
                     continue; // have already seen this pattern
                 }
                 fData.rangePattern = {value.getUnicodeString(status), status};
-            } else if (uprv_strcmp(key, "approximately") == 0) {
+            }
+            /*
+            // Note: approximatelyPattern is unused since ICU 69.
+            else if (uprv_strcmp(key, "approximately") == 0) {
                 if (hasApproxData()) {
                     continue; // have already seen this pattern
                 }
                 fData.approximatelyPattern = {value.getUnicodeString(status), status};
             }
+            */
         }
     }
 
@@ -59,21 +64,26 @@ class NumberRangeDataSink : public ResourceSink {
         return fData.rangePattern.getArgumentLimit() != 0;
     }
 
+    /*
+    // Note: approximatelyPattern is unused since ICU 69.
     bool hasApproxData() {
         return fData.approximatelyPattern.getArgumentLimit() != 0;
     }
+    */
 
     bool isComplete() {
-        return hasRangeData() && hasApproxData();
+        return hasRangeData() /* && hasApproxData() */;
     }
 
     void fillInDefaults(UErrorCode& status) {
         if (!hasRangeData()) {
             fData.rangePattern = {u"{0}–{1}", status};
         }
+        /*
         if (!hasApproxData()) {
             fData.approximatelyPattern = {u"~{0}", status};
         }
+        */
     }
 
   private:
