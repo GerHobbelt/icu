@@ -43,8 +43,8 @@ SHAREDLIBCXXFLAGS =
 SHAREDLIBCPPFLAGS = -DPIC
 
 ## Additional flags when building libraries and with threads
-THREADSCFLAGS = -mthreads
-THREADSCXXFLAGS = -mthreads
+THREADSCFLAGS = -pthread
+THREADSCXXFLAGS = -pthread
 LIBCPPFLAGS =
 
 ## Add 'd' suffix to the names of binary files with Debug configuration
