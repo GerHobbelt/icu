@@ -1577,10 +1577,7 @@ AliasReplacer::replaceTransformedExtensions(
             tkey = nextTKey;
         } while (tkey != nullptr);
         tfields.sort([](UElement e1, UElement e2) -> int32_t {
-            // uprv_strcmp may return value other than {-1, 0, 1}.
-            int res = uprv_strcmp(
-                (const char*)e1.pointer, (const char*)e2.pointer);
-            return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
+            return uprv_strcmp((const char*)e1.pointer, (const char*)e2.pointer);
         }, status);
         for (int32_t i = 0; i < tfields.size(); i++) {
              if (output.length() > 0) {
@@ -1620,10 +1617,7 @@ AliasReplacer::outputToString(
           out.append(SEP_CHAR, status);
         }
         variants.sort([](UElement e1, UElement e2) -> int32_t {
-            // uprv_strcmp may return value other than {-1, 0, 1}.
-            int res = uprv_strcmp(
-                (const char*)e1.pointer, (const char*)e2.pointer);
-            return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
+            return uprv_strcmp((const char*)e1.pointer, (const char*)e2.pointer);
         }, status);
         int32_t variantsStart = out.length();
         for (int32_t i = 0; i < variants.size(); i++) {
@@ -1684,10 +1678,7 @@ AliasReplacer::replace(const Locale& locale, CharString& out, UErrorCode& status
 
     // Sort the variants
     variants.sort([](UElement e1, UElement e2) -> int32_t {
-        // uprv_strcmp may return value other than {-1, 0, 1}.
-        int res = uprv_strcmp(
-            (const char*)e1.pointer, (const char*)e2.pointer);
-        return (res == 0) ? 0 : ((res > 0) ? 1 : -1);
+        return uprv_strcmp((const char*)e1.pointer, (const char*)e2.pointer);
     }, status);
 
     // A changed count to assert when loop too many times.
