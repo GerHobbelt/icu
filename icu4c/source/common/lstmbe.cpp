@@ -28,14 +28,12 @@ U_NAMESPACE_BEGIN
 
 
 ThaiLSTMBreakEngine::ThaiLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"),
-                      status)
+    : LSTMBreakEngine(name, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"), status)
 {
 }
 
 BurmeseLSTMBreakEngine::BurmeseLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"),
-                      status)
+    : LSTMBreakEngine(name, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"), status)
 {
 }
 
@@ -45,6 +43,7 @@ BurmeseLSTMBreakEngine::BurmeseLSTMBreakEngine(const UnicodeString& name, UError
  */
 class ReadArray1D {
 public:
+    virtual ~ReadArray1D() {}
     virtual int32_t d1() const = 0;
     virtual float get(int32_t i) const = 0;
 
@@ -65,6 +64,7 @@ public:
  */
 class ReadArray2D {
 public:
+    virtual ~ReadArray2D() {}
     virtual int32_t d1() const = 0;
     virtual int32_t d2() const = 0;
     virtual float get(int32_t i, int32_t j) const = 0;
@@ -387,9 +387,11 @@ LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
     int32_t mat6_size = mat3_size;
     int32_t mat7_size = mat4_size;
     int32_t mat8_size = 2 * hunits * 4;
+#if U_DEBUG
     int32_t mat9_size = 4;
     U_ASSERT(data_len == mat1_size + mat2_size + mat3_size + mat4_size + mat5_size +
         mat6_size + mat7_size + mat8_size + mat9_size);
+#endif
 
     fEmbedding.init(data, (num_index + 1), embedding_size);
     data += mat1_size;
