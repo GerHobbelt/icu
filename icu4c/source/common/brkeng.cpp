@@ -163,7 +163,9 @@ UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     // open root from brkitr tree.
     UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
     b = ures_getByKeyWithFallback(b, "lstm", b, &status);
-    return ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
+    UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
+    ures_close(b);
+    return result;
 }
 
 const LanguageBreakEngine *
