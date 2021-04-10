@@ -76,7 +76,7 @@ private:
 class ThaiLSTMBreakEngine : public LSTMBreakEngine {
 public:
     ThaiLSTMBreakEngine(const UnicodeString& name, UErrorCode &status);
-    virtual ~ThaiLSTMBreakEngine() {}
+    virtual ~ThaiLSTMBreakEngine();
 };
 
 /*******************************************************************
@@ -93,7 +93,7 @@ public:
 class BurmeseLSTMBreakEngine : public LSTMBreakEngine {
 public:
     BurmeseLSTMBreakEngine(const UnicodeString& name,UErrorCode &status);
-    virtual ~BurmeseLSTMBreakEngine() {}
+    virtual ~BurmeseLSTMBreakEngine();
 };
 
 U_NAMESPACE_END
