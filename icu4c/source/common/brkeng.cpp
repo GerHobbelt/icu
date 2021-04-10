@@ -159,55 +159,19 @@ ICULanguageBreakFactory::getEngineFor(UChar32 c) {
     return lbe;
 }
 
-UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
-    // open root from brkitr tree.
-    UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
-    b = ures_getByKeyWithFallback(b, "lstm", b, &status);
-    UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
-    ures_close(b);
-    return result;
-}
-
 const LanguageBreakEngine *
 ICULanguageBreakFactory::loadEngineFor(UChar32 c) {
     UErrorCode status = U_ZERO_ERROR;
     UScriptCode code = uscript_getScript(c, &status);
     if (U_SUCCESS(status)) {
         // Try to use LSTM first
-        const LanguageBreakEngine *engine = nullptr;
-        switch(code) {
-            case USCRIPT_THAI:
-                {
-                    UnicodeString lstm = defaultLSTM(code, status);
-                    if (U_SUCCESS(status)) {
-                        engine = new ThaiLSTMBreakEngine(lstm, status);
-                        if (U_SUCCESS(status) && engine != nullptr) {
-                            return engine;
-                        }
-                        if (engine != nullptr) {
-                            delete engine;
-                            engine = nullptr;
-                        }
-                    }
-                }
-                break;
-            case USCRIPT_MYANMAR:
-                {
-                    UnicodeString lstm = defaultLSTM(code, status);
-                    if (U_SUCCESS(status)) {
-                        engine = new BurmeseLSTMBreakEngine(lstm, status);
-                        if (U_SUCCESS(status) && engine != nullptr) {
-                            return engine;
-                        }
-                        if (engine != nullptr) {
-                            delete engine;
-                            engine = nullptr;
-                        }
-                    }
-                }
-                break;
-            default:
-                break;
+        const LanguageBreakEngine *engine = CreateLSTMBreakEngine(code, status);
+        if (U_SUCCESS(status) && engine != nullptr) {
+            return engine;
+        }
+        if (engine != nullptr) {
+            delete engine;
+            engine = nullptr;
         }
         status = U_ZERO_ERROR;  // fallback to dictionary based
         DictionaryMatcher *m = loadDictionaryMatcherFor(code);

@@ -26,26 +26,6 @@
 
 U_NAMESPACE_BEGIN
 
-
-ThaiLSTMBreakEngine::ThaiLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"), status)
-{
-}
-
-ThaiLSTMBreakEngine::~ThaiLSTMBreakEngine()
-{
-}
-
-BurmeseLSTMBreakEngine::BurmeseLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"), status)
-{
-}
-
-BurmeseLSTMBreakEngine::~BurmeseLSTMBreakEngine()
-{
-}
-
-
 /**
  * Interface for reading 1D array.
  */
@@ -318,30 +298,65 @@ Array2D::~Array2D()
 }
 
 typedef enum {
-    UNKNOWN,
-    CODE_POINTS,
-    GRAPHEME_CLUSTER,
-} EmbeddingType;
-
-typedef enum {
     BEGIN,
     INSIDE,
     END,
     SINGLE
 } LSTMClass;
 
+typedef enum {
+    UNKNOWN,
+    CODE_POINTS,
+    GRAPHEME_CLUSTER,
+} EmbeddingType;
+
 class LSTMData : public UMemory {
 public:
-    LSTMData(const UnicodeString& name, UErrorCode &status);
+    LSTMData();
     virtual ~LSTMData();
-    UHashtable* GetDictionary() const { return fDict; }
+    virtual UHashtable* GetDictionary() const = 0;
+    virtual EmbeddingType type() const = 0;
+    virtual const UChar* name() const = 0;
+    virtual const ConstArray2D& embedding() const = 0;
+    virtual const ConstArray2D& forwardW() const = 0;
+    virtual const ConstArray2D& forwardU() const = 0;
+    virtual const ConstArray1D& forwardB() const = 0;
+    virtual const ConstArray2D& backwardW() const = 0;
+    virtual const ConstArray2D& backwardU() const = 0;
+    virtual const ConstArray1D& backwardB() const = 0;
+    virtual const ConstArray2D& outputW() const = 0;
+    virtual const ConstArray1D& outputB() const = 0;
+};
 
- private:
+LSTMData::LSTMData()
+{
+}
+
+LSTMData::~LSTMData()
+{
+}
+
+class LSTMResourceData : public LSTMData {
+public:
+    LSTMResourceData(const UnicodeString& name, UErrorCode &status);
+    virtual ~LSTMResourceData();
+    virtual UHashtable* GetDictionary() const { return fDict; }
+    virtual EmbeddingType type() const { return fType; }
+    virtual const UChar* name() const { return fName; }
+    virtual const ConstArray2D& embedding() const { return fEmbedding; }
+    virtual const ConstArray2D& forwardW() const { return fForwardW; }
+    virtual const ConstArray2D& forwardU() const { return fForwardU; }
+    virtual const ConstArray1D& forwardB() const { return fForwardB; }
+    virtual const ConstArray2D& backwardW() const { return fBackwardW; }
+    virtual const ConstArray2D& backwardU() const { return fBackwardU; }
+    virtual const ConstArray1D& backwardB() const { return fBackwardB; }
+    virtual const ConstArray2D& outputW() const { return fOutputW; }
+    virtual const ConstArray1D& outputB() const { return fOutputB; }
+
+private:
     UResourceBundle* fDataRes;
     UResourceBundle* fDictRes;
     UHashtable* fDict;
-
- public:
     EmbeddingType fType;
     const UChar* fName;
     ConstArray2D fEmbedding;
@@ -355,7 +370,7 @@ public:
     ConstArray1D fOutputB;
 };
 
-LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
+LSTMResourceData::LSTMResourceData(const UnicodeString& name, UErrorCode &status)
     : fDataRes(nullptr), fDictRes(nullptr), fDict(nullptr),
     fType(UNKNOWN), fName(nullptr)
 {
@@ -435,7 +450,7 @@ LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
     fOutputB.init(data, 4);
 }
 
-LSTMData::~LSTMData() {
+LSTMResourceData::~LSTMResourceData() {
     uhash_close(fDict);
     ures_close(fDictRes);
     ures_close(fDataRes);
@@ -600,7 +615,7 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     int32_t* indicesBuf = indices.getBuffer();
 
     int32_t input_seq_len = indices.size();
-    int32_t hunits = fData->fForwardU.d1();
+    int32_t hunits = fData->forwardU().d1();
 
     // To save the needed memory usage, the following is different from the
     // Python or ICU4X implementation. We first perform the Backward LSTM
@@ -617,8 +632,8 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         if (i != input_seq_len - 1) {
             hRow.assign(hBackward.row(i+1));
         }
-        compute(fData->fBackwardW, fData->fBackwardU, fData->fBackwardB,
-                fData->fEmbedding.row(indicesBuf[i]),
+        compute(fData->backwardW(), fData->backwardU(), fData->backwardB(),
+                fData->embedding().row(indicesBuf[i]),
                 hRow, c);
     }
 
@@ -637,14 +652,14 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
-        compute(fData->fForwardW, fData->fForwardU, fData->fForwardB,
-                fData->fEmbedding.row(indicesBuf[i]),
+        compute(fData->forwardW(), fData->forwardU(), fData->forwardB(),
+                fData->embedding().row(indicesBuf[i]),
                 forwardRow, c);
 
         // assign the data from hBackward.row(i) to second half of fbRowa.
         backwardRow.assign(hBackward.row(i));
 
-        logp.dotProduct(fbRow, fData->fOutputW).add(fData->fOutputB);
+        logp.dotProduct(fbRow, fData->outputW()).add(fData->outputB());
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
@@ -663,7 +678,7 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     if (U_FAILURE(status)) {
         return nullptr;
     }
-    switch (data->fType) {
+    switch (data->type()) {
         case CODE_POINTS:
             return new CodePointsVectorizer(data->GetDictionary());
             break;
@@ -676,9 +691,8 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     UPRV_UNREACHABLE;
 }
 
-LSTMBreakEngine::LSTMBreakEngine(const UnicodeString& name, const UnicodeString& set, UErrorCode &status)
-    : DictionaryBreakEngine(), fData(new LSTMData(name, status)),
-      fVectorizer(createVectorizer(fData, status))
+LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeString& set, UErrorCode &status)
+    : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
     UnicodeSet unicodeSet;
     unicodeSet.applyPattern(set, status);
@@ -693,7 +707,43 @@ LSTMBreakEngine::~LSTMBreakEngine() {
 }
 
 const UChar* LSTMBreakEngine::name() const {
-    return fData->fName;
+    return fData->name();
+}
+
+UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
+    // open root from brkitr tree.
+    UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
+    b = ures_getByKeyWithFallback(b, "lstm", b, &status);
+    UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
+    ures_close(b);
+    return result;
+}
+
+const LanguageBreakEngine*
+CreateLSTMBreakEngine(UScriptCode script, UErrorCode& status)
+{
+    UnicodeString name = defaultLSTM(script, status);
+    if (U_FAILURE(status)) {
+        return nullptr;
+    }
+    const LSTMData* data = new LSTMResourceData(name, status);
+    if (data == nullptr) {
+        return nullptr;
+    }
+    if (U_FAILURE(status)) {
+        delete data;
+        return nullptr;
+    }
+    switch(script) {
+        case USCRIPT_THAI:
+            return new LSTMBreakEngine(data, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"), status);
+        case USCRIPT_MYANMAR:
+            return new LSTMBreakEngine(data, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"), status);
+        default:
+            break;
+    }
+    delete data;
+    return nullptr;
 }
 
 U_NAMESPACE_END

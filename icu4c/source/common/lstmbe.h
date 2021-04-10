@@ -14,9 +14,8 @@
 
 U_NAMESPACE_BEGIN
 
-class LSTMData;
 class Vectorizer;
-
+class LSTMData;
 
 /*******************************************************************
  * LSTMBreakEngine
@@ -34,7 +33,7 @@ public:
     /**
      * <p>Constructor.</p>
      */
-    LSTMBreakEngine(const UnicodeString& model, const UnicodeString& set, UErrorCode &status);
+    LSTMBreakEngine(const LSTMData* data, const UnicodeString& set, UErrorCode &status);
 
     /**
      * <p>Virtual destructor.</p>
@@ -62,39 +61,8 @@ private:
     const Vectorizer* fVectorizer;
 };
 
-/*******************************************************************
- * ThaiLSTMBreakEngine
- */
 
-/**
- * <p>ThaiLSTMBreakEngine is a kind of LSTMBreakEngine that uses a
- * LSTM to determine Thai-specific breaks.</p>
- *
- * <p>After it is constructed a ThaiLSTMBreakEngine may be shared between
- * threads without synchronization.</p>
- */
-class ThaiLSTMBreakEngine : public LSTMBreakEngine {
-public:
-    ThaiLSTMBreakEngine(const UnicodeString& name, UErrorCode &status);
-    virtual ~ThaiLSTMBreakEngine();
-};
-
-/*******************************************************************
- * BurmeseLSTMBreakEngine
- */
-
-/**
- * <p>BurmeseLSTMBreakEngine is a kind of LSTMBreakEngine that uses a
- * LSTM to determine Burmese-specific breaks.</p>
- *
- * <p>After it is constructed a BurmeseLSTMBreakEngine may be shared between
- * threads without synchronization.</p>
- */
-class BurmeseLSTMBreakEngine : public LSTMBreakEngine {
-public:
-    BurmeseLSTMBreakEngine(const UnicodeString& name,UErrorCode &status);
-    virtual ~BurmeseLSTMBreakEngine();
-};
+const LanguageBreakEngine* CreateLSTMBreakEngine(UScriptCode script, UErrorCode& status);
 
 U_NAMESPACE_END
 
