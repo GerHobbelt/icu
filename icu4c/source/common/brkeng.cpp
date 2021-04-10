@@ -176,17 +176,31 @@ ICULanguageBreakFactory::loadEngineFor(UChar32 c) {
         switch(code) {
             case USCRIPT_THAI:
                 {
-                    engine = new ThaiLSTMBreakEngine(defaultLSTM(code, status), status);
-                    if (U_SUCCESS(status) && engine != nullptr) {
-                        return engine;
+                    UnicodeString lstm = defaultLSTM(code, status);
+                    if (U_SUCCESS(status)) {
+                        engine = new ThaiLSTMBreakEngine(lstm, status);
+                        if (U_SUCCESS(status) && engine != nullptr) {
+                            return engine;
+                        }
+                        if (engine != nullptr) {
+                            delete engine;
+                            engine = nullptr;
+                        }
                     }
                 }
                 break;
             case USCRIPT_MYANMAR:
                 {
-                    engine = new BurmeseLSTMBreakEngine(defaultLSTM(code, status), status);
-                    if (U_SUCCESS(status) && engine != nullptr) {
-                        return engine;
+                    UnicodeString lstm = defaultLSTM(code, status);
+                    if (U_SUCCESS(status)) {
+                        engine = new BurmeseLSTMBreakEngine(lstm, status);
+                        if (U_SUCCESS(status) && engine != nullptr) {
+                            return engine;
+                        }
+                        if (engine != nullptr) {
+                            delete engine;
+                            engine = nullptr;
+                        }
                     }
                 }
                 break;
