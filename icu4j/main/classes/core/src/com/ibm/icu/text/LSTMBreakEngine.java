@@ -2,7 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html
 //
 /**
- *
+ * A LSTMBreakEngine
  */
 package com.ibm.icu.text;
 
