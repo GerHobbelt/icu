@@ -2561,10 +2561,10 @@ SimpleDateFormat::parse(const UnicodeString& text, Calendar& cal, ParsePosition&
             if (btz != NULL) {
                 if (tzTimeType == UTZFMT_TIME_TYPE_STANDARD) {
                     btz->getOffsetFromLocal(localMillis,
-                        BasicTimeZone::kStandard, BasicTimeZone::kStandard, raw, dst, status);
+                        (UTimeZoneLocalOption)BasicTimeZone::kStandard, (UTimeZoneLocalOption)BasicTimeZone::kStandard, raw, dst, status);
                 } else {
                     btz->getOffsetFromLocal(localMillis,
-                        BasicTimeZone::kDaylight, BasicTimeZone::kDaylight, raw, dst, status);
+                        (UTimeZoneLocalOption)BasicTimeZone::kDaylight, (UTimeZoneLocalOption)BasicTimeZone::kDaylight, raw, dst, status);
                 }
             } else {
                 // No good way to resolve ambiguous time at transition,
