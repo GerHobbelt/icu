@@ -44,42 +44,42 @@ BurmeseLSTMBreakEngine::BurmeseLSTMBreakEngine(const UnicodeString& name, UError
  * Interface for reading 1D array.
  */
 class ReadArray1D {
- public:
+public:
+    virtual ~ReadArray1D();
     virtual int32_t d1() const = 0;
     virtual float get(int32_t i) const = 0;
-
-    inline void print() const {
-        for (int32_t i = 0; i < d1(); i++) {
-            printf("  %e", get(i));
-            if (i % 4 == 3) {
-                printf("\n");
-            }
-        }
-        printf("\n");
-    }
 };
+
+ReadArray1D::~ReadArray1D()
+{
+}
 
 /**
  * Interface for reading 2D array.
  */
 class ReadArray2D {
- public:
+public:
+    virtual ~ReadArray2D();
     virtual int32_t d1() const = 0;
     virtual int32_t d2() const = 0;
     virtual float get(int32_t i, int32_t j) const = 0;
 };
+
+ReadArray2D::~ReadArray2D()
+{
+}
 
 /**
  * A class to index a float array as a 1D Array without owning the pointer or
  * copy the data.
  */
 class ConstArray1D : public ReadArray1D {
- public:
+public:
     ConstArray1D() : data_(nullptr), d1_(0) {}
 
     ConstArray1D(const float* data, int32_t d1) : data_(data), d1_(d1) {}
 
-    virtual ~ConstArray1D() {}
+    virtual ~ConstArray1D();
 
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
@@ -92,26 +92,30 @@ class ConstArray1D : public ReadArray1D {
     virtual int32_t d1() const { return d1_; }
     virtual float get(int32_t i) const {
         U_ASSERT(i < d1_);
-      return data_[i];
+        return data_[i];
     }
 
- private:
+private:
     const float* data_;
     int32_t d1_;
 };
+
+ConstArray1D::~ConstArray1D()
+{
+}
 
 /**
  * A class to index a float array as a 2D Array without owning the pointer or
  * copy the data.
  */
 class ConstArray2D : public ReadArray2D {
- public:
+public:
     ConstArray2D() : data_(nullptr), d1_(0), d2_(0) {}
 
     ConstArray2D(const float* data, int32_t d1, int32_t d2)
         : data_(data), d1_(d1), d2_(d2) {}
 
-    virtual ~ConstArray2D() { }
+    virtual ~ConstArray2D();
 
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
@@ -127,36 +131,39 @@ class ConstArray2D : public ReadArray2D {
     float get(int32_t i, int32_t j) const {
         U_ASSERT(i < d1_);
         U_ASSERT(j < d2_);
-      return data_[i * d2_ + j];
+        return data_[i * d2_ + j];
     }
 
     // Expose the ith row as a ConstArray1D
     inline ConstArray1D row(int32_t i) const {
-      U_ASSERT(i < d1_);
-      return ConstArray1D(data_ + i * d2_, d2_);
+        U_ASSERT(i < d1_);
+        return ConstArray1D(data_ + i * d2_, d2_);
     }
 
-   private:
+private:
     const float* data_;
     int32_t d1_;
     int32_t d2_;
 };
+
+ConstArray2D::~ConstArray2D()
+{
+}
 
 /**
  * A class to allocate data as a writable 1D array.
  * This is the main class implement matrix operation.
  */
 class Array1D : public ReadArray1D {
- public:
+public:
     Array1D() : memory_(nullptr), data_(nullptr), d1_(0) {}
     Array1D(int32_t d1)
         : memory_(uprv_malloc(d1 * sizeof(float))),
           data_((float*)memory_), d1_(d1) {
       clear();
     }
-    virtual ~Array1D() {
-        uprv_free(memory_);
-    }
+
+    virtual ~Array1D();
 
     // A special constructor which does not own the memory but writeable
     // as a slice of an array.
@@ -252,23 +259,26 @@ class Array1D : public ReadArray1D {
         return *this;
     }
 
- private:
+private:
     void* memory_;
     float* data_;
     int32_t d1_;
 };
 
+Array1D::~Array1D()
+{
+    uprv_free(memory_);
+}
+
 class Array2D : public ReadArray2D {
- public:
+public:
     Array2D() : memory_(nullptr), data_(nullptr), d1_(0), d2_(0) {}
     Array2D(int32_t d1, int32_t d2)
         : memory_(uprv_malloc(d1 * d2 * sizeof(float))),
           data_((float*)memory_), d1_(d1), d2_(d2) {
         clear();
     }
-    virtual ~Array2D() {
-        uprv_free(memory_);
-    }
+    virtual ~Array2D();
 
     // ReadArray2D methods.
     virtual int32_t d1() const { return d1_; }
@@ -289,18 +299,17 @@ class Array2D : public ReadArray2D {
         return *this;
     }
 
- private:
+private:
     void* memory_;
     float* data_;
     int32_t d1_;
     int32_t d2_;
 };
 
-typedef enum {
-    UNKNOWN,
-    CODE_POINTS,
-    GRAPHEME_CLUSTER,
-} EmbeddingType;
+Array2D::~Array2D()
+{
+    uprv_free(memory_);
+}
 
 typedef enum {
     BEGIN,
@@ -309,15 +318,56 @@ typedef enum {
     SINGLE
 } LSTMClass;
 
-class LSTMData : public UMemory {
- public:
-    LSTMData(const UnicodeString& name, UErrorCode &status);
-    virtual ~LSTMData();
-    UHashtable* GetDictionary() const {
-        return fDict;
-    }
+typedef enum {
+    UNKNOWN,
+    CODE_POINTS,
+    GRAPHEME_CLUSTER,
+} EmbeddingType;
 
- private:
+class LSTMData : public UMemory {
+public:
+    LSTMData();
+    virtual ~LSTMData();
+    virtual UHashtable* GetDictionary() const = 0;
+    virtual EmbeddingType type() const = 0;
+    virtual const UChar* name() const = 0;
+    virtual const ConstArray2D& embedding() const = 0;
+    virtual const ConstArray2D& forwardW() const = 0;
+    virtual const ConstArray2D& forwardU() const = 0;
+    virtual const ConstArray1D& forwardB() const = 0;
+    virtual const ConstArray2D& backwardW() const = 0;
+    virtual const ConstArray2D& backwardU() const = 0;
+    virtual const ConstArray1D& backwardB() const = 0;
+    virtual const ConstArray2D& outputW() const = 0;
+    virtual const ConstArray1D& outputB() const = 0;
+};
+
+LSTMData::LSTMData()
+{
+}
+
+LSTMData::~LSTMData()
+{
+}
+
+class LSTMResourceData : public LSTMData {
+public:
+    LSTMResourceData(const UnicodeString& name, UErrorCode &status);
+    virtual ~LSTMResourceData();
+    virtual UHashtable* GetDictionary() const { return fDict; }
+    virtual EmbeddingType type() const { return fType; }
+    virtual const UChar* name() const { return fName; }
+    virtual const ConstArray2D& embedding() const { return fEmbedding; }
+    virtual const ConstArray2D& forwardW() const { return fForwardW; }
+    virtual const ConstArray2D& forwardU() const { return fForwardU; }
+    virtual const ConstArray1D& forwardB() const { return fForwardB; }
+    virtual const ConstArray2D& backwardW() const { return fBackwardW; }
+    virtual const ConstArray2D& backwardU() const { return fBackwardU; }
+    virtual const ConstArray1D& backwardB() const { return fBackwardB; }
+    virtual const ConstArray2D& outputW() const { return fOutputW; }
+    virtual const ConstArray1D& outputB() const { return fOutputB; }
+
+private:
     UResourceBundle* fDataRes;
     UResourceBundle* fDictRes;
     UHashtable* fDict;
@@ -336,7 +386,7 @@ class LSTMData : public UMemory {
     ConstArray1D fOutputB;
 };
 
-LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
+LSTMResourceData::LSTMResourceData(const UnicodeString& name, UErrorCode &status)
     : fDataRes(nullptr), fDictRes(nullptr), fDict(nullptr),
     fType(UNKNOWN), fName(nullptr)
 {
@@ -356,9 +406,9 @@ LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
     int32_t hunits = ures_getInt(hunits_res.getAlias(), &status);
     const UChar* type = ures_getStringByKey(rb.getAlias(), "type", nullptr, &status);
     if (u_strCompare(type, -1, u"codepoints", -1, false) == 0) {
-      fType = CODE_POINTS;
+        fType = CODE_POINTS;
     } else if (u_strCompare(type, -1, u"graphclust", -1, false) == 0) {
-      fType = GRAPHEME_CLUSTER;
+        fType = GRAPHEME_CLUSTER;
     }
     fName = ures_getStringByKey(rb.getAlias(), "model", nullptr, &status);
     fDataRes = ures_getByKey(rb.getAlias(), "data", nullptr, &status);
@@ -391,9 +441,11 @@ LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
     int32_t mat6_size = mat3_size;
     int32_t mat7_size = mat4_size;
     int32_t mat8_size = 2 * hunits * 4;
+#if U_DEBUG
     int32_t mat9_size = 4;
     U_ASSERT(data_len == mat1_size + mat2_size + mat3_size + mat4_size + mat5_size +
         mat6_size + mat7_size + mat8_size + mat9_size);
+#endif
 
     fEmbedding.init(data, (num_index + 1), embedding_size);
     data += mat1_size;
@@ -414,37 +466,44 @@ LSTMData::LSTMData(const UnicodeString& name, UErrorCode &status)
     fOutputB.init(data, 4);
 }
 
-LSTMData::~LSTMData() {
+LSTMResourceData::~LSTMResourceData() {
     uhash_close(fDict);
     ures_close(fDictRes);
     ures_close(fDataRes);
 }
 
 class Vectorizer : public UMemory {
- public:
+public:
     Vectorizer(UHashtable* dict) : dict(dict) {}
-    virtual ~Vectorizer() {}
+    virtual ~Vectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
                            UErrorCode &status) const = 0;
- protected:
+protected:
     int32_t stringToIndex(const UChar* str) const {
-      return uhash_geti(dict, (const void*)str);
+        return uhash_geti(dict, (const void*)str);
     }
 
- private:
+private:
     UHashtable* dict;
 };
 
+Vectorizer::~Vectorizer()
+{
+}
 
 class CodePointsVectorizer : public Vectorizer {
- public:
+public:
     CodePointsVectorizer(UHashtable* dict) : Vectorizer(dict) {}
-    virtual ~CodePointsVectorizer() {}
+    virtual ~CodePointsVectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
                            UErrorCode &status) const;
 };
+
+CodePointsVectorizer::~CodePointsVectorizer()
+{
+}
 
 void CodePointsVectorizer::vectorize(
     UText *text, int32_t startPos, int32_t endPos,
@@ -465,13 +524,17 @@ void CodePointsVectorizer::vectorize(
 }
 
 class GraphemeClusterVectorizer : public Vectorizer {
- public:
+public:
     GraphemeClusterVectorizer(UHashtable* dict) : Vectorizer(dict) {}
-    virtual ~GraphemeClusterVectorizer() {}
+    virtual ~GraphemeClusterVectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
                            UErrorCode &status) const;
 };
+
+GraphemeClusterVectorizer::~GraphemeClusterVectorizer()
+{
+}
 
 #define MAX_GRAPHEME_CLSTER_LENTH 10
 void GraphemeClusterVectorizer::vectorize(
@@ -485,7 +548,7 @@ void GraphemeClusterVectorizer::vectorize(
         graphemeIter->setText(text, status);
 
         if (startPos != 0) {
-          graphemeIter->preceding(startPos);
+            graphemeIter->preceding(startPos);
         }
         int32_t last = startPos;
         int32_t current = startPos;
@@ -568,9 +631,8 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     int32_t* indicesBuf = indices.getBuffer();
 
     int32_t input_seq_len = indices.size();
-    int32_t hunits = fData->fForwardU.d1();
+    int32_t hunits = fData->forwardU().d1();
 
-    // printf("len %d\n", input_seq_len);
     // To save the needed memory usage, the following is different from the
     // Python or ICU4X implementation. We first perform the Backward LSTM
     // and then merge the iteration of the forward LSTM and the output layer
@@ -586,14 +648,9 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         if (i != input_seq_len - 1) {
             hRow.assign(hBackward.row(i+1));
         }
-        compute(fData->fBackwardW, fData->fBackwardU, fData->fBackwardB,
-                fData->fEmbedding.row(indicesBuf[i]),
+        compute(fData->backwardW(), fData->backwardU(), fData->backwardB(),
+                fData->embedding().row(indicesBuf[i]),
                 hRow, c);
-        // printf("Backward %d %d\n", i, indicesBuf[i]);
-        // printf("h\n");
-        // hRow.print();
-        // printf("c\n");
-        // c.print();
     }
 
     Array1D logp(4);
@@ -612,21 +669,14 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
-        compute(fData->fForwardW, fData->fForwardU, fData->fForwardB,
-                fData->fEmbedding.row(indicesBuf[i]),
+        compute(fData->forwardW(), fData->forwardU(), fData->forwardB(),
+                fData->embedding().row(indicesBuf[i]),
                 forwardRow, c);
 
         // assign the data from hBackward.row(i) to second half of fbRowa.
         backwardRow.assign(hBackward.row(i));
 
-        //printf("final %d\n", i);
-        //fbRow.print();
-        // Output layer
-        // logp = fbRow * fOutputW + fOutputB
-        logp.dotProduct(fbRow, fData->fOutputW).add(fData->fOutputB);
-
-        //printf("logp %d\n", i);
-        //logp.print();
+        logp.dotProduct(fbRow, fData->outputW()).add(fData->outputB());
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
@@ -649,28 +699,26 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     if (U_FAILURE(status)) {
         return nullptr;
     }
-    switch (data->fType) {
-      case CODE_POINTS:
-        return new CodePointsVectorizer(data->GetDictionary());
-        break;
-      case GRAPHEME_CLUSTER:
-        return new GraphemeClusterVectorizer(data->GetDictionary());
-        break;
-      default:
-        break;
+    switch (data->type()) {
+        case CODE_POINTS:
+            return new CodePointsVectorizer(data->GetDictionary());
+            break;
+        case GRAPHEME_CLUSTER:
+            return new GraphemeClusterVectorizer(data->GetDictionary());
+            break;
+        default:
+            break;
     }
     UPRV_UNREACHABLE;
 }
 
-LSTMBreakEngine::LSTMBreakEngine(const UnicodeString& name, const UnicodeString& set, UErrorCode &status)
-    : DictionaryBreakEngine(),
-      fData(new LSTMData(name, status)),
-      fVectorizer(createVectorizer(fData, status))
+LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeString& set, UErrorCode &status)
+    : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
     UnicodeSet unicodeSet;
     unicodeSet.applyPattern(set, status);
     if (U_SUCCESS(status)) {
-      setCharacters(unicodeSet);
+        setCharacters(unicodeSet);
     }
 }
 
@@ -680,10 +728,44 @@ LSTMBreakEngine::~LSTMBreakEngine() {
 }
 
 const UChar* LSTMBreakEngine::name() const {
-    return fData->fName;
+    return fData->name();
 }
 
+UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
+    // open root from brkitr tree.
+    UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
+    b = ures_getByKeyWithFallback(b, "lstm", b, &status);
+    UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
+    ures_close(b);
+    return result;
+}
 
+const LanguageBreakEngine*
+CreateLSTMBreakEngine(UScriptCode script, UErrorCode& status)
+{
+    UnicodeString name = defaultLSTM(script, status);
+    if (U_FAILURE(status)) {
+        return nullptr;
+    }
+    const LSTMData* data = new LSTMResourceData(name, status);
+    if (data == nullptr) {
+        return nullptr;
+    }
+    if (U_FAILURE(status)) {
+        delete data;
+        return nullptr;
+    }
+    switch(script) {
+        case USCRIPT_THAI:
+            return new LSTMBreakEngine(data, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"), status);
+        case USCRIPT_MYANMAR:
+            return new LSTMBreakEngine(data, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"), status);
+        default:
+            break;
+    }
+    delete data;
+    return nullptr;
+}
 
 U_NAMESPACE_END
 

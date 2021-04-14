@@ -171,24 +171,18 @@ ICULanguageBreakFactory::loadEngineFor(UChar32 c) {
     UErrorCode status = U_ZERO_ERROR;
     UScriptCode code = uscript_getScript(c, &status);
     if (U_SUCCESS(status)) {
-        // Use LSTM
-        if (code == USCRIPT_THAI) {
-            const LanguageBreakEngine *engine = new ThaiLSTMBreakEngine(defaultLSTM(code, status), status);
-            if (U_SUCCESS(status) && engine != nullptr) {
-                return engine;
-            }
-            status = U_ZERO_ERROR;
+        // Try to use LSTM first
+        const LanguageBreakEngine *engine = CreateLSTMBreakEngine(code, status);
+        if (U_SUCCESS(status) && engine != nullptr) {
+            return engine;
         }
-        if (code == USCRIPT_MYANMAR) {
-            const LanguageBreakEngine *engine = new BurmeseLSTMBreakEngine(defaultLSTM(code, status), status);
-            if (U_SUCCESS(status) && engine != nullptr) {
-                return engine;
-            }
-            status = U_ZERO_ERROR;
+        if (engine != nullptr) {
+            delete engine;
+            engine = nullptr;
         }
+        status = U_ZERO_ERROR;  // fallback to dictionary based
         DictionaryMatcher *m = loadDictionaryMatcherFor(code);
-        if (m != nullptr) {
-            const LanguageBreakEngine *engine = nullptr;
+        if (m != NULL) {
             switch(code) {
             case USCRIPT_THAI:
                 engine = new ThaiBreakEngine(m, status);
