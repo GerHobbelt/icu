@@ -159,12 +159,14 @@ ICULanguageBreakFactory::getEngineFor(UChar32 c) {
     return lbe;
 }
 
+#if 0
 UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     // open root from brkitr tree.
     UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
     b = ures_getByKeyWithFallback(b, "lstm", b, &status);
     return ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
 }
+#endif
 
 const LanguageBreakEngine *
 ICULanguageBreakFactory::loadEngineFor(UChar32 c) {
