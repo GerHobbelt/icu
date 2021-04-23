@@ -9,7 +9,9 @@ description: >- # this means to ignore newlines until "baseurl:"
   documentation on how to use ICU.
 
 baseurl: "/icu" # the subpath for the site
-url: "https://unicode-org.github.io" # the base hostname & protocol for your site
+# url: "https://unicode-org.github.io" # the base hostname & protocol for your site
+# DO NOT MERGE: docs demo override, revert changes to this file before merging PR:
+url: "https://hugovdm.github.io"
 
 twitter_username: unicode
 github_username:  unicode-org
