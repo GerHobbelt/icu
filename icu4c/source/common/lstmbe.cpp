@@ -26,20 +26,6 @@
 
 U_NAMESPACE_BEGIN
 
-
-ThaiLSTMBreakEngine::ThaiLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"),
-                      status)
-{
-}
-
-BurmeseLSTMBreakEngine::BurmeseLSTMBreakEngine(const UnicodeString& name, UErrorCode &status)
-    : LSTMBreakEngine(name, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"),
-                      status)
-{
-}
-
-
 /**
  * Interface for reading 1D array.
  */
