@@ -173,6 +173,7 @@ def generate_conv(config, io, common_vars):
 def generate_lstm(config, io, common_vars):
     basenames = [
         "Thai_graphclust_model4_heavy",
+        "Thai_codepoints_exclusive_model5_heavy",
         "Burmese_graphclust_model5_heavy"
     ]
     input_files = [InFile("%s.txt" % bn) for bn in basenames]
@@ -180,7 +181,7 @@ def generate_lstm(config, io, common_vars):
     return [
          RepeatedExecutionRequest(
             name = "lstm_res",
-            category = "brkitr_lstm",
+            category = "tests",
             input_files = input_files,
             output_files = output_files,
             tool = IcuTool("genrb"),

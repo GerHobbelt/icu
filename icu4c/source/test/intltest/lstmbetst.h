@@ -32,13 +32,11 @@ public:
 
     void runIndexedTest( int32_t index, UBool exec, const char* &name, char* par = NULL );
 
-    void TestThai();
-    void TestBurmese();
+    void TestThaiGraphclust();
+    void TestThaiCodepoints();
+    void TestBurmeseGraphclust();
     void runTestFromFile(const char* filename);
 
-    // TO BE DELETED after landing https://github.com/unicode-org/icu/pull/1700/files
-    UChar *ReadAndConvertFile(const char *fileName, int &ulen, const char *encoding, UErrorCode &status);
-/***********************/
 private:
     const LanguageBreakEngine* createEngineFromTestData(const char* model, UScriptCode script, UErrorCode& status);
 

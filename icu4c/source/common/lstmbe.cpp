@@ -176,6 +176,16 @@ public:
         return index;
     }
 
+#if LSTM_DEBUG
+    void print() const {
+        printf("\n[");
+        for (int32_t i = 0; i < d1_; i++) {
+           printf("%0.8e ", data_[i]);
+           if (i % 4 == 3) printf("\n");
+        }
+        printf("]\n");
+    }
+#endif
     // Slice part of the array to a new one.
     inline Array1D slice(int32_t from, int32_t size) const {
         U_ASSERT(from >= 0);
@@ -407,7 +417,7 @@ LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
     while(ures_hasNext(fDictRes.getAlias())) {
         const char *tempKey = nullptr;
         const UChar* str = ures_getNextString(fDictRes.getAlias(), nullptr, &tempKey, &status);
-        uhash_puti(fDict, (void*)str, idx++, &status);
+        uhash_putiAllowZero(fDict, (void*)str, idx++, &status);
         if (U_FAILURE(status)) {
             return;
         }
@@ -460,7 +470,9 @@ public:
                            UErrorCode &status) const = 0;
 protected:
     int32_t stringToIndex(const UChar* str) const {
-        return uhash_geti(dict, (const void*)str);
+        UBool found = false;
+        int32_t ret = uhash_getiAndFound(dict, (const void*)str, &found);
+        return found ? ret : dict->count;
     }
 
 private:
@@ -633,7 +645,6 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     }
 
     Array1D logp(4);
-    bool breakOnNext = true;
 
     // Allocate fbRow and slice the internal array in two.
     Array1D fbRow(2 * hunits);
@@ -659,12 +670,11 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
         // BIES logic.
-        if (breakOnNext || current == BEGIN || current == SINGLE) {
+        if (current == BEGIN || current == SINGLE) {
             if (i != 0) {
                 foundBreaks.addElement(offsetsBuf[i], status);
             }
         }
-        breakOnNext = (current == END || current == SINGLE);
     }
     return foundBreaks.size();
 }

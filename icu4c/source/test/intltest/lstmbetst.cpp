@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "charstr.h"
-#include "unicode/ucnv.h" // TO BE DELETED after landing https://github.com/unicode-org/icu/pull/1700
 
 //---------------------------------------------
 // runIndexedTest
@@ -23,8 +22,9 @@ void LSTMBETest::runIndexedTest( int32_t index, UBool exec, const char* &name, c
 
     TESTCASE_AUTO_BEGIN;
 
-    TESTCASE_AUTO(TestThai);
-    TESTCASE_AUTO(TestBurmese);
+    TESTCASE_AUTO(TestThaiGraphclust);
+    TESTCASE_AUTO(TestThaiCodepoints);
+    TESTCASE_AUTO(TestBurmeseGraphclust);
 
     TESTCASE_AUTO_END;
 }
@@ -42,103 +42,6 @@ LSTMBETest::LSTMBETest() {
 
 
 LSTMBETest::~LSTMBETest() {
-}
-
-// TO BE DELETED after landing https://github.com/unicode-org/icu/pull/1700
-UChar* LSTMBETest::ReadAndConvertFile(const char *fileName, int &ulen, const char *encoding, UErrorCode &status) {
-    UChar       *retPtr  = NULL;
-    char        *fileBuf = NULL;
-    UConverter* conv     = NULL;
-    FILE        *f       = NULL;
-
-    ulen = 0;
-    if (U_FAILURE(status)) {
-        return retPtr;
-    }
-
-    //
-    //  Open the file.
-    //
-    f = fopen(fileName, "rb");
-    if (f == 0) {
-        dataerrln("Error opening test data file %s\n", fileName);
-        status = U_FILE_ACCESS_ERROR;
-        return NULL;
-    }
-    //
-    //  Read it in
-    //
-    int   fileSize;
-    int   amt_read;
-
-    fseek( f, 0, SEEK_END);
-    fileSize = ftell(f);
-    fileBuf = new char[fileSize];
-    fseek(f, 0, SEEK_SET);
-    amt_read = static_cast<int>(fread(fileBuf, 1, fileSize, f));
-    if (amt_read != fileSize || fileSize <= 0) {
-        errln("Error reading test data file.");
-        goto cleanUpAndReturn;
-    }
-
-    //
-    // Look for a Unicode Signature (BOM) on the data just read
-    //
-    int32_t        signatureLength;
-    const char *   fileBufC;
-    const char*    bomEncoding;
-
-    fileBufC = fileBuf;
-    bomEncoding = ucnv_detectUnicodeSignature(
-        fileBuf, fileSize, &signatureLength, &status);
-    if(bomEncoding!=NULL ){
-        fileBufC  += signatureLength;
-        fileSize  -= signatureLength;
-        encoding = bomEncoding;
-    }
-
-    //
-    // Open a converter to take the rule file to UTF-16
-    //
-    conv = ucnv_open(encoding, &status);
-    if (U_FAILURE(status)) {
-        goto cleanUpAndReturn;
-    }
-
-    //
-    // Convert the rules to UChar.
-    //  Preflight first to determine required buffer size.
-    //
-    ulen = ucnv_toUChars(conv,
-        NULL,           //  dest,
-        0,              //  destCapacity,
-        fileBufC,
-        fileSize,
-        &status);
-    if (status == U_BUFFER_OVERFLOW_ERROR) {
-        // Buffer Overflow is expected from the preflight operation.
-        status = U_ZERO_ERROR;
-
-        retPtr = new UChar[ulen+1];
-        ucnv_toUChars(conv,
-            retPtr,       //  dest,
-            ulen+1,
-            fileBufC,
-            fileSize,
-            &status);
-    }
-
-cleanUpAndReturn:
-    fclose(f);
-    delete []fileBuf;
-    ucnv_close(conv);
-    if (U_FAILURE(status)) {
-        errln("ucnv_toUChars: ICU Error \"%s\"\n", u_errorName(status));
-        delete []retPtr;
-        retPtr = 0;
-        ulen   = 0;
-    }
-    return retPtr;
 }
 
 UScriptCode getScriptFromModelName(const std::string& modelName) {
@@ -190,6 +93,8 @@ void LSTMBETest::runTestFromFile(const char* filename) {
     UnicodeString line;
     int32_t end;
     std::string actual_sep_str;
+    int32_t caseNum = 0;
+    bool hasInput = false;
     do {
         int32_t cr = testString.indexOf(u'\r', start);
         int32_t lf = testString.indexOf(u'\n', start);
@@ -208,6 +113,20 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                     return;
                 }
             } else if (key == "Input:") {
+                caseNum++;
+                bool canHandleAllChars = true;
+                for (int32_t i = 0; i < value.length(); i++) {
+                    if (!engine->handles(value.charAt(i))) {
+                        errln(UnicodeString("Test Case#") + caseNum + " contains char '" +
+                                  UnicodeString(value.charAt(i)) +
+                                  "' cannot be handled by the engine in offset " + i + "\n" + line);
+                        canHandleAllChars = false;
+                        break;
+                    }
+                }
+                if (! canHandleAllChars) {
+                    return;
+                }
                 std::stringstream ss;
                 UText ut = UTEXT_INITIALIZER;
                 utext_openConstUnicodeString(&ut, &value, &status);
@@ -223,7 +142,8 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                 }
                 ss << value.length();
                 actual_sep_str = ss.str();
-            } else if (key == "Output:") {
+                hasInput = true;
+            } else if (key == "Output:" && hasInput) {
                 std::string d;
                 int32_t sep;
                 int32_t start = 0;
@@ -238,14 +158,14 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                         curr += len;
                         ss << curr;
                     }
-                    start = sep+1;
+                    start = sep + 1;
                 }
                 std::string expected = ss.str();
                 std::string utf8;
-                assertEquals(value.toUTF8String<std::string>(utf8).c_str(),
+                assertEquals((value + " Test Case#" + caseNum).toUTF8String<std::string>(utf8).c_str(),
                              expected.c_str(), actual_sep_str.c_str());
+                hasInput = false;
             }
-
         }
         start = std::max(cr, lf) + 1;
     } while (end >= 0);
@@ -253,19 +173,16 @@ void LSTMBETest::runTestFromFile(const char* filename) {
     delete [] testFile;
 }
 
-void LSTMBETest::TestThai() {
-    runTestFromFile("Thai_graphclust_model4_heavyTest.txt");
+void LSTMBETest::TestThaiGraphclust() {
+    runTestFromFile("Thai_graphclust_model4_heavy_Test.txt");
 }
 
-void LSTMBETest::TestBurmese() {
-    UErrorCode   status = U_ZERO_ERROR;
-    LocalPointer<const LanguageBreakEngine> engine(createEngineFromTestData(
-        "Burmese_graphclust_model5_heavy", USCRIPT_MYANMAR, status));
-    if (U_FAILURE(status)) {
-        dataerrln("Could not CreateLSTMBreakEngine for Burmese, " +
-                  UnicodeString(u_errorName(status)));
-        return;
-    }
+void LSTMBETest::TestThaiCodepoints() {
+    runTestFromFile("Thai_codepoints_exclusive_model5_heavy_Test.txt");
+}
+
+void LSTMBETest::TestBurmeseGraphclust() {
+    runTestFromFile("Burmese_graphclust_model5_heavy_Test.txt");
 }
 
 const LanguageBreakEngine* LSTMBETest::createEngineFromTestData(
