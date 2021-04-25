@@ -64,6 +64,7 @@
 #include "uassert.h"
 #include "cmemory.h"
 #include "umutex.h"
+#include "mutex.h"
 #include <float.h>
 #include "smpdtfst.h"
 #include "sharednumberformat.h"
@@ -594,11 +595,20 @@ SimpleDateFormat& SimpleDateFormat::operator=(const SimpleDateFormat& other)
     fLocale = other.fLocale;
 
     // TimeZoneFormat can now be set independently via setter.
-    // If it is NULL, it will be lazily initialized from locale
+    // If it is NULL, it will be lazily initialized from locale.
+    //
+    // This lazy initialization may happen from const functions,
+    // meaning it could happen concurrently on other.fTimeZoneFormat
+    // in the following code. Thus requiring synchronization.
     delete fTimeZoneFormat;
-    fTimeZoneFormat = NULL;
-    if (other.fTimeZoneFormat) {
-        fTimeZoneFormat = new TimeZoneFormat(*other.fTimeZoneFormat);
+    fTimeZoneFormat = nullptr;
+    TimeZoneFormat *otherTZFormat;
+    {
+        Mutex m(&LOCK);
+        otherTZFormat = other.fTimeZoneFormat;
+    }
+    if (otherTZFormat) {
+        fTimeZoneFormat = new TimeZoneFormat(*otherTZFormat);
     }
 
 #if !UCONFIG_NO_BREAK_ITERATION
@@ -4308,19 +4318,10 @@ SimpleDateFormat::skipUWhiteSpace(const UnicodeString& text, int32_t pos) const 
 // Lazy TimeZoneFormat instantiation, semantically const.
 TimeZoneFormat *
 SimpleDateFormat::tzFormat(UErrorCode &status) const {
-    if (fTimeZoneFormat == NULL) {
-        umtx_lock(&LOCK);
-        {
-            if (fTimeZoneFormat == NULL) {
-                TimeZoneFormat *tzfmt = TimeZoneFormat::createInstance(fLocale, status);
-                if (U_FAILURE(status)) {
-                    return NULL;
-                }
-
-                const_cast<SimpleDateFormat *>(this)->fTimeZoneFormat = tzfmt;
-            }
-        }
-        umtx_unlock(&LOCK);
+    Mutex m(&LOCK);
+    if (fTimeZoneFormat == nullptr && U_SUCCESS(status)) {
+        const_cast<SimpleDateFormat *>(this)->fTimeZoneFormat =
+                TimeZoneFormat::createInstance(fLocale, status);
     }
     return fTimeZoneFormat;
 }
