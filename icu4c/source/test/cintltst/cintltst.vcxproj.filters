@@ -425,5 +425,6 @@
     <ClInclude Include="nfsprep.h">
       <Filter>sprep &amp; idna</Filter>
     </ClInclude>
+    <ClInclude Include="calldata.h" />
   </ItemGroup>
 </Project>
