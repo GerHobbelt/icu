@@ -1,0 +1,6 @@
+Model:	Burmese_graphclust_model5_heavy
+Embedding:	grapheme_clusters_tf
+Input:	အပြည်ပြည်ဆိုင်ရာလူ့အခွင့်အရေးကြေညာစာတမ်း
+Output:	|အပြည်|ပြည်|ဆိုင်ရာ|လူ့|အခွင့်အရေး|ကြေညာစာတမ်း|
+Input:	မျိုးရိုးဂုဏ်သိက္ခာနှင့်တကွ
+Output:	|မျိုး|ရိုး|ဂုဏ်|သိက္ခာ|နှင့်|တ|ကွ|

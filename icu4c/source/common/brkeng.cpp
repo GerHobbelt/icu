@@ -164,14 +164,22 @@ ICULanguageBreakFactory::loadEngineFor(UChar32 c) {
     UErrorCode status = U_ZERO_ERROR;
     UScriptCode code = uscript_getScript(c, &status);
     if (U_SUCCESS(status)) {
+        const LanguageBreakEngine *engine = nullptr;
         // Try to use LSTM first
-        const LanguageBreakEngine *engine = CreateLSTMBreakEngine(code, status);
-        if (U_SUCCESS(status) && engine != nullptr) {
-            return engine;
-        }
-        if (engine != nullptr) {
-            delete engine;
-            engine = nullptr;
+        const LSTMData *data = CreateLSTMDataForScript(code, status);
+        if (U_SUCCESS(status)) {
+            if (data != nullptr) {
+                engine = CreateLSTMBreakEngine(code, data, status);
+                if (U_SUCCESS(status) && engine != nullptr) {
+                    return engine;
+                }
+                if (engine != nullptr) {
+                    delete engine;
+                    engine = nullptr;
+                } else {
+                    DeleteLSTMData(data);
+                }
+            }
         }
         status = U_ZERO_ERROR;  // fallback to dictionary based
         DictionaryMatcher *m = loadDictionaryMatcherFor(code);

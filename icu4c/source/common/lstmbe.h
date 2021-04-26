@@ -4,12 +4,13 @@
 #ifndef LSTMBE_H
 #define LSTMBE_H
 
-#include "unicode/utypes.h"
 #include "unicode/uniset.h"
+#include "unicode/ures.h"
 #include "unicode/utext.h"
+#include "unicode/utypes.h"
 
-#include "dictbe.h"
 #include "brkeng.h"
+#include "dictbe.h"
 #include "uvectr32.h"
 
 U_NAMESPACE_BEGIN
@@ -33,7 +34,7 @@ public:
     /**
      * <p>Constructor.</p>
      */
-    LSTMBreakEngine(const LSTMData* data, const UnicodeString& set, UErrorCode &status);
+    LSTMBreakEngine(const LSTMData* data, const UnicodeSet& set, UErrorCode &status);
 
     /**
      * <p>Virtual destructor.</p>
@@ -62,7 +63,11 @@ private:
 };
 
 
-const LanguageBreakEngine* CreateLSTMBreakEngine(UScriptCode script, UErrorCode& status);
+const LanguageBreakEngine* CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status);
+const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status);
+const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status);
+void DeleteLSTMData(const LSTMData* data);
+
 
 U_NAMESPACE_END
 

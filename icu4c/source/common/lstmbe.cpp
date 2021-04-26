@@ -176,6 +176,16 @@ public:
         return index;
     }
 
+#if LSTM_DEBUG
+    void print() const {
+        printf("\n[");
+        for (int32_t i = 0; i < d1_; i++) {
+           printf("%0.8e ", data_[i]);
+           if (i % 4 == 3) printf("\n");
+        }
+        printf("]\n");
+    }
+#endif
     // Slice part of the array to a new one.
     inline Array1D slice(int32_t from, int32_t size) const {
         U_ASSERT(from >= 0);
@@ -338,7 +348,7 @@ LSTMData::~LSTMData()
 
 class LSTMResourceData : public LSTMData {
 public:
-    LSTMResourceData(const UnicodeString& name, UErrorCode &status);
+    LSTMResourceData(UResourceBundle* rb, UErrorCode &status);
     virtual ~LSTMResourceData();
     virtual UHashtable* GetDictionary() const { return fDict; }
     virtual EmbeddingType type() const { return fType; }
@@ -357,8 +367,6 @@ private:
     UResourceBundle* fDataRes;
     UResourceBundle* fDictRes;
     UHashtable* fDict;
-
- public:
     EmbeddingType fType;
     const UChar* fName;
     ConstArray2D fEmbedding;
@@ -372,36 +380,31 @@ private:
     ConstArray1D fOutputB;
 };
 
-LSTMResourceData::LSTMResourceData(const UnicodeString& name, UErrorCode &status)
+LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
     : fDataRes(nullptr), fDictRes(nullptr), fDict(nullptr),
     fType(UNKNOWN), fName(nullptr)
 {
     if (U_FAILURE(status)) {
         return;
     }
-    CharString namebuf;
-    namebuf.appendInvariantChars(name, status).truncate(namebuf.lastIndexOf('.'));
-
-    LocalUResourceBundlePointer rb(
-        ures_openDirect(U_ICUDATA_BRKITR, namebuf.data(), &status));
     LocalUResourceBundlePointer embeddings_res(
-        ures_getByKey(rb.getAlias(), "embeddings", nullptr, &status));
+        ures_getByKey(rb, "embeddings", nullptr, &status));
     int32_t embedding_size = ures_getInt(embeddings_res.getAlias(), &status);
     LocalUResourceBundlePointer hunits_res(
-        ures_getByKey(rb.getAlias(), "hunits", nullptr, &status));
+        ures_getByKey(rb, "hunits", nullptr, &status));
     int32_t hunits = ures_getInt(hunits_res.getAlias(), &status);
-    const UChar* type = ures_getStringByKey(rb.getAlias(), "type", nullptr, &status);
+    const UChar* type = ures_getStringByKey(rb, "type", nullptr, &status);
     if (u_strCompare(type, -1, u"codepoints", -1, false) == 0) {
         fType = CODE_POINTS;
     } else if (u_strCompare(type, -1, u"graphclust", -1, false) == 0) {
         fType = GRAPHEME_CLUSTER;
     }
-    fName = ures_getStringByKey(rb.getAlias(), "model", nullptr, &status);
-    fDataRes = ures_getByKey(rb.getAlias(), "data", nullptr, &status);
+    fName = ures_getStringByKey(rb, "model", nullptr, &status);
+    fDataRes = ures_getByKey(rb, "data", nullptr, &status);
     int32_t data_len = 0;
     const int32_t* data = ures_getIntVector(fDataRes, &data_len, &status);
     LocalUResourceBundlePointer fDictRes(
-        ures_getByKey(rb.getAlias(), "dict", nullptr, &status));
+        ures_getByKey(rb, "dict", nullptr, &status));
     int32_t num_index = ures_getSize(fDictRes.getAlias());
     fDict = uhash_open(uhash_hashUChars, uhash_compareUChars, nullptr, &status);
     if (U_FAILURE(status)) {
@@ -414,7 +417,7 @@ LSTMResourceData::LSTMResourceData(const UnicodeString& name, UErrorCode &status
     while(ures_hasNext(fDictRes.getAlias())) {
         const char *tempKey = nullptr;
         const UChar* str = ures_getNextString(fDictRes.getAlias(), nullptr, &tempKey, &status);
-        uhash_puti(fDict, (void*)str, idx++, &status);
+        uhash_putiAllowZero(fDict, (void*)str, idx++, &status);
         if (U_FAILURE(status)) {
             return;
         }
@@ -467,7 +470,9 @@ public:
                            UErrorCode &status) const = 0;
 protected:
     int32_t stringToIndex(const UChar* str) const {
-        return uhash_geti(dict, (const void*)str);
+        UBool found = false;
+        int32_t ret = uhash_getiAndFound(dict, (const void*)str, &found);
+        return found ? ret : dict->count;
     }
 
 private:
@@ -640,7 +645,6 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     }
 
     Array1D logp(4);
-    bool breakOnNext = true;
 
     // Allocate fbRow and slice the internal array in two.
     Array1D fbRow(2 * hunits);
@@ -651,7 +655,6 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     // together.
     c.clear();  // reuse c since it is the same size.
     for (int32_t i = 0; i < input_seq_len; i++) {
-        // printf("Grapheme ID for  %d %d\n", i, indicesBuf[i]);
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
@@ -666,17 +669,12 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
-        // const char* bies = "bies";
-        // printf("%d %c offset=%d\n", i, bies[(int)current], offsetsBuf[i]);
-        // printf("%c", bies[(int)current]);
-
         // BIES logic.
-        if (breakOnNext || current == BEGIN || current == SINGLE) {
+        if (current == BEGIN || current == SINGLE) {
             if (i != 0) {
                 foundBreaks.addElement(offsetsBuf[i], status);
             }
         }
-        breakOnNext = (current == END || current == SINGLE);
     }
     return foundBreaks.size();
 }
@@ -698,14 +696,10 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     UPRV_UNREACHABLE;
 }
 
-LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeString& set, UErrorCode &status)
+LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeSet& set, UErrorCode &status)
     : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
-    UnicodeSet unicodeSet;
-    unicodeSet.applyPattern(set, status);
-    if (U_SUCCESS(status)) {
-        setCharacters(unicodeSet);
-    }
+    setCharacters(set);
 }
 
 LSTMBreakEngine::~LSTMBreakEngine() {
@@ -722,38 +716,67 @@ UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
     b = ures_getByKeyWithFallback(b, "lstm", b, &status);
     UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
+    std::string utf8;
     ures_close(b);
     return result;
 }
 
-const LanguageBreakEngine*
-CreateLSTMBreakEngine(UScriptCode script, UErrorCode& status)
+const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
 {
+    if (script != USCRIPT_KHMER && script != USCRIPT_LAO && script != USCRIPT_MYANMAR && script != USCRIPT_THAI) {
+        return nullptr;
+    }
     UnicodeString name = defaultLSTM(script, status);
+    CharString namebuf;
+    namebuf.appendInvariantChars(name, status).truncate(namebuf.lastIndexOf('.'));
+
+    LocalUResourceBundlePointer rb(
+        ures_openDirect(U_ICUDATA_BRKITR, namebuf.data(), &status));
     if (U_FAILURE(status)) {
         return nullptr;
     }
-    const LSTMData* data = new LSTMResourceData(name, status);
-    if (data == nullptr) {
-        return nullptr;
-    }
-    if (U_FAILURE(status)) {
-        delete data;
-        return nullptr;
-    }
+
+    return CreateLSTMData(rb.getAlias(), status);
+}
+
+const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
+{
+    return new LSTMResourceData(rb, status);
+}
+
+const LanguageBreakEngine*
+CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status)
+{
+    UnicodeString unicodeSetString;
     switch(script) {
         case USCRIPT_THAI:
-            return new LSTMBreakEngine(data, UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]"), status);
-        case USCRIPT_MYANMAR:
-            return new LSTMBreakEngine(data, UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]"), status);
-        default:
+            unicodeSetString = UnicodeString(u"[[:Thai:]&[:LineBreak=SA:]]");
             break;
+        case USCRIPT_MYANMAR:
+            unicodeSetString = UnicodeString(u"[[:Mymr:]&[:LineBreak=SA:]]");
+            break;
+        default:
+            delete data;
+            return nullptr;
     }
-    delete data;
-    return nullptr;
+    UnicodeSet unicodeSet;
+    unicodeSet.applyPattern(unicodeSetString, status);
+    const LanguageBreakEngine* engine = new LSTMBreakEngine(data, unicodeSet, status);
+    if (U_FAILURE(status) || engine == nullptr) {
+        if (engine != nullptr) {
+            delete engine;
+        }
+        return nullptr;
+    }
+    return engine;
 }
+
+void DeleteLSTMData(const LSTMData* data)
+{
+    delete data;
+}
+
 
 U_NAMESPACE_END
 
 #endif /* #if !UCONFIG_NO_BREAK_ITERATION */
-
