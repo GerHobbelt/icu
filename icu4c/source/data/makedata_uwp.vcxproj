@@ -41,7 +41,7 @@
     <ConfigurationType>Makefile</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-</PropertyGroup>
+  </PropertyGroup>
   <!-- The following import will include the 'default' configuration options for VS UWP projects. -->
   <Import Project="..\allinone\Build.Windows.UWP.ProjectConfiguration.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -51,12 +51,12 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>$(Configuration)-$(PlatformShortname)\</OutDir>
-    <IntDir>$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
-    <MakeCFG>$(Configuration)-$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
+    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
-    <OutDir Condition="'$(Platform)'=='Win32'">.\data\tmp\x86\</OutDir>
-    <MakeCFG Condition="'$(Platform)'=='Win32'">x86\$(Configuration)</MakeCFG>
+    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
+    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
     <!-- NMake -->
     <NMakeBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP clean all</NMakeReBuildCommandLine>
@@ -64,7 +64,6 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <BuildLog>
-      <Path>$(OutDir)$(Configuration)UWPBuildLog.html</Path>
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>

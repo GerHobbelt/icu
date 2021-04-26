@@ -8,7 +8,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
 </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -20,11 +20,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>$(Configuration)-$(PlatformShortname)\</OutDir>
-    <IntDir>$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
+    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
-    <OutDir Condition="'$(Platform)'=='Win32'">.\x86\$(Configuration)\</OutDir>
-    <IntDir Condition="'$(Platform)'=='Win32'">.\x86\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
     <!-- Disable Incremental Linking for Release builds as it prevents Link-time Code Generation -->
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)'=='Release'">false</LinkIncremental>
@@ -37,7 +37,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <CompileAs>Default</CompileAs>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalIncludeDirectories>..\..\..\include;..\..\common;..\toolutil;..\ctestfw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PrecompiledHeaderOutputFile>$(OutDir)/gentest.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(OutDir)/</AssemblerListingLocation>

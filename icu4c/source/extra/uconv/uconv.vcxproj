@@ -7,7 +7,7 @@
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <CharacterSet>MultiByte</CharacterSet>
+    <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -19,9 +19,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>$(Configuration)-$(PlatformShortname)\</OutDir>
-    <IntDir>$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
-    <MakeCFG>$(Configuration)-$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
+    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
+    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
     <!-- Disable Incremental Linking for Release builds as it prevents Link-time Code Generation -->
     <LinkIncremental Condition="'$(Configuration)'=='Debug'">true</LinkIncremental>
@@ -35,18 +35,18 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <CompileAs>Default</CompileAs>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
       <AdditionalIncludeDirectories>..\..\..\include;..\..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>UCONVMSG_LINK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderOutputFile>$(OutDir)\uconv.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>$(OutDir)/</AssemblerListingLocation>
       <ObjectFileName>$(OutDir)/</ObjectFileName>
       <ProgramDataBaseFileName>$(OutDir)\uconv.pdb</ProgramDataBaseFileName>
-    <LanguageStandard>stdcpp17</LanguageStandard>
-    <LanguageStandard_C>stdc17</LanguageStandard_C>
-    <FunctionLevelLinking>true</FunctionLevelLinking>
-    <StringPooling>true</StringPooling>
-</ClCompile>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <StringPooling>true</StringPooling>
+    </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\uconv.exe</OutputFile>
@@ -63,10 +63,6 @@
     <ClCompile>
       <BrowseInformation>true</BrowseInformation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      
-      
-      
-      
     </ClCompile>
     <Link>
       <AdditionalDependencies>icuucd.lib;icuind.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -76,9 +72,6 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      
-      
-      
     </ClCompile>
     <Link>
       <AdditionalDependencies>icuuc.lib;icuin.lib;%(AdditionalDependencies)</AdditionalDependencies>
