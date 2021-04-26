@@ -20,7 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{B9458CB3-9B09-402A-8C4C-43B6D0EA9691}</ProjectGuid>
-  </PropertyGroup>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
   <Import Project="..\..\..\allinone\Build.Windows.ProjectConfiguration.props" />
@@ -150,9 +151,9 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\tools\toolutil;..\..\..\common;..\..\..\tools\ctestfw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
+      
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      
       <PrecompiledHeaderOutputFile>.\x86\Release/utrie2perf.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\x86\Release/</AssemblerListingLocation>
       <ObjectFileName>.\x86\Release/</ObjectFileName>
@@ -189,9 +190,9 @@
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\tools\toolutil;..\..\..\common;..\..\..\tools\ctestfw;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN64;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <StringPooling>true</StringPooling>
+      
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      
       <PrecompiledHeaderOutputFile>.\x64\Release/utrie2perf.pch</PrecompiledHeaderOutputFile>
       <AssemblerListingLocation>.\x64\Release/</AssemblerListingLocation>
       <ObjectFileName>.\x64\Release/</ObjectFileName>

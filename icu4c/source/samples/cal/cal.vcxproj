@@ -4,10 +4,12 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
-  </PropertyGroup>
+    <PlatformToolset>v142</PlatformToolset>
+</PropertyGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{F7659D77-09CF-4FE9-ACEE-927287AA9509}</ProjectGuid>
-  </PropertyGroup>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
   <Import Project="..\..\allinone\Build.Windows.ProjectConfiguration.props" />
@@ -36,7 +38,11 @@
       <AdditionalIncludeDirectories>..\..\..\include;..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <WarningLevel>Level3</WarningLevel>
       <DisableLanguageExtensions>false</DisableLanguageExtensions>
-    </ClCompile>
+    <LanguageStandard>stdcpp17</LanguageStandard>
+    <LanguageStandard_C>stdc17</LanguageStandard_C>
+    <FunctionLevelLinking>true</FunctionLevelLinking>
+    <StringPooling>true</StringPooling>
+</ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
@@ -45,7 +51,7 @@
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\x86\Release/cal.pch</PrecompiledHeaderOutputFile>
@@ -71,7 +77,7 @@
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      
       <PrecompiledHeader>
       </PrecompiledHeader>
       <PrecompiledHeaderOutputFile>.\x64\Release/cal.pch</PrecompiledHeaderOutputFile>

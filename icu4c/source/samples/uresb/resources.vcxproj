@@ -3,10 +3,12 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{69437707-2FEF-4E2C-8C3F-6E6B3D241366}</ProjectGuid>
     <Keyword>MakeFileProj</Keyword>
-  </PropertyGroup>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+</PropertyGroup>
   <PropertyGroup Label="Configuration">
     <ConfigurationType>Makefile</ConfigurationType>
-  </PropertyGroup>
+    <PlatformToolset>v142</PlatformToolset>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
   <Import Project="..\..\allinone\Build.Windows.ProjectConfiguration.props" />

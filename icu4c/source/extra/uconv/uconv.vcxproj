@@ -42,7 +42,11 @@
       <AssemblerListingLocation>$(OutDir)/</AssemblerListingLocation>
       <ObjectFileName>$(OutDir)/</ObjectFileName>
       <ProgramDataBaseFileName>$(OutDir)\uconv.pdb</ProgramDataBaseFileName>
-    </ClCompile>
+    <LanguageStandard>stdcpp17</LanguageStandard>
+    <LanguageStandard_C>stdc17</LanguageStandard_C>
+    <FunctionLevelLinking>true</FunctionLevelLinking>
+    <StringPooling>true</StringPooling>
+</ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <OutputFile>$(OutDir)\uconv.exe</OutputFile>
@@ -59,10 +63,10 @@
     <ClCompile>
       <BrowseInformation>true</BrowseInformation>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <StringPooling>true</StringPooling>
+      
+      
+      
+      
     </ClCompile>
     <Link>
       <AdditionalDependencies>icuucd.lib;icuind.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -72,9 +76,9 @@
   <ItemDefinitionGroup Condition="'$(Configuration)'=='Release'">
     <ClCompile>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
-      <LanguageStandard>stdcpp17</LanguageStandard>
-      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      
+      
+      
     </ClCompile>
     <Link>
       <AdditionalDependencies>icuuc.lib;icuin.lib;%(AdditionalDependencies)</AdditionalDependencies>

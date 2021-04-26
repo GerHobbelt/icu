@@ -14,7 +14,8 @@
     <ProjectGuid>{EE2259BF-280D-4E0E-8A08-D77A26AE4191}</ProjectGuid>
     <RootNamespace>ucnvavailperf</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-  </PropertyGroup>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
   <Import Project="..\..\..\allinone\Build.Windows.ProjectConfiguration.props" />
@@ -74,7 +75,7 @@
       <AdditionalIncludeDirectories>..\..\..\tools\ctestfw;..\..\..\..\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
-      <FunctionLevelLinking>true</FunctionLevelLinking>
+      
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>

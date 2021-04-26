@@ -5,7 +5,8 @@
     <Keyword>MakeFileProj</Keyword>
     <ConfigurationType>Makefile</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-  </PropertyGroup>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+</PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
   <Import Project="..\allinone\Build.Windows.ProjectConfiguration.props" />
@@ -15,9 +16,9 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>.\data\tmp\$(Platform)\</OutDir>
-    <IntDir>.\data\build\</IntDir>
-    <MakeCFG>$(Platform)\$(Configuration)</MakeCFG>
+    <OutDir>$(Configuration)-$(PlatformShortname)\</OutDir>
+    <IntDir>$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
+    <MakeCFG>$(Configuration)-$(PlatformShortname)\$(Configuration)</MakeCFG>
     <DebugBuild Condition="'$(Configuration)'=='Debug'">true</DebugBuild>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
     <OutDir Condition="'$(Platform)'=='Win32'">.\data\tmp\x86\</OutDir>
