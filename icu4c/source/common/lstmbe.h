@@ -20,7 +20,7 @@
 U_NAMESPACE_BEGIN
 
 class Vectorizer;
-class LSTMData;
+struct LSTMData;
 
 /*******************************************************************
  * LSTMBreakEngine

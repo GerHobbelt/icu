@@ -324,52 +324,9 @@ typedef enum {
     GRAPHEME_CLUSTER,
 } EmbeddingType;
 
-class LSTMData : public UMemory {
-public:
-    LSTMData();
-    virtual ~LSTMData();
-    virtual UHashtable* GetDictionary() const = 0;
-    virtual EmbeddingType type() const = 0;
-    virtual const UChar* name() const = 0;
-    virtual const ConstArray2D& embedding() const = 0;
-    virtual const ConstArray2D& forwardW() const = 0;
-    virtual const ConstArray2D& forwardU() const = 0;
-    virtual const ConstArray1D& forwardB() const = 0;
-    virtual const ConstArray2D& backwardW() const = 0;
-    virtual const ConstArray2D& backwardU() const = 0;
-    virtual const ConstArray1D& backwardB() const = 0;
-    virtual const ConstArray2D& outputW() const = 0;
-    virtual const ConstArray1D& outputB() const = 0;
-};
-
-LSTMData::LSTMData()
-{
-}
-
-LSTMData::~LSTMData()
-{
-}
-
-class LSTMResourceData : public LSTMData {
-public:
-    LSTMResourceData(UResourceBundle* rb, UErrorCode &status);
-    virtual ~LSTMResourceData();
-    virtual UHashtable* GetDictionary() const { return fDict; }
-    virtual EmbeddingType type() const { return fType; }
-    virtual const UChar* name() const { return fName; }
-    virtual const ConstArray2D& embedding() const { return fEmbedding; }
-    virtual const ConstArray2D& forwardW() const { return fForwardW; }
-    virtual const ConstArray2D& forwardU() const { return fForwardU; }
-    virtual const ConstArray1D& forwardB() const { return fForwardB; }
-    virtual const ConstArray2D& backwardW() const { return fBackwardW; }
-    virtual const ConstArray2D& backwardU() const { return fBackwardU; }
-    virtual const ConstArray1D& backwardB() const { return fBackwardB; }
-    virtual const ConstArray2D& outputW() const { return fOutputW; }
-    virtual const ConstArray1D& outputB() const { return fOutputB; }
-
-private:
-    UResourceBundle* fDataRes;
-    UResourceBundle* fDictRes;
+struct LSTMData : public UMemory {
+    LSTMData(UResourceBundle* rb, UErrorCode &status);
+    ~LSTMData();
     UHashtable* fDict;
     EmbeddingType fType;
     const UChar* fName;
@@ -382,11 +339,15 @@ private:
     ConstArray1D fBackwardB;
     ConstArray2D fOutputW;
     ConstArray1D fOutputB;
+
+private:
+    UResourceBundle* fDataRes;
+    UResourceBundle* fDictRes;
 };
 
-LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
-    : fDataRes(nullptr), fDictRes(nullptr), fDict(nullptr),
-    fType(UNKNOWN), fName(nullptr)
+LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
+    : fDict(nullptr), fType(UNKNOWN), fName(nullptr),
+      fDataRes(nullptr), fDictRes(nullptr)
 {
     if (U_FAILURE(status)) {
         return;
@@ -459,7 +420,7 @@ LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
     fOutputB.init(data, 4);
 }
 
-LSTMResourceData::~LSTMResourceData() {
+LSTMData::~LSTMData() {
     uhash_close(fDict);
     ures_close(fDictRes);
     ures_close(fDataRes);
@@ -644,7 +605,7 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     int32_t* indicesBuf = indices.getBuffer();
 
     int32_t input_seq_len = indices.size();
-    int32_t hunits = fData->forwardU().d1();
+    int32_t hunits = fData->fForwardU.d1();
 
     // To save the needed memory usage, the following is different from the
     // Python or ICU4X implementation. We first perform the Backward LSTM
@@ -661,8 +622,8 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         if (i != input_seq_len - 1) {
             hRow.assign(hBackward.row(i+1));
         }
-        compute(fData->backwardW(), fData->backwardU(), fData->backwardB(),
-                fData->embedding().row(indicesBuf[i]),
+        compute(fData->fBackwardW, fData->fBackwardU, fData->fBackwardB,
+                fData->fEmbedding.row(indicesBuf[i]),
                 hRow, c);
     }
 
@@ -680,14 +641,14 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
-        compute(fData->forwardW(), fData->forwardU(), fData->forwardB(),
-                fData->embedding().row(indicesBuf[i]),
+        compute(fData->fForwardW, fData->fForwardU, fData->fForwardB,
+                fData->fEmbedding.row(indicesBuf[i]),
                 forwardRow, c);
 
         // assign the data from hBackward.row(i) to second half of fbRowa.
         backwardRow.assign(hBackward.row(i));
 
-        logp.dotProduct(fbRow, fData->outputW()).add(fData->outputB());
+        logp.dotProduct(fbRow, fData->fOutputW).add(fData->fOutputB);
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
@@ -705,12 +666,12 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     if (U_FAILURE(status)) {
         return nullptr;
     }
-    switch (data->type()) {
+    switch (data->fType) {
         case CODE_POINTS:
-            return new CodePointsVectorizer(data->GetDictionary());
+            return new CodePointsVectorizer(data->fDict);
             break;
         case GRAPHEME_CLUSTER:
-            return new GraphemeClusterVectorizer(data->GetDictionary());
+            return new GraphemeClusterVectorizer(data->fDict);
             break;
         default:
             break;
@@ -735,7 +696,7 @@ LSTMBreakEngine::~LSTMBreakEngine() {
 }
 
 const UChar* LSTMBreakEngine::name() const {
-    return fData->name();
+    return fData->fName;
 }
 
 UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
@@ -767,7 +728,7 @@ U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(UScriptCode script, UEr
 
 U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
 {
-    return new LSTMResourceData(rb, status);
+    return new LSTMData(rb, status);
 }
 
 U_CAPI const LanguageBreakEngine* U_EXPORT2
