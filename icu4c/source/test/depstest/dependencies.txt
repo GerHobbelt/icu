@@ -78,7 +78,7 @@ group: floating_point
     abs fabs floor ceil modf fmod log pow round sqrt trunc
 
 group: exp_and_tanhf
-    exp tanhf
+    expf tanhf
 
 group: trigonometry
     acos asin atan atan2 cos sin tan
