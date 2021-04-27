@@ -352,6 +352,10 @@ LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
     if (U_FAILURE(status)) {
         return;
     }
+    if (IEEE_754 != 1) {
+        status = U_UNSUPPORTED_ERROR;
+        return;
+    }
     LocalUResourceBundlePointer embeddings_res(
         ures_getByKey(rb, "embeddings", nullptr, &status));
     int32_t embedding_size = ures_getInt(embeddings_res.getAlias(), &status);
