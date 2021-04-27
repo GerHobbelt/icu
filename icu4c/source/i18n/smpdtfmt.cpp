@@ -596,14 +596,23 @@ SimpleDateFormat& SimpleDateFormat::operator=(const SimpleDateFormat& other)
 
     // TimeZoneFormat can now be set independently via setter.
     // If it is NULL, it will be lazily initialized from locale.
-    //
-    // This lazy initialization may happen from const functions,
-    // meaning it could happen concurrently on other.fTimeZoneFormat
-    // in the following code. Thus requiring synchronization.
     delete fTimeZoneFormat;
     fTimeZoneFormat = nullptr;
     TimeZoneFormat *otherTZFormat;
     {
+        // Synchronization is required here, when accessing other.fTimeZoneFormat,
+        // because another thread may be concurrently executing other.tzFormat(),
+        // a logically const function that lazily creates other.fTimeZoneFormat.
+        //
+        // Without synchronization, reordered memory writes could allow us
+        // to see a non-null fTimeZoneFormat before the object itself was
+        // fully initialized. In case of a race, it doesn't matter whether
+        // we see a null or a fully initialized other.fTimeZoneFormat,
+        // only that we avoid seeing a partially initialized object.
+        //
+        // Once initialized, no const function can modify fTimeZoneFormat,
+        // meaning that once we have safely grabbed the other.fTimeZoneFormat
+        // pointer, continued synchronization is not required to use it.
         Mutex m(&LOCK);
         otherTZFormat = other.fTimeZoneFormat;
     }
