@@ -249,7 +249,7 @@ public:
     // Apply sigmoid to all the elements in the array.
     inline Array1D& sigmoid() {
         for (int32_t i = 0; i < d1_; i++) {
-            data_[i] = 1.0/(1.0 + exp(-data_[i]));
+            data_[i] = 1.0/(1.0 + expf(-data_[i]));
         }
         return *this;
     }
