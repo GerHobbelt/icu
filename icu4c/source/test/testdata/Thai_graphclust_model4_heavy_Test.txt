@@ -1,3 +1,5 @@
+# Copyright (C) 2018 and later: Unicode, Inc. and others.
+# License & terms of use: http://www.unicode.org/copyright.html
 Model:	Thai_graphclust_model4_heavy
 Embedding:	grapheme_clusters_tf
 Input:	ปฏิญญาสากลว่าด้วยสิทธิมนุษยชน

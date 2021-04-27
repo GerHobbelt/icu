@@ -12,6 +12,7 @@
 #include "charstr.h"
 #include "cmemory.h"
 #include "lstmbe.h"
+#include "putilimp.h"
 #include "uassert.h"
 #include "ubrkimpl.h"
 #include "uresimp.h"
@@ -23,6 +24,7 @@
 #include "unicode/ubrk.h"
 #include "unicode/uniset.h"
 #include "unicode/ustring.h"
+#include "unicode/utf.h"
 
 U_NAMESPACE_BEGIN
 
@@ -70,6 +72,7 @@ public:
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
     void init(const int32_t* data, int32_t d1) {
+        U_ASSERT(IEEE_754 == 1);
         data_ = reinterpret_cast<const float*>(data);
         d1_ = d1;
     }
@@ -106,6 +109,7 @@ public:
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
     void init(const int32_t* data, int32_t d1, int32_t d2) {
+        U_ASSERT(IEEE_754 == 1);
         data_ = reinterpret_cast<const float*>(data);
         d1_ = d1;
         d2_ = d2;
@@ -176,7 +180,7 @@ public:
         return index;
     }
 
-#if LSTM_DEBUG
+#ifdef LSTM_DEBUG
     void print() const {
         printf("\n[");
         for (int32_t i = 0; i < d1_; i++) {
@@ -245,7 +249,7 @@ public:
     // Apply sigmoid to all the elements in the array.
     inline Array1D& sigmoid() {
         for (int32_t i = 0; i < d1_; i++) {
-            data_[i] = 1.0/(1.0 + exp(-data_[i]));
+            data_[i] = 1.0f/(1.0f + expf(-data_[i]));
         }
         return *this;
     }
@@ -320,52 +324,9 @@ typedef enum {
     GRAPHEME_CLUSTER,
 } EmbeddingType;
 
-class LSTMData : public UMemory {
-public:
-    LSTMData();
-    virtual ~LSTMData();
-    virtual UHashtable* GetDictionary() const = 0;
-    virtual EmbeddingType type() const = 0;
-    virtual const UChar* name() const = 0;
-    virtual const ConstArray2D& embedding() const = 0;
-    virtual const ConstArray2D& forwardW() const = 0;
-    virtual const ConstArray2D& forwardU() const = 0;
-    virtual const ConstArray1D& forwardB() const = 0;
-    virtual const ConstArray2D& backwardW() const = 0;
-    virtual const ConstArray2D& backwardU() const = 0;
-    virtual const ConstArray1D& backwardB() const = 0;
-    virtual const ConstArray2D& outputW() const = 0;
-    virtual const ConstArray1D& outputB() const = 0;
-};
-
-LSTMData::LSTMData()
-{
-}
-
-LSTMData::~LSTMData()
-{
-}
-
-class LSTMResourceData : public LSTMData {
-public:
-    LSTMResourceData(UResourceBundle* rb, UErrorCode &status);
-    virtual ~LSTMResourceData();
-    virtual UHashtable* GetDictionary() const { return fDict; }
-    virtual EmbeddingType type() const { return fType; }
-    virtual const UChar* name() const { return fName; }
-    virtual const ConstArray2D& embedding() const { return fEmbedding; }
-    virtual const ConstArray2D& forwardW() const { return fForwardW; }
-    virtual const ConstArray2D& forwardU() const { return fForwardU; }
-    virtual const ConstArray1D& forwardB() const { return fForwardB; }
-    virtual const ConstArray2D& backwardW() const { return fBackwardW; }
-    virtual const ConstArray2D& backwardU() const { return fBackwardU; }
-    virtual const ConstArray1D& backwardB() const { return fBackwardB; }
-    virtual const ConstArray2D& outputW() const { return fOutputW; }
-    virtual const ConstArray1D& outputB() const { return fOutputB; }
-
-private:
-    UResourceBundle* fDataRes;
-    UResourceBundle* fDictRes;
+struct LSTMData : public UMemory {
+    LSTMData(UResourceBundle* rb, UErrorCode &status);
+    ~LSTMData();
     UHashtable* fDict;
     EmbeddingType fType;
     const UChar* fName;
@@ -378,13 +339,21 @@ private:
     ConstArray1D fBackwardB;
     ConstArray2D fOutputW;
     ConstArray1D fOutputB;
+
+private:
+    UResourceBundle* fDataRes;
+    UResourceBundle* fDictRes;
 };
 
-LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
-    : fDataRes(nullptr), fDictRes(nullptr), fDict(nullptr),
-    fType(UNKNOWN), fName(nullptr)
+LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
+    : fDict(nullptr), fType(UNKNOWN), fName(nullptr),
+      fDataRes(nullptr), fDictRes(nullptr)
 {
     if (U_FAILURE(status)) {
+        return;
+    }
+    if (IEEE_754 != 1) {
+        status = U_UNSUPPORTED_ERROR;
         return;
     }
     LocalUResourceBundlePointer embeddings_res(
@@ -455,7 +424,7 @@ LSTMResourceData::LSTMResourceData(UResourceBundle* rb, UErrorCode &status)
     fOutputB.init(data, 4);
 }
 
-LSTMResourceData::~LSTMResourceData() {
+LSTMData::~LSTMData() {
     uhash_close(fDict);
     ures_close(fDictRes);
     ures_close(fDataRes);
@@ -507,7 +476,11 @@ void CodePointsVectorizer::vectorize(
         UChar str[2] = {0, 0};
         while (U_SUCCESS(status) &&
                (current = (int32_t)utext_getNativeIndex(text)) < endPos) {
+            // Since the LSTMBreakEngine is currently only accept chars in BMP,
+            // we can ignore the possibility of hitting supplementary code
+            // point.
             str[0] = (UChar) utext_next32(text);
+            U_ASSERT(!U_IS_SURROGATE(str[0]));
             offsets.addElement(current, status);
             indices.addElement(stringToIndex(str), status);
         }
@@ -516,7 +489,10 @@ void CodePointsVectorizer::vectorize(
 
 class GraphemeClusterVectorizer : public Vectorizer {
 public:
-    GraphemeClusterVectorizer(UHashtable* dict) : Vectorizer(dict) {}
+    GraphemeClusterVectorizer(UHashtable* dict)
+        : Vectorizer(dict)
+    {
+    }
     virtual ~GraphemeClusterVectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
@@ -527,49 +503,60 @@ GraphemeClusterVectorizer::~GraphemeClusterVectorizer()
 {
 }
 
-#define MAX_GRAPHEME_CLSTER_LENTH 10
+constexpr int32_t MAX_GRAPHEME_CLSTER_LENTH = 10;
+
 void GraphemeClusterVectorizer::vectorize(
     UText *text, int32_t startPos, int32_t endPos,
     UVector32 &offsets, UVector32 &indices, UErrorCode &status) const
 {
-    if (offsets.ensureCapacity(endPos - startPos, status) &&
-            indices.ensureCapacity(endPos - startPos, status)) {
-        LocalPointer<BreakIterator> graphemeIter(
-            BreakIterator::createCharacterInstance(Locale(), status));
-        graphemeIter->setText(text, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
+    if (!offsets.ensureCapacity(endPos - startPos, status) ||
+            !indices.ensureCapacity(endPos - startPos, status)) {
+        return;
+    }
+    LocalPointer<BreakIterator> graphemeIter(BreakIterator::createCharacterInstance(Locale(), status));
+    if (U_FAILURE(status)) {
+        return;
+    }
+    graphemeIter->setText(text, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
 
-        if (startPos != 0) {
-            graphemeIter->preceding(startPos);
+    if (startPos != 0) {
+        graphemeIter->preceding(startPos);
+    }
+    int32_t last = startPos;
+    int32_t current = startPos;
+    UChar str[MAX_GRAPHEME_CLSTER_LENTH];
+    while ((current = graphemeIter->next()) != BreakIterator::DONE) {
+        if (current >= endPos) {
+            break;
         }
-        int32_t last = startPos;
-        int32_t current = startPos;
-        UChar str[MAX_GRAPHEME_CLSTER_LENTH];
-        while ((current = graphemeIter->next()) != BreakIterator::DONE) {
-          if (current >= endPos) {
-              break;
-          }
-          if (current > startPos) {
-              utext_extract(text, last, current,
-                            str, MAX_GRAPHEME_CLSTER_LENTH, &status);
-              if (U_FAILURE(status)) {
-                  break;
-              }
-              offsets.addElement(last, status);
-              indices.addElement(stringToIndex(str), status);
-          }
-          last = current;
-        }
-        if (U_SUCCESS(status) && last < endPos) {
-            utext_extract(text, last, endPos,
-                          str, MAX_GRAPHEME_CLSTER_LENTH, &status);
-            if (U_SUCCESS(status)) {
-                offsets.addElement(last, status);
-                indices.addElement(stringToIndex(str), status);
+        if (current > startPos) {
+            utext_extract(text, last, current, str, MAX_GRAPHEME_CLSTER_LENTH, &status);
+            if (U_FAILURE(status)) {
+                break;
             }
+            offsets.addElement(last, status);
+            indices.addElement(stringToIndex(str), status);
         }
+        last = current;
+    }
+    if (U_FAILURE(status) || last >= endPos) {
+        return;
+    }
+    utext_extract(text, last, endPos, str, MAX_GRAPHEME_CLSTER_LENTH, &status);
+    if (U_SUCCESS(status)) {
+        offsets.addElement(last, status);
+        indices.addElement(stringToIndex(str), status);
     }
 }
 
+// Computing LSTM as stated in
+// https://en.wikipedia.org/wiki/Long_short-term_memory#LSTM_with_a_forget_gate
 void compute(
     const ReadArray2D& W, const ReadArray2D& U, const ReadArray1D& b,
     const ReadArray1D& x, Array1D& h, Array1D& c)
@@ -622,7 +609,7 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     int32_t* indicesBuf = indices.getBuffer();
 
     int32_t input_seq_len = indices.size();
-    int32_t hunits = fData->forwardU().d1();
+    int32_t hunits = fData->fForwardU.d1();
 
     // To save the needed memory usage, the following is different from the
     // Python or ICU4X implementation. We first perform the Backward LSTM
@@ -639,8 +626,8 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         if (i != input_seq_len - 1) {
             hRow.assign(hBackward.row(i+1));
         }
-        compute(fData->backwardW(), fData->backwardU(), fData->backwardB(),
-                fData->embedding().row(indicesBuf[i]),
+        compute(fData->fBackwardW, fData->fBackwardU, fData->fBackwardB,
+                fData->fEmbedding.row(indicesBuf[i]),
                 hRow, c);
     }
 
@@ -658,14 +645,14 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
-        compute(fData->forwardW(), fData->forwardU(), fData->forwardB(),
-                fData->embedding().row(indicesBuf[i]),
+        compute(fData->fForwardW, fData->fForwardU, fData->fForwardB,
+                fData->fEmbedding.row(indicesBuf[i]),
                 forwardRow, c);
 
         // assign the data from hBackward.row(i) to second half of fbRowa.
         backwardRow.assign(hBackward.row(i));
 
-        logp.dotProduct(fbRow, fData->outputW()).add(fData->outputB());
+        logp.dotProduct(fbRow, fData->fOutputW).add(fData->fOutputB);
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
@@ -683,12 +670,12 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
     if (U_FAILURE(status)) {
         return nullptr;
     }
-    switch (data->type()) {
+    switch (data->fType) {
         case CODE_POINTS:
-            return new CodePointsVectorizer(data->GetDictionary());
+            return new CodePointsVectorizer(data->fDict);
             break;
         case GRAPHEME_CLUSTER:
-            return new GraphemeClusterVectorizer(data->GetDictionary());
+            return new GraphemeClusterVectorizer(data->fDict);
             break;
         default:
             break;
@@ -699,6 +686,11 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
 LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeSet& set, UErrorCode &status)
     : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
+    if (U_FAILURE(status)) {
+      fData = nullptr;
+      fVectorizer = nullptr;
+      return;
+    }
     setCharacters(set);
 }
 
@@ -708,7 +700,7 @@ LSTMBreakEngine::~LSTMBreakEngine() {
 }
 
 const UChar* LSTMBreakEngine::name() const {
-    return fData->name();
+    return fData->fName;
 }
 
 UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
@@ -716,12 +708,11 @@ UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
     b = ures_getByKeyWithFallback(b, "lstm", b, &status);
     UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
-    std::string utf8;
     ures_close(b);
     return result;
 }
 
-const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
 {
     if (script != USCRIPT_KHMER && script != USCRIPT_LAO && script != USCRIPT_MYANMAR && script != USCRIPT_THAI) {
         return nullptr;
@@ -739,12 +730,12 @@ const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
     return CreateLSTMData(rb.getAlias(), status);
 }
 
-const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
 {
-    return new LSTMResourceData(rb, status);
+    return new LSTMData(rb, status);
 }
 
-const LanguageBreakEngine*
+U_CAPI const LanguageBreakEngine* U_EXPORT2
 CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status)
 {
     UnicodeString unicodeSetString;
@@ -765,13 +756,15 @@ CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& stat
     if (U_FAILURE(status) || engine == nullptr) {
         if (engine != nullptr) {
             delete engine;
+        } else {
+            status = U_MEMORY_ALLOCATION_ERROR;
         }
         return nullptr;
     }
     return engine;
 }
 
-void DeleteLSTMData(const LSTMData* data)
+U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data)
 {
     delete data;
 }

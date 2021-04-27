@@ -1,11 +1,14 @@
 // © 2021 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 
+#include "unicode/utypes.h"
+
 #if !UCONFIG_NO_BREAK_ITERATION
 
 #include "lstmbetst.h"
 #include "lstmbe.h"
 
+#include <algorithm>
 #include <sstream>
 #include <vector>
 
@@ -64,46 +67,46 @@ UScriptCode getScriptFromModelName(const std::string& modelName) {
 //   Output:\t[expected output separated by | ]
 //   Input: ...
 //   Output: ...
+// The test will ensure the Input contains only the characters can be handled by
+// the model. Since by default the LSTM models are not included, all the tested
+// models need to be included under source/test/testdata.
 
 void LSTMBETest::runTestFromFile(const char* filename) {
     UErrorCode   status = U_ZERO_ERROR;
     LocalPointer<const LanguageBreakEngine> engine;
-    //
     //  Open and read the test data file.
-    //
     const char *testDataDirectory = IntlTest::getSourceTestData(status);
     CharString testFileName(testDataDirectory, -1, status);
     testFileName.append(filename, -1, status);
 
-    int    len;
+    int len;
     UChar *testFile = ReadAndConvertFile(testFileName.data(), len, "UTF-8", status);
     if (U_FAILURE(status)) {
         errln("%s:%d Error %s opening test file %s", __FILE__, __LINE__, u_errorName(status), filename);
         return;
     }
 
-    //
     //  Put the test data into a UnicodeString
-    //
     UnicodeString testString(FALSE, testFile, len);
 
     int32_t start = 0;
-    UVector32 actual(status);
 
     UnicodeString line;
     int32_t end;
     std::string actual_sep_str;
     int32_t caseNum = 0;
-    bool hasInput = false;
+    // Iterate through all the lines in the test file.
     do {
         int32_t cr = testString.indexOf(u'\r', start);
         int32_t lf = testString.indexOf(u'\n', start);
         end = cr >= 0 ? (lf >= 0 ? std::min(cr, lf) : cr) : lf;
         line = testString.tempSubString(start, end < 0 ? INT32_MAX : end - start);
         if (line.length() > 0) {
+            // Separate each line to key and value by TAB.
             int32_t tab = line.indexOf(u'\t');
             UnicodeString key = line.tempSubString(0, tab);
             const UnicodeString value = line.tempSubString(tab+1);
+
             if (key == "Model:") {
                 std::string modelName;
                 value.toUTF8String<std::string>(modelName);
@@ -113,6 +116,8 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                     return;
                 }
             } else if (key == "Input:") {
+                // First, we ensure all the char in the Input lines are accepted
+                // by the engine before we test them.
                 caseNum++;
                 bool canHandleAllChars = true;
                 for (int32_t i = 0; i < value.length(); i++) {
@@ -127,23 +132,35 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                 if (! canHandleAllChars) {
                     return;
                 }
+
+                // If the engine can handle all the chars in the Input line, we
+                // then find the break points by calling the engine.
                 std::stringstream ss;
+
+                // Construct the UText which is expected by the the engine as
+                // input from the UnicodeString.
                 UText ut = UTEXT_INITIALIZER;
                 utext_openConstUnicodeString(&ut, &value, &status);
                 if (U_FAILURE(status)) {
                     dataerrln("Could not utext_openConstUnicodeString for " + value + UnicodeString(u_errorName(status)));
                     return;
                 }
-                actual.removeAllElements();
+
+                UVector32 actual(status);
+                if (U_FAILURE(status)) {
+                    dataerrln("%s:%d Error %s Could not allocate UVextor32", __FILE__, __LINE__, u_errorName(status));
+                    return;
+                }
                 engine->findBreaks(&ut, 0, value.length(), actual);
                 utext_close(&ut);
                 for (int32_t i = 0; i < actual.size(); i++) {
                     ss << actual.elementAti(i) << ", ";
                 }
                 ss << value.length();
-                actual_sep_str = ss.str();
-                hasInput = true;
-            } else if (key == "Output:" && hasInput) {
+                // Turn the break points into a string for easy comparions
+                // output.
+                actual_sep_str = "{" + ss.str() + "}";
+            } else if (key == "Output:" && !actual_sep_str.empty()) {
                 std::string d;
                 int32_t sep;
                 int32_t start = 0;
@@ -160,11 +177,14 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                     }
                     start = sep + 1;
                 }
-                std::string expected = ss.str();
+                // Turn the break points into a string for easy comparions
+                // output.
+                std::string expected = "{" + ss.str() + "}";
                 std::string utf8;
+
                 assertEquals((value + " Test Case#" + caseNum).toUTF8String<std::string>(utf8).c_str(),
                              expected.c_str(), actual_sep_str.c_str());
-                hasInput = false;
+                actual_sep_str.clear();
             }
         }
         start = std::max(cr, lf) + 1;

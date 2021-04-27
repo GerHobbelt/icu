@@ -4,6 +4,10 @@
 #ifndef LSTMBE_H
 #define LSTMBE_H
 
+#include "unicode/utypes.h"
+
+#if !UCONFIG_NO_BREAK_ITERATION
+
 #include "unicode/uniset.h"
 #include "unicode/ures.h"
 #include "unicode/utext.h"
@@ -16,7 +20,7 @@
 U_NAMESPACE_BEGIN
 
 class Vectorizer;
-class LSTMData;
+struct LSTMData;
 
 /*******************************************************************
  * LSTMBreakEngine
@@ -62,13 +66,19 @@ private:
     const Vectorizer* fVectorizer;
 };
 
+U_CAPI const LanguageBreakEngine* U_EXPORT2 CreateLSTMBreakEngine(
+    UScriptCode script, const LSTMData* data, UErrorCode& status);
 
-const LanguageBreakEngine* CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status);
-const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status);
-const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status);
-void DeleteLSTMData(const LSTMData* data);
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(
+    UResourceBundle* rb, UErrorCode& status);
 
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(
+    UScriptCode script, UErrorCode& status);
+
+U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data);
 
 U_NAMESPACE_END
+
+#endif /* #if !UCONFIG_NO_BREAK_ITERATION */
 
 #endif  /* LSTMBE_H */

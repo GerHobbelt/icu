@@ -10,7 +10,6 @@ def generate(config, io, common_vars):
     requests += generate_rb(config, io, common_vars)
     requests += generate_sprep(config, io, common_vars)
     requests += generate_conv(config, io, common_vars)
-    requests += generate_lstm(config, io, common_vars)
     requests += generate_other(config, io, common_vars)
     requests += generate_copy(config, io, common_vars)
 
@@ -45,6 +44,10 @@ def generate_rb(config, io, common_vars):
         "testaliases",
         "testempty",
         "testtypes",
+        # LSTM models
+        "Thai_graphclust_model4_heavy",
+        "Thai_codepoints_exclusive_model5_heavy",
+        "Burmese_graphclust_model5_heavy"
         # "metaZones",
         # "timezoneTypes",
         # "windowsZones",
@@ -169,32 +172,6 @@ def generate_conv(config, io, common_vars):
             repeat_with = {}
         )
     ]
-
-def generate_lstm(config, io, common_vars):
-    basenames = [
-        "Thai_graphclust_model4_heavy",
-        "Thai_codepoints_exclusive_model5_heavy",
-        "Burmese_graphclust_model5_heavy"
-    ]
-    input_files = [InFile("%s.txt" % bn) for bn in basenames]
-    output_files = [OutFile("%s.res" % bn) for bn in basenames]
-    return [
-         RepeatedExecutionRequest(
-            name = "lstm_res",
-            category = "tests",
-            input_files = input_files,
-            output_files = output_files,
-            tool = IcuTool("genrb"),
-            args = "-s {IN_DIR} -d {OUT_DIR} -i {OUT_DIR} "
-                "-k "
-                "{INPUT_FILE}",
-            format_with = {},
-            repeat_with = {
-                "INPUT_BASENAME": utils.SpaceSeparatedList(basenames)
-            }
-        )
-    ]
-
 
 def generate_copy(config, io, common_vars):
     return [
