@@ -12,6 +12,7 @@
 #include "charstr.h"
 #include "cmemory.h"
 #include "lstmbe.h"
+#include "putilimp.h"
 #include "uassert.h"
 #include "ubrkimpl.h"
 #include "uresimp.h"
@@ -71,6 +72,7 @@ public:
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
     void init(const int32_t* data, int32_t d1) {
+        U_ASSERT(IEEE_754 == 1);
         data_ = reinterpret_cast<const float*>(data);
         d1_ = d1;
     }
@@ -107,6 +109,7 @@ public:
     // Init the object, the object does not own the data nor copy.
     // It is designed to directly use data from memory mapped resources.
     void init(const int32_t* data, int32_t d1, int32_t d2) {
+        U_ASSERT(IEEE_754 == 1);
         data_ = reinterpret_cast<const float*>(data);
         d1_ = d1;
         d2_ = d2;
