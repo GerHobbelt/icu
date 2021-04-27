@@ -521,7 +521,10 @@ void CodePointsVectorizer::vectorize(
 
 class GraphemeClusterVectorizer : public Vectorizer {
 public:
-    GraphemeClusterVectorizer(UHashtable* dict) : Vectorizer(dict) {}
+    GraphemeClusterVectorizer(UHashtable* dict)
+        : Vectorizer(dict)
+    {
+    }
     virtual ~GraphemeClusterVectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
@@ -538,41 +541,49 @@ void GraphemeClusterVectorizer::vectorize(
     UText *text, int32_t startPos, int32_t endPos,
     UVector32 &offsets, UVector32 &indices, UErrorCode &status) const
 {
-    if (offsets.ensureCapacity(endPos - startPos, status) &&
-            indices.ensureCapacity(endPos - startPos, status)) {
-        LocalPointer<BreakIterator> graphemeIter(
-            BreakIterator::createCharacterInstance(Locale(), status));
-        graphemeIter->setText(text, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
+    if (!offsets.ensureCapacity(endPos - startPos, status) ||
+            !indices.ensureCapacity(endPos - startPos, status)) {
+        return;
+    }
+    LocalPointer<BreakIterator> graphemeIter(BreakIterator::createCharacterInstance(Locale(), status));
+    if (U_FAILURE(status)) {
+        return;
+    }
+    graphemeIter->setText(text, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
 
-        if (startPos != 0) {
-            graphemeIter->preceding(startPos);
+    if (startPos != 0) {
+        graphemeIter->preceding(startPos);
+    }
+    int32_t last = startPos;
+    int32_t current = startPos;
+    UChar str[MAX_GRAPHEME_CLSTER_LENTH];
+    while ((current = graphemeIter->next()) != BreakIterator::DONE) {
+        if (current >= endPos) {
+            break;
         }
-        int32_t last = startPos;
-        int32_t current = startPos;
-        UChar str[MAX_GRAPHEME_CLSTER_LENTH];
-        while ((current = graphemeIter->next()) != BreakIterator::DONE) {
-          if (current >= endPos) {
-              break;
-          }
-          if (current > startPos) {
-              utext_extract(text, last, current,
-                            str, MAX_GRAPHEME_CLSTER_LENTH, &status);
-              if (U_FAILURE(status)) {
-                  break;
-              }
-              offsets.addElement(last, status);
-              indices.addElement(stringToIndex(str), status);
-          }
-          last = current;
-        }
-        if (U_SUCCESS(status) && last < endPos) {
-            utext_extract(text, last, endPos,
-                          str, MAX_GRAPHEME_CLSTER_LENTH, &status);
-            if (U_SUCCESS(status)) {
-                offsets.addElement(last, status);
-                indices.addElement(stringToIndex(str), status);
+        if (current > startPos) {
+            utext_extract(text, last, current, str, MAX_GRAPHEME_CLSTER_LENTH, &status);
+            if (U_FAILURE(status)) {
+                break;
             }
+            offsets.addElement(last, status);
+            indices.addElement(stringToIndex(str), status);
         }
+        last = current;
+    }
+    if (U_FAILURE(status) || last >= endPos) {
+        return;
+    }
+    utext_extract(text, last, endPos, str, MAX_GRAPHEME_CLSTER_LENTH, &status);
+    if (U_SUCCESS(status)) {
+        offsets.addElement(last, status);
+        indices.addElement(stringToIndex(str), status);
     }
 }
 
@@ -707,6 +718,11 @@ Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
 LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeSet& set, UErrorCode &status)
     : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
+    if (U_FAILURE(status)) {
+      fData = nullptr;
+      fVectorizer = nullptr;
+      return;
+    }
     setCharacters(set);
 }
 

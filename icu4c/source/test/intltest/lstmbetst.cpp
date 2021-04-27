@@ -147,6 +147,10 @@ void LSTMBETest::runTestFromFile(const char* filename) {
                 }
 
                 UVector32 actual(status);
+                if (U_FAILURE(status)) {
+                    dataerrln("%s:%d Error %s Could not allocate UVextor32", __FILE__, __LINE__, u_errorName(status));
+                    return;
+                }
                 engine->findBreaks(&ut, 0, value.length(), actual);
                 utext_close(&ut);
                 for (int32_t i = 0; i < actual.size(); i++) {
