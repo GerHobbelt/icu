@@ -4,6 +4,10 @@
 #ifndef LSTMBE_H
 #define LSTMBE_H
 
+#include "unicode/utypes.h"
+
+#if !UCONFIG_NO_BREAK_ITERATION
+
 #include "unicode/uniset.h"
 #include "unicode/ures.h"
 #include "unicode/utext.h"
@@ -74,5 +78,7 @@ U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(
 U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data);
 
 U_NAMESPACE_END
+
+#endif /* #if !UCONFIG_NO_BREAK_ITERATION */
 
 #endif  /* LSTMBE_H */

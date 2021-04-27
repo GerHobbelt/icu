@@ -1,11 +1,14 @@
 // © 2021 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 
+#include "unicode/utypes.h"
+
 #if !UCONFIG_NO_BREAK_ITERATION
 
 #include "lstmbetst.h"
 #include "lstmbe.h"
 
+#include <algorithm>
 #include <sstream>
 #include <vector>
 
