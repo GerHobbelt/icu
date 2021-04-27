@@ -62,12 +62,16 @@ private:
     const Vectorizer* fVectorizer;
 };
 
+U_CAPI const LanguageBreakEngine* U_EXPORT2 CreateLSTMBreakEngine(
+    UScriptCode script, const LSTMData* data, UErrorCode& status);
 
-const LanguageBreakEngine* CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status);
-const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status);
-const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status);
-void DeleteLSTMData(const LSTMData* data);
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(
+    UResourceBundle* rb, UErrorCode& status);
 
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(
+    UScriptCode script, UErrorCode& status);
+
+U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data);
 
 U_NAMESPACE_END
 

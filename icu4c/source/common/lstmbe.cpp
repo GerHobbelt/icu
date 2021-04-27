@@ -23,6 +23,7 @@
 #include "unicode/ubrk.h"
 #include "unicode/uniset.h"
 #include "unicode/ustring.h"
+#include "unicode/utf.h"
 
 U_NAMESPACE_BEGIN
 
@@ -176,7 +177,7 @@ public:
         return index;
     }
 
-#if LSTM_DEBUG
+#ifdef LSTM_DEBUG
     void print() const {
         printf("\n[");
         for (int32_t i = 0; i < d1_; i++) {
@@ -507,7 +508,11 @@ void CodePointsVectorizer::vectorize(
         UChar str[2] = {0, 0};
         while (U_SUCCESS(status) &&
                (current = (int32_t)utext_getNativeIndex(text)) < endPos) {
+            // Since the LSTMBreakEngine is currently only accept chars in BMP,
+            // we can ignore the possibility of hitting supplementary code
+            // point.
             str[0] = (UChar) utext_next32(text);
+            U_ASSERT(!U_IS_SURROGATE(str[0]));
             offsets.addElement(current, status);
             indices.addElement(stringToIndex(str), status);
         }
@@ -527,7 +532,8 @@ GraphemeClusterVectorizer::~GraphemeClusterVectorizer()
 {
 }
 
-#define MAX_GRAPHEME_CLSTER_LENTH 10
+constexpr int32_t MAX_GRAPHEME_CLSTER_LENTH = 10;
+
 void GraphemeClusterVectorizer::vectorize(
     UText *text, int32_t startPos, int32_t endPos,
     UVector32 &offsets, UVector32 &indices, UErrorCode &status) const
@@ -570,6 +576,8 @@ void GraphemeClusterVectorizer::vectorize(
     }
 }
 
+// Computing LSTM as stated in
+// https://en.wikipedia.org/wiki/Long_short-term_memory#LSTM_with_a_forget_gate
 void compute(
     const ReadArray2D& W, const ReadArray2D& U, const ReadArray1D& b,
     const ReadArray1D& x, Array1D& h, Array1D& c)
@@ -721,7 +729,7 @@ UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     return result;
 }
 
-const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
 {
     if (script != USCRIPT_KHMER && script != USCRIPT_LAO && script != USCRIPT_MYANMAR && script != USCRIPT_THAI) {
         return nullptr;
@@ -739,12 +747,12 @@ const LSTMData* CreateLSTMDataForScript(UScriptCode script, UErrorCode& status)
     return CreateLSTMData(rb.getAlias(), status);
 }
 
-const LSTMData* CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
+U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
 {
     return new LSTMResourceData(rb, status);
 }
 
-const LanguageBreakEngine*
+U_CAPI const LanguageBreakEngine* U_EXPORT2
 CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& status)
 {
     UnicodeString unicodeSetString;
@@ -765,13 +773,15 @@ CreateLSTMBreakEngine(UScriptCode script, const LSTMData* data, UErrorCode& stat
     if (U_FAILURE(status) || engine == nullptr) {
         if (engine != nullptr) {
             delete engine;
+        } else {
+            status = U_MEMORY_ALLOCATION_ERROR;
         }
         return nullptr;
     }
     return engine;
 }
 
-void DeleteLSTMData(const LSTMData* data)
+U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data)
 {
     delete data;
 }
