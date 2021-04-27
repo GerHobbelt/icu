@@ -724,7 +724,6 @@ UnicodeString defaultLSTM(UScriptCode script, UErrorCode& status) {
     UResourceBundle *b = ures_open(U_ICUDATA_BRKITR, "", &status);
     b = ures_getByKeyWithFallback(b, "lstm", b, &status);
     UnicodeString result = ures_getUnicodeStringByKey(b, uscript_getShortName(script), &status);
-    std::string utf8;
     ures_close(b);
     return result;
 }
