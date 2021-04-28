@@ -169,7 +169,7 @@ U_NAMESPACE_BEGIN
 
 Locale *locale_set_default_internal(const char *id, UErrorCode& status) {
     // Synchronize this entire function.
-    Mutex lock(getDefaultLocaleMutex());
+    Mutex lock(&gDefaultLocaleMutex);
 
     UBool canonicalize = FALSE;
 
@@ -1845,7 +1845,7 @@ const Locale& U_EXPORT2
 Locale::getDefault()
 {
     {
-        Mutex lock(getDefaultLocaleMutex());
+        Mutex lock(&gDefaultLocaleMutex);
         if (gDefaultLocale != NULL) {
             return *gDefaultLocale;
         }
