@@ -1162,14 +1162,14 @@ public final class ULocale implements Serializable, Comparable<ULocale> {
             return localeID;
         }
 
-        // The string is equals to "und" case-insensitively
+        // The string is equals to "und" case-insensitively.
         if (length == 3) {
             return EMPTY_STRING;
         }
 
         // localeID must have a length >= 4
-        char forthChar = localeID.charAt(3);
-        if (forthChar == '-' || forthChar == '_') { // "und-*" or "und_*"
+        char separator = localeID.charAt(3);
+        if (separator == '-' || separator == '_') { // "und-*" or "und_*"
             return localeID.substring(3);
         }
 
