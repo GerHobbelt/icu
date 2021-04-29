@@ -92,6 +92,8 @@ public:
     void Test16BitsTrieWith16BitStateTable();
     void TestTable_8_16_Bits();
     void TestBug13590();
+    void TestLSTMThai();
+    void TestLSTMBurmese();
 
 #if U_ENABLE_TRACING
     void TestTraceCreateCharacter();
