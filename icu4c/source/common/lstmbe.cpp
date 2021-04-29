@@ -28,6 +28,10 @@
 
 U_NAMESPACE_BEGIN
 
+// Uncomment the follwoing #define to debug.
+// #define LSTM_DEBUG 1
+// #define LSTM_VECTORIZER_DEBUG 1
+
 /**
  * Interface for reading 1D array.
  */
@@ -36,6 +40,17 @@ public:
     virtual ~ReadArray1D();
     virtual int32_t d1() const = 0;
     virtual float get(int32_t i) const = 0;
+
+#ifdef LSTM_DEBUG
+    void print() const {
+        printf("\n[");
+        for (int32_t i = 0; i < d1(); i++) {
+           printf("%0.8e ", get(i));
+           if (i % 4 == 3) printf("\n");
+        }
+        printf("]\n");
+    }
+#endif
 };
 
 ReadArray1D::~ReadArray1D()
@@ -180,16 +195,6 @@ public:
         return index;
     }
 
-#ifdef LSTM_DEBUG
-    void print() const {
-        printf("\n[");
-        for (int32_t i = 0; i < d1_; i++) {
-           printf("%0.8e ", data_[i]);
-           if (i % 4 == 3) printf("\n");
-        }
-        printf("]\n");
-    }
-#endif
     // Slice part of the array to a new one.
     inline Array1D slice(int32_t from, int32_t size) const {
         U_ASSERT(from >= 0);
@@ -390,6 +395,14 @@ LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
         if (U_FAILURE(status)) {
             return;
         }
+#ifdef LSTM_VECTORIZER_DEBUG
+        printf("Assign [");
+        while (*str != 0x0000) {
+            printf("U+%04x ", *str);
+            str++;
+        }
+        printf("] map to %d\n", idx-1);
+#endif
     }
     int32_t mat1_size = (num_index + 1) * embedding_size;
     int32_t mat2_size = embedding_size * 4 * hunits;
@@ -432,7 +445,7 @@ LSTMData::~LSTMData() {
 
 class Vectorizer : public UMemory {
 public:
-    Vectorizer(UHashtable* dict) : dict(dict) {}
+    Vectorizer(UHashtable* dict) : fDict(dict) {}
     virtual ~Vectorizer();
     virtual void vectorize(UText *text, int32_t startPos, int32_t endPos,
                            UVector32 &offsets, UVector32 &indices,
@@ -440,12 +453,23 @@ public:
 protected:
     int32_t stringToIndex(const UChar* str) const {
         UBool found = false;
-        int32_t ret = uhash_getiAndFound(dict, (const void*)str, &found);
-        return found ? ret : dict->count;
+        int32_t ret = uhash_getiAndFound(fDict, (const void*)str, &found);
+        if (!found) {
+            ret = fDict->count;
+        }
+#ifdef LSTM_VECTORIZER_DEBUG
+        printf("[");
+        while (*str != 0x0000) {
+            printf("U+%04x ", *str);
+            str++;
+        }
+        printf("] map to %d\n", ret);
+#endif
+        return ret;
     }
 
 private:
-    UHashtable* dict;
+    UHashtable* fDict;
 };
 
 Vectorizer::~Vectorizer()
@@ -626,6 +650,13 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         if (i != input_seq_len - 1) {
             hRow.assign(hBackward.row(i+1));
         }
+#ifdef LSTM_DEBUG
+        printf("hRow %d\n", i);
+        hRow.print();
+        printf("indicesBuf[%d] = %d\n", i, indicesBuf[i]);
+        printf("fData->fEmbedding.row(indicesBuf[%d]):\n", i);
+        fData->fEmbedding.row(indicesBuf[i]).print();
+#endif  // LSTM_DEBUG
         compute(fData->fBackwardW, fData->fBackwardU, fData->fBackwardB,
                 fData->fEmbedding.row(indicesBuf[i]),
                 hRow, c);
@@ -642,6 +673,10 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
     // together.
     c.clear();  // reuse c since it is the same size.
     for (int32_t i = 0; i < input_seq_len; i++) {
+#ifdef LSTM_DEBUG
+        printf("forwardRow %d\n", i);
+        forwardRow.print();
+#endif  // LSTM_DEBUG
         // Forward LSTM
         // Calculate the result into forwardRow, which point to the data in the first half
         // of fbRow.
@@ -653,6 +688,12 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
         backwardRow.assign(hBackward.row(i));
 
         logp.dotProduct(fbRow, fData->fOutputW).add(fData->fOutputB);
+#ifdef LSTM_DEBUG
+        printf("backwardRow %d\n", i);
+        backwardRow.print();
+        printf("logp %d\n", i);
+        logp.print();
+#endif  // LSTM_DEBUG
 
         // current = argmax(logp)
         LSTMClass current = (LSTMClass)logp.maxIndex();
@@ -687,8 +728,7 @@ LSTMBreakEngine::LSTMBreakEngine(const LSTMData* data, const UnicodeSet& set, UE
     : DictionaryBreakEngine(), fData(data), fVectorizer(createVectorizer(fData, status))
 {
     if (U_FAILURE(status)) {
-      fData = nullptr;
-      fVectorizer = nullptr;
+      fData = nullptr;  // If failure, we should not delete fData in destructor because the caller will do so.
       return;
     }
     setCharacters(set);
