@@ -51,6 +51,7 @@
 
 #if !UCONFIG_NO_FILTERED_BREAK_ITERATION
 #include "unicode/filteredbrk.h"
+#include "lstmbe.h"
 #endif // !UCONFIG_NO_FILTERED_BREAK_ITERATION
 
 #define TEST_ASSERT(x) UPRV_BLOCK_MACRO_BEGIN { \
@@ -136,6 +137,8 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
     TESTCASE_AUTO(TestBug13590);
     TESTCASE_AUTO(TestUnpairedSurrogate);
     TESTCASE_AUTO(TestThaiWordBreak);
+    TESTCASE_AUTO(TestLSTMThai);
+    TESTCASE_AUTO(TestLSTMBurmese);
 
 #if U_ENABLE_TRACING
     TESTCASE_AUTO(TestTraceCreateCharacter);
@@ -750,8 +753,12 @@ void RBBITest::executeTest(TestParams *t, UErrorCode &status) {
     }
 }
 
-
 void RBBITest::TestExtended() {
+     // The expectations in this test heavily depends on the Thai dictionary.
+     // Therefore, we skip this test under the LSTM configuration.
+     if (skipDictionaryTest()) {
+         return;
+     }
   // Skip test for now when UCONFIG_NO_FILTERED_BREAK_ITERATION is set. This
   // data driven test closely entangles filtered and regular data.
 #if !UCONFIG_NO_REGULAR_EXPRESSIONS && !UCONFIG_NO_FILTERED_BREAK_ITERATION
@@ -1161,6 +1168,11 @@ end_test:
 #endif
 }
 
+void RBBITest::TestLSTMThai() {
+}
+
+void RBBITest::TestLSTMBurmese() {
+}
 
 //-------------------------------------------------------------------------------
 //

@@ -614,10 +614,11 @@ static const int32_t MIN_WORD = 2;
 static const int32_t MIN_WORD_SPAN = MIN_WORD * 2;
 
 int32_t
-LSTMBreakEngine::divideUpDictionaryRange( UText *text,
-                                                int32_t startPos,
-                                                int32_t endPos,
-                                                UVector32 &foundBreaks ) const {
+LSTMBreakEngine::divideUpDictionaryRange(UText *text,
+                                         int32_t startPos,
+                                         int32_t endPos,
+                                         UVector32 &foundBreaks) const {
+    int32_t beginFoundBreakSize = foundBreaks.size();
     utext_setNativeIndex(text, startPos);
     utext_moveIndex32(text, MIN_WORD_SPAN);
     if (utext_getNativeIndex(text) >= endPos) {
@@ -704,7 +705,7 @@ LSTMBreakEngine::divideUpDictionaryRange( UText *text,
             }
         }
     }
-    return foundBreaks.size();
+    return foundBreaks.size() - beginFoundBreakSize;
 }
 
 Vectorizer* createVectorizer(const LSTMData* data, UErrorCode &status) {
