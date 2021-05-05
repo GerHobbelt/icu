@@ -2430,12 +2430,23 @@ cleanUpAndReturn:
 }
 
 #if !UCONFIG_NO_BREAK_ITERATION
-UBool IntlTest::skipDictionaryTest() {
+UBool LSTMDataIsBuilt() {
   // If we can find the LSTM data, the RBBI will use the LSTM engine.
   // So we skip the test which depending on the dictionary data.
   UErrorCode status = U_ZERO_ERROR;
   DeleteLSTMData(CreateLSTMDataForScript(USCRIPT_THAI, status));
-  return U_SUCCESS(status);
+  UBool thaiDataIsBuilt = U_SUCCESS(status);
+  status = U_ZERO_ERROR;
+  DeleteLSTMData(CreateLSTMDataForScript(USCRIPT_MYANMAR, status));
+  UBool burmeseDataIsBuilt = U_SUCCESS(status);
+  return thaiDataIsBuilt | burmeseDataIsBuilt;
+}
+
+UBool IntlTest::skipLSTMTest() {
+   return ! LSTMDataIsBuilt();
+}
+UBool IntlTest::skipDictionaryTest() {
+   return LSTMDataIsBuilt();
 }
 #endif /* #if !UCONFIG_NO_BREAK_ITERATION */
 

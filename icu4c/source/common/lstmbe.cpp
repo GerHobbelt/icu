@@ -810,6 +810,10 @@ U_CAPI void U_EXPORT2 DeleteLSTMData(const LSTMData* data)
     delete data;
 }
 
+U_CAPI const UChar* U_EXPORT2 LSTMDataName(const LSTMData* data)
+{
+    return data->fName;
+}
 
 U_NAMESPACE_END
 

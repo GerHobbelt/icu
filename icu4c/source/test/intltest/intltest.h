@@ -194,6 +194,7 @@ public:
 
 #if !UCONFIG_NO_BREAK_ITERATION
     UBool skipDictionaryTest();
+    UBool skipLSTMTest();
 #endif /* #if !UCONFIG_NO_BREAK_ITERATION */
 
     virtual void info( const UnicodeString &message );
