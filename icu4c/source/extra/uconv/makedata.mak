@@ -109,26 +109,26 @@ OUTPUT = "$(DLL_OUTPUT)\$(RESNAME).lib"
 !ENDIF
 
 ALL : $(OUTPUT)
-    @echo All targets are up to date (mode $(PKGMODE))
+	@echo All targets are up to date (mode $(PKGMODE))
 
 
 # invoke pkgdata - static
 "$(DLL_OUTPUT)\$(RESNAME).lib" : $(RB_FILES) $(RESFILES)
-    @echo Building $(RESNAME).lib
-    @"$(ICUTOOLS)\pkgdata" -f -v -m static -c -p $(RESNAME) -d "$(DLL_OUTPUT)" $(EXTRA_PKGDATA_ARGUMENTS) -s "$(RESDIR)" <<pkgdatain.txt
+	@echo Building $(RESNAME).lib
+	@"$(ICUTOOLS)\pkgdata" -f -v -m static -c -p $(RESNAME) -d "$(DLL_OUTPUT)" $(EXTRA_PKGDATA_ARGUMENTS) -s "$(RESDIR)" <<pkgdatain.txt
 $(RES_FILES:.res =.res
 )
 <<KEEP
 
 # This is to remove all the data files
 CLEAN :
-    -@erase "$(RB_FILES)"
-    -@erase "$(CFG)\*uconvmsg*.*"
-    -@"$(ICUTOOLS)\pkgdata" -f --clean -v -m static -c -p $(RESNAME) -d "$(DLL_OUTPUT)" $(EXTRA_PKGDATA_ARGUMENTS) -s "$(RESDIR)" pkgdatain.txt
+	-@erase "$(RB_FILES)"
+	-@erase "$(CFG)\*uconvmsg*.*"
+	-@"$(ICUTOOLS)\pkgdata" -f --clean -v -m static -c -p $(RESNAME) -d "$(DLL_OUTPUT)" $(EXTRA_PKGDATA_ARGUMENTS) -s "$(RESDIR)" pkgdatain.txt
 
 # Inference rule for creating resource bundles
 {$(RESDIR)}.txt{$(RESDIR)}.res:
-    @echo Making Resource Bundle files
-    "$(ICUTOOLS)\genrb" -s $(@D) -d $(@D) $(?F)
+	@echo Making Resource Bundle files
+	"$(ICUTOOLS)\genrb" -s $(@D) -d $(@D) $(?F)
 
 $(RESSRC) : {"$(ICUTOOLS)"}genrb.exe

@@ -41,7 +41,7 @@
     <ConfigurationType>Makefile</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
-</PropertyGroup>
+  </PropertyGroup>
   <!-- The following import will include the 'default' configuration options for VS UWP projects. -->
   <Import Project="..\allinone\Build.Windows.UWP.ProjectConfiguration.props" />
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -63,17 +63,10 @@
     <NMakeCleanCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
-    
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="brkitr\brkfiles.mk" />
-    <None Include="coll\colfiles.mk" />
     <None Include="makedata.mak" />
-    <None Include="misc\miscfiles.mk" />
-    <None Include="rbnf\rbnffiles.mk" />
-    <None Include="locales\resfiles.mk" />
     <None Include="..\test\testdata\testdata.mak" />
-    <None Include="translit\trnsfiles.mk" />
     <None Include="mappings\ucmcore.mk" />
     <None Include="mappings\ucmebcdic.mk" />
     <None Include="mappings\ucmfiles.mk" />
