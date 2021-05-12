@@ -373,13 +373,14 @@ struct LSTMData : public UMemory {
     ConstArray1D fOutputB;
 
 private:
+    UResourceBundle* fBundle;
     UResourceBundle* fDataRes;
     UResourceBundle* fDictRes;
 };
 
 LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
     : fDict(nullptr), fType(UNKNOWN), fName(nullptr),
-      fDataRes(nullptr), fDictRes(nullptr)
+      fBundle(rb), fDataRes(nullptr), fDictRes(nullptr)
 {
     if (U_FAILURE(status)) {
         return;
@@ -470,6 +471,7 @@ LSTMData::~LSTMData() {
     uhash_close(fDict);
     ures_close(fDictRes);
     ures_close(fDataRes);
+    ures_close(fBundle);
 }
 
 class Vectorizer : public UMemory {
@@ -806,7 +808,7 @@ U_CAPI const LSTMData* U_EXPORT2 CreateLSTMDataForScript(UScriptCode script, UEr
         ures_openDirect(U_ICUDATA_BRKITR, namebuf.data(), &status));
     if (U_FAILURE(status)) return nullptr;
 
-    return CreateLSTMData(rb.getAlias(), status);
+    return CreateLSTMData(rb.orphan(), status);
 }
 
 U_CAPI const LSTMData* U_EXPORT2 CreateLSTMData(UResourceBundle* rb, UErrorCode& status)
