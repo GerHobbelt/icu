@@ -90,6 +90,11 @@ jobs:
     - checkout: self
       lfs: true
       fetchDepth: 10
+    # This is to work-around issue: https://github.com/actions/virtual-environments/issues/3376
+    # Once the Ubuntu 18.04 build bot image is fixed, we can remove this work-around.
+    - script: |
+        sudo apt remove libgcc-11-dev gcc-11
+      displayName: Remove GCC 11 (work-around)
     - script: |
         export CXXFLAGS="-std=c++14 -Winvalid-constexpr" && cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j2 check
       displayName: 'Build and Test C++14'
@@ -413,7 +418,7 @@ jobs:
 #-------------------------------------------------------------------------
 - job: ICU4C_Cygwin_GCC_x86_64_Release
   displayName: 'C: Cygwin GCC x86_64 Release'
-  timeoutInMinutes: 120
+  timeoutInMinutes: 180
   pool:
     vmImage: 'windows-2019'
   variables:
@@ -467,8 +472,14 @@ jobs:
         %CYG_ROOT%\\bin\\sh -lc 'echo Hello' && %CYG_ROOT%\\bin\\sh -lc 'uname -a'
       displayName: 'Check Cygwin environment'
     - script: |
-        %CYG_ROOT%\\bin\\bash -lc "cd $(cygpath \"$(Build.SourcesDirectory)\") && cd icu4c/source && ./runConfigureICU Cygwin && make check"
-      displayName: 'Build and test'
+        %CYG_ROOT%\\bin\\bash -lc "cd $(cygpath \"$(Build.SourcesDirectory)\") && cd icu4c/source && ./runConfigureICU Cygwin && make tests"
+      displayName: 'Build ICU (source and test)'
+      env:
+        CC: gcc
+        CXX: g++
+    - script: |
+        %CYG_ROOT%\\bin\\bash -lc "cd $(cygpath \"$(Build.SourcesDirectory)\") && cd icu4c/source && make check"
+      displayName: 'Run Tests'
       env:
         CC: gcc
         CXX: g++

@@ -374,13 +374,11 @@ struct LSTMData : public UMemory {
 
 private:
     UResourceBundle* fBundle;
-    UResourceBundle* fDataRes;
-    UResourceBundle* fDictRes;
 };
 
 LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
     : fDict(nullptr), fType(UNKNOWN), fName(nullptr),
-      fBundle(rb), fDataRes(nullptr), fDictRes(nullptr)
+      fBundle(rb)
 {
     if (U_FAILURE(status)) {
         return;
@@ -404,26 +402,25 @@ LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
         fType = GRAPHEME_CLUSTER;
     }
     fName = ures_getStringByKey(rb, "model", nullptr, &status);
-    fDataRes = ures_getByKey(rb, "data", nullptr, &status);
+    LocalUResourceBundlePointer dataRes(ures_getByKey(rb, "data", nullptr, &status));
     if (U_FAILURE(status)) return;
     int32_t data_len = 0;
-    const int32_t* data = ures_getIntVector(fDataRes, &data_len, &status);
-    if (U_FAILURE(status)) return;
-    fDictRes = ures_getByKey(rb, "dict", nullptr, &status);
-    if (U_FAILURE(status)) return;
-    U_ASSERT(fDictRes != nullptr);
-    int32_t num_index = ures_getSize(fDictRes);
+    const int32_t* data = ures_getIntVector(dataRes.getAlias(), &data_len, &status);
     fDict = uhash_open(uhash_hashUChars, uhash_compareUChars, nullptr, &status);
-    if (U_FAILURE(status)) return;
 
-    ures_resetIterator(fDictRes);
-    int32_t idx = 0;
+    StackUResourceBundle stackTempBundle;
+    ResourceDataValue value;
+    ures_getValueWithFallback(rb, "dict", stackTempBundle.getAlias(), value, status);
+    ResourceArray stringArray = value.getArray(status);
+    int32_t num_index = stringArray.getSize();
+    if (U_FAILURE(status)) { return; }
+
     // put dict into hash
-    while(ures_hasNext(fDictRes)) {
-        const char *tempKey = nullptr;
-        const UChar* str = ures_getNextString(fDictRes, nullptr, &tempKey, &status);
-        if (U_FAILURE(status)) return;
-        uhash_putiAllowZero(fDict, (void*)str, idx++, &status);
+    int32_t stringLength;
+    for (int32_t idx = 0; idx < num_index; idx++) {
+        stringArray.getValue(idx, value);
+        const UChar* str = value.getString(stringLength, status);
+        uhash_putiAllowZero(fDict, (void*)str, idx, &status);
         if (U_FAILURE(status)) return;
 #ifdef LSTM_VECTORIZER_DEBUG
         printf("Assign [");
@@ -469,8 +466,6 @@ LSTMData::LSTMData(UResourceBundle* rb, UErrorCode &status)
 
 LSTMData::~LSTMData() {
     uhash_close(fDict);
-    ures_close(fDictRes);
-    ures_close(fDataRes);
     ures_close(fBundle);
 }
 
