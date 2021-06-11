@@ -1,5 +1,6 @@
 ---
 layout: default
+title: APIs & Docs
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 20
@@ -26,25 +27,28 @@ License & terms of use: http://www.unicode.org/copyright.html
 ### ICU4C
 
 1.  **Note: for ICU4C 49m2 or later, will require Doxygen 1.7.5.1 or later (
-    see** [#8862](http://bugs.icu-project.org/trac/ticket/8862) **).** On Linux
-    with debian style package management,
-    ` sudo apt-get install doxygen`
+    see** [ICU-8862](https://unicode-org.atlassian.net/browse/ICU-8862) **).**
+    On Linux with debian style package management,
+
+    `sudo apt-get install doxygen`
+
     Or, to install manually
     1.  To update Doxygen, first [download binary or source release
         here](http://doxygen.org/download.html#latestsrc)
-    2.  Unpack the release, and run something like
-        "`configure --prefix /usr/local`" (to install into /usr/local/bin etc )
+    2.  Unpack the release, and run something like<br>
+        "`configure --prefix /usr/local`" (to install into /usr/local/bin etc)<br>
         (Note for the binary release, 'configure' just builds an installer.)
     3.  Run "`make install`" with appropriate permission (perhaps
         "`sudo make install`".)
     4.  Verify that '`doxygen --version`' gives the correct number.
+
 2.  Update the API documentation in all header files (.h file) to have correct
     @draft/@stable/@deprecated labels.
 3.  Update docmain.h
 4.  ./configure
 5.  make doc
 6.  Follow instructions in
-    [tools/release/java/readme.txt](https://htmlpreview.github.io/?https://github.com/unicode-org/icu/blob/master/tools/release/java/readme.txt)
+    [tools/release/java/readme.txt](https://htmlpreview.github.io/?https://github.com/unicode-org/icu/blob/main/tools/release/java/readme.txt)
     to generate API status change report.
 7.  Make sure that ICU headers work with U_HIDE_DRAFT_API and other such
     switches.
@@ -66,7 +70,7 @@ See the [User Guide, ICU Architectural Design, ICU API
 compatibility](http://userguide.icu-project.org/design#TOC-ICU-API-compatibility).
 
 On ICU4J, run
-[com.ibm.icu.dev.tool.docs.CheckTags](https://github.com/unicode-org/icu/blob/master/icu4j/tools/build/src/com/ibm/icu/dev/tool/docs/CheckTags.java)
+[com.ibm.icu.dev.tool.docs.CheckTags](https://github.com/unicode-org/icu/blob/main/icu4j/tools/build/src/com/ibm/icu/dev/tool/docs/CheckTags.java)
 (see file for instructions). This requires a JDK with javadoc available. The
 tool will need to change to reflect the release number to search for.
 
@@ -75,9 +79,11 @@ report since the previous official release.
 
 Make sure **@internal APIs** are also marked as @deprecated:
 
-` * @internal`
-` * @deprecated This API is ICU internal only.`
-` @Deprecated`
+```
+* @internal
+* @deprecated This API is ICU internal only.
+@Deprecated
+```
 
 ---
 
@@ -110,7 +116,7 @@ Andy's method (from email 2019-sep-05):
 ### **ICU4J**
 
 1.  Create a new GitHub branch.
-2.  Run next ant target: $ ant draftAPIsTSV
+2.  Run next ant target: `$ ant draftAPIsTSV`
 3.  This **ant** target generates a tab-separated values file at
     icu4j/out/draftAPIs.tsv.
 4.  Import the TSV file to Google spread sheet - for example, [ICU4J 61 Draft
@@ -131,7 +137,7 @@ Andy's method (from email 2019-sep-05):
 8.  Update API comments in ICU4J source code. In this case, @draft is replaced
     with @stable (do not change ICU version, for example, "@draft ICU 59" will
     be changed to "@stable ICU 59").
-9.  Run next ant target to generate an API change report html: $ ant apireport
+9.  Run next ant target to generate an API change report html: `$ ant apireport`
 10. Review the report, sent the report file and the link of the spread sheet to
     ICU technical committee members for review.
 11. Once ICU TC approves the proposed change, create a pull request (PR), wait
@@ -148,10 +154,10 @@ This work is done in the root of icu4c:
 1.  Update the API documentation in all header files (.h file) to have correct
     @draft/@stable/@deprecated/@obsolete labels.
 2.  Update docmain.h with additions or removals as needed.
-3.  \`source/configure\`
-4.  \`make doc\`
+3.  `source/configure`
+4.  `make doc`
 5.  Follow instructions in
-    [tools/release/java/readme.txt](https://github.com/unicode-org/icu/blob/master/tools/release/java/readme.txt).
+    [tools/release/java/readme.txt](https://github.com/unicode-org/icu/blob/main/tools/release/java/readme.txt).
 
 ### ICU4J
 
@@ -159,15 +165,15 @@ This work is done in the root of icu4j:
 
 1.  Make sure JAVA_HOME is set to JDK 8. This report creation fails with JDK 11.
     For example, in Linux:
-    *   export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64
+    *   `export JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64`
 2.  Then run ant task "clean" and "apireport" at <icu4j_root>:
-    *   ant clean apireport
+    *   `ant clean apireport`
 3.  Above will produce API change report file
-    <icu4j_root>/**out**/icu4j_compare_xxx_yyy.html
+    <code><icu4j_root>/<b>out</b>/icu4j_compare_xxx_yyy.html</code>
 4.  Make sure there are any new doc tag errors are reported. (As of ICU 4.4,
     ArabicShaping constants do not have proper tags - otherwise, clean)
-5.  Copy generated report file to <icu4j_root>/APIChangeReport.html and check it
-    in.
+5.  Copy generated report file to `<icu4j_root>/APIChangeReport.html` and check
+    it in.
 
 Once official release version is shipped, we need to keep API signature
 information file for next iteration. This is not done for milestone releases,
@@ -208,7 +214,7 @@ In ICU4C, we want every (consecutive group of) `@draft` API to be surrounded by
 `#ifndef U_HIDE_DRAFT_API`. This allows users to `-DU_HIDE_DRAFT_API` to make
 sure they don't use unstable API.
 
-```none
+```
 #ifndef U_HIDE_DRAFT_API
 /** @draft ICU 51 */
 U_CAPI u_newFunction1();
@@ -217,17 +223,17 @@ U_CAPI u_newFunction2();
 #endif  // U_HIDE_DRAFT_API
 ```
 
-Same for `@deprecated` & `#ifndef U_HIDE_**DEPRECATED**_API` .. `#endif //
-U_HIDE_**DEPRECATED**_API`
+Same for `@deprecated` & <code>#ifndef U_HIDE_<b>DEPRECATED</b>_API</code> ..
+`#endif // U_HIDE_DEPRECATED_API`
 
-Same for `@internal` & `#ifndef U_HIDE_**INTERNAL**_API` .. `#endif //
-U_HIDE_**INTERNAL**_API`
+Same for `@internal` & <code>#ifndef U_HIDE_<b>INTERNAL</b>_API</code> ..
+`#endif // U_HIDE_INTERNAL_API`
 
-Same for `@system` & `#ifndef U_HIDE_**SYSTEM**_API` .. `#endif //
-U_HIDE_**SYSTEM**_API`
+Same for `@system` & <code>#ifndef U_HIDE_<b>SYSTEM</b>_API</code> ..
+`#endif // U_HIDE_SYSTEM_API`
 
-Same for `@obsolete` & `#ifndef U_HIDE_**OBSOLETE**_API` .. `#endif //
-U_HIDE_**OBSOLETE**_API`
+Same for `@obsolete` & <code>#ifndef U_HIDE_<b>OBSOLETE</b>_API</code> ..
+`#endif // U_HIDE_OBSOLETE_API`
 
 ### Caution
 
@@ -239,9 +245,9 @@ U_HIDE_**OBSOLETE**_API`
     (e.g., a _COUNT or _LIMIT) should retain the same numeric values as if the
     guard was absent.
 
-For more details (and cautions) see the Coding Guidelines section [C/C++ Hiding
-Un-@stable
-APIs](http://userguide.icu-project.org/dev/codingguidelines#TOC-C-C-Hiding-Un--stable-APIs).
+<span style="background-color:yellow">For more details (and cautions) see the
+Coding Guidelines section [C/C++ Hiding Un-@stable
+APIs](http://userguide.icu-project.org/dev/codingguidelines#TOC-C-C-Hiding-Un--stable-APIs).</span>
 
 ### Task
 
@@ -256,26 +262,28 @@ b) For each of these U_HIDE_..._API guards, verify that it only and exactly
 surrounds APIs with the corresponding status tag. In particular, make sure that
 U_HIDE_DRAFT_API does not surround (newly) @stable API.
 
-We don't have tools for this. One approach is to use "grep" or similar on the
-public *common*, *i18n*, *io* header files. Use grep options like -A 3, -B 2 and
--C 3 for context After, Before, and Around the matching line. A better approach
-if you have the tools available is to use a programming-oriented text editor
-that can do (a) powerful regex search across (b) multiple files in several
-specified directories, and (c) display the matched lines in context such that
-(d) they or their context can be edited in place; an example of such a tool on
-macOS is BBEdit. This permits a comprehensive search using an expression such as
+We don't have tools for this. <span style="background-color:yellow">One approach
+is to</span> use "grep" or similar on the public *common*, *i18n*, *io* header
+files. Use grep options like -A 3, -B 2 and -C 3 for context After, Before, and
+Around the matching line. <span style="background-color:yellow">A better
+approach if you have the tools available is to use a programming-oriented text
+editor that can do (a) powerful regex search across (b) multiple files in
+several specified directories, and (c) display the matched lines in context such
+that (d) they or their context can be edited in place; an example of such a tool
+on macOS is BBEdit. This permits a comprehensive search using an expression such
+as
 "(U_HIDE_\[A-Z_\]+)|(@draft)|(@deprecated)|(@obsolete)|(@system)|(@internal)|(@preview)"
 which permits relatively easy checking for correct enclosure of status tags in
-conditionals.
+conditionals.</span>
 
-As part of this, you may need to run side searches, for example to verify that
-no conditionalized type, function or value is used by an unconditionalized
-portion of a header file.
+<span style="background-color:yellow">As part of this, you may need to run side
+searches, for example to verify that no conditionalized type, function or value
+is used by an unconditionalized portion of a header file.</span>
 
-There is no magic bullet; however you carry out this step, it will require
-several hours of going through the grep/regex results and manually checking for
-correct enclosure, checking that conditionalized values are not needed
-elsewhere, etc.
+<span style="background-color:yellow">There is no magic bullet; however you
+carry out this step, it will require several hours of going through the
+grep/regex results and manually checking for correct enclosure, checking that
+conditionalized values are not needed elsewhere, etc.</span>
 
 ---
 
@@ -283,9 +291,9 @@ elsewhere, etc.
 
 *Ignore this step for ICU49 and later. In ICU 49 and above, these header files
 and the gendraft/genheaders.pl tool are gone. (Ticket
-[#8571](http://bugs.icu-project.org/trac/ticket/8571))*
+[ICU-8571](https://unicode-org.atlassian.net/browse/ICU-8571))*
 
-Instructions ==for ICU4C 4.8.x and earlier==:
+Instructions ***for ICU4C 4.8.x and earlier***:
 
 1.  make doc
 2.  `cd source/tools/gendraft ; make install-headers`
@@ -298,7 +306,7 @@ Instructions ==for ICU4C 4.8.x and earlier==:
 
 Run the ICU4J versus JDK API comparison tool against the target JDK (anything
 that will come out before our next release, basically) with the tool
-[com.ibm.icu.dev.tool.docs.ICUJDKCompare](https://github.com/unicode-org/icu/blob/master/icu4j/tools/build/src/com/ibm/icu/dev/tool/docs/ICUJDKCompare.java)
+[com.ibm.icu.dev.tool.docs.ICUJDKCompare](https://github.com/unicode-org/icu/blob/main/icu4j/tools/build/src/com/ibm/icu/dev/tool/docs/ICUJDKCompare.java)
 and make sure ICU4J adequately covers the JDK API for the classes we replicate.
 
 ---
@@ -311,50 +319,46 @@ Build the API documentation pages for the new release. Run Doxygen to create the
 javadoc files. Create icu4c-X_X_X-docs.zip
 
 **Note: for ICU4C 49m2 or later, requires Doxygen 1.7.5.1 or later ( see
-[#8862](http://bugs.icu-project.org/trac/ticket/8862) )**
+[ICU-8862](https://unicode-org.atlassian.net/browse/ICU-8862) )**
 
 #### Steps:
 
 1.  Go to .../icu4c/source
-2.  Generate the API document pages:
-    \`make doc-searchengine\`
-3.  The generated API docs are in <path>/icu4c/source/doc/html/
-    \`cd <path>/icu4c/source/doc/html/\`
-4.  Create a zip file, e.g.,
-    \`zip /tmp/icu4c641 \*\` # '641' needs to be replaced by the respective
-    release label.
+2.  Generate the API document pages:<br>
+    `make doc-searchengine`
+3.  The generated API docs are in <path>/icu4c/source/doc/html/<br>
+    `cd <path>/icu4c/source/doc/html/`
+4.  Create a zip file, e.g.,<br>
+    `zip /tmp/icu4c641 * # '641' needs to be replaced by the respective release label.`
 5.  ~~Upload this zip file to the GitHub release page. For the live API docs, see below.~~
 
 DRAFT:
 
-5. Follow directions in [How to update ICU
-docs](https://unicode-org.github.io/icu-docs/HOWTO-Update.html)
+5.  Follow directions in [How to update ICU docs](https://unicode-org.github.io/icu-docs/HOWTO-Update.html)
 
-a. First, bring main branch of icu-docs fork up to date.
+    a. First, bring main branch of icu-docs fork up to date.
 
-b. Copy the zip file to personal fork of icu-docs in apidoc/released/icu4c (or
-dev if not a release)
+    b. Copy the zip file to personal fork of icu-docs in apidoc/released/icu4c
+    (or dev if not a release)
 
-c. Unzip the file, replacing all documentation
+    c. Unzip the file, replacing all documentation
 
-d. Remove the zip file
+    d. Remove the zip file
 
-e. \`git add .\`
+    e. \`git add .\`
 
-f. \`git commit -m "ICU-<TICKET-NUMBER> Update ICU4C API reference docs for
-XX.Y"
+    f. \`git commit -m "ICU-<TICKET-NUMBER> Update ICU4C API reference docs for
+    XX.Y"<br>
+    Example: ["ICU-21546 Update ICU4C API reference docs for 69.1"](https://github.com/unicode-org/icu-docs/pull/25)
 
-Example: ["ICU-21546 Update ICU4C API reference docs for
-69.1"](https://github.com/unicode-org/icu-docs/pull/25)
+    g. \`git push origin main\`
 
-g. \`git push origin main\`
+    h. Create Pull Request at personal github fork for icu-docs from main into
+    unicode-ort/icu-docs main branch
 
-h. Create Pull Request at personal github fork for icu-docs from main into
-unicode-ort/icu-docs main branch
+    i. Request review
 
-i. Request review
-
-# Note: This is also referenced below '**[Upload API documentations](docs.md)**' for how to make the API docs public.
+Note: This is also referenced below '[Upload API documentations](docs.md)' for how to make the API docs public.
 
 ### ICU4J
 
@@ -363,7 +367,7 @@ i. Request review
 
 Build the API documentation pages for the new release:
 
-```none
+```
 ant releaseDocs
 ```
 
@@ -374,7 +378,7 @@ ant releaseDocs
 
 Use the release target
 
-```none
+```
 ant releaseVer
 ```
 
@@ -383,7 +387,7 @@ which generate all release files.
 *   Upload the output files including icu4j-docs.jar to the release page first,
 *   Then update the live API docs from the generated docs.jar.
 
-# See ['](goog_1113919890)[Upload API documentations](docs.md)' below for how to make the API docs public.
+See '[Upload API documentations](docs.md)' below for how to make the API docs public.
 
 ### Upload API documentations
 

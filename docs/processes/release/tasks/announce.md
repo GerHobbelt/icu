@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Announcements
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 10
@@ -113,8 +114,8 @@ accuracy as well- not sure here. (Steven Loomis, 2001-06-14)
 [developerWorks unicode zone](http://www.ibm.com/developerworks/unicode/),
 [developerWorks open-source
 zone](http://www.ibm.com/developerworks/opensource/), [developerWorks java
-zone](http://www.ibm.com/developerworks/java/) (send email to dWnews <at>
-us.ibm.com)
+zone](http://www.ibm.com/developerworks/java/) (send email to `dWnews <at>
+us.ibm.com`)
 
 [ICU sourceforge News](http://sourceforge.net/projects/icu) - login here, go to
 News, Admin, and submit a news item as an administrator.

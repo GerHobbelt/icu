@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Updating MeasureUnit with new CLDR data
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 120
@@ -10,7 +11,7 @@ nav_order: 120
 License & terms of use: http://www.unicode.org/copyright.html
 -->
 
-# Updating Measure Unit with new CLDR data
+# Updating MeasureUnit with new CLDR data
 {: .no_toc }
 
 ## Contents

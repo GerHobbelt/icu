@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Healthy Code
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 50
@@ -40,23 +41,23 @@ One easy way to check for this is to search through the API change report and
 look for "UClassID" or similar.
 
 *   Latest trunk report:
-    [icu/icu4c/APIChangeReport.html](https://github.com/unicode-org/icu/blob/master/icu4c/APIChangeReport.html)
+    [icu/icu4c/APIChangeReport.html](https://github.com/unicode-org/icu/blob/main/icu4c/APIChangeReport.html)
 *   ~~The automated build system creates a new report:
     <https://cldr-build.unicode.org/jenkins/job/icu/job/icu-apidocs/>~~
     *   Click "ICU4C API Change Report vs Latest"
 *   Old: was http://bugs.icu-project.org/trac/build/icu4cdocs
     *   Go into the latest successful build, the report is an attachment there.
     *   Download the style sheet next to it:
-        https://github.com/unicode-org/icu/blob/master/icu4c/icu4c.css
+        https://github.com/unicode-org/icu/blob/main/icu4c/icu4c.css
 
 ---
 
-## Check for non-ascii characters in ICU4C source files \[obsolete\]
+## ~~Check for non-ascii characters in ICU4C source files \[obsolete\]~~
 
-Note: ICU4C and ICU4J source files are UTF-8. The ASCII check is no longer
-appropriate for them.
+~~Note: ICU4C and ICU4J source files are UTF-8. The ASCII check is no longer
+appropriate for them.~~
 
-```none
+```sh
 cd icu4c/source
 find . \( -name "*.[ch]" -or -name "*.cpp" \) -exec grep -PHn [^[:ascii:]] {} \;
 ```
@@ -70,14 +71,14 @@ endings.
 
 To do this on Linux, In an up-to-date git workspace,
 
-```none
+```sh
 cd icu/icu4c/source
 tools/icu-file-utf8-check.py          # reports problems
 ```
 
 The same python script from the icu4c tools will also check icu4j
 
-```none
+```sh
 cd icu/icu4j
 ../icu4c/source/tools/icu-file-utf8-check.py
 ```
@@ -86,7 +87,7 @@ To double-check the line endings, the following grep will find all text files
 containing \\r characters. Do not run from Windows, where \\r\\n line endings
 are expected.
 
-```none
+```sh
 cd icu
 grep -rPIl "\r" *
 ```
@@ -94,13 +95,14 @@ grep -rPIl "\r" *
 Even when run from Mac or Linux, some WIndows specific files (.bat, etc) will be
 found by this check. This is OK.
 
-## Check UTF-8 file properties \[obsolete\]
+## ~~Check UTF-8 file properties \[obsolete\]~~
 
 *Note: As of ICU 63, the project moved from svn to GitHub. SVN file properties
 are no longer relevant.*
 
-**Note: As of ICU 59, ICU4C source files are UTF-8 encoded, and have the svn
-mime-type property "text/plain;charset=utf-8". They must not have a BOM.**
+<span style="color:red">**Note: As of ICU 59, ICU4C source files are UTF-8
+encoded, and have the svn mime-type property "text/plain;charset=utf-8". They
+must not have a BOM.**</span>
 
 This is checked by the above task, *Check svn properties, valid UTF-8 and text
 file line endings.*
@@ -108,8 +110,9 @@ file line endings.*
 The bomfix.py script, formerly used for this task, must *not* be run over the
 ICU4C sources
 
-**~~Note: This task is only applicable to ICU4C. ICU4J .java source files are
-encoded by UTF-8, but must be without UTF-8 BOM.~~**
+<span style="color:red">**~~Note: This task is only applicable to ICU4C. ICU4J
+.java source files are encoded by UTF-8, but must be without UTF-8
+BOM.~~**</span>
 
 ~~Check that the following match: Files marked as UTF-8 vs. Files beginning with
 the UTF-8 signature byte sequence ("BOM").~~
@@ -117,10 +120,7 @@ the UTF-8 signature byte sequence ("BOM").~~
 ~~Run:~~
 
 <pre><code><s>cd {icu}/icu4c</s>
-</code></pre>
-
-<pre><code><s>python ../tools/release/c/bomfix.py</s>
-</code></pre>
+<s>python ../tools/release/c/bomfix.py</s></code></pre>
 
 ---
 
@@ -137,18 +137,18 @@ this case, you may need to narrow a selection per iteration.)
 
 ## Check library dependencies
 
-==*ICU 64+ (2019+): Done automatically by a build bot, at least in one of the
-two modes (debug/release), ok to skip as BRS task.*==
+***ICU 64+ (2019+): Done automatically by a build bot, at least in one of the
+two modes (debug/release), ok to skip as BRS task.***
 
 We want to keep dependencies between .c/.cpp/.o files reasonable, both between
 and inside ICU's libraries.
 
 On Linux, run
-[source/test/depstest/depstest.py](https://github.com/unicode-org/icu/blob/master/icu4c/source/test/depstest/dependencies.py),
+[source/test/depstest/depstest.py](https://github.com/unicode-org/icu/blob/main/icu4c/source/test/depstest/dependencies.py),
 for example:
-
-> `~/icu/mine/src/icu4c/source/test/depstest$ ./depstest.py
-> ~/icu/mine/dbg/icu4c`
+```sh
+~/icu/mine/src/icu4c/source/test/depstest$ ./depstest.py ~/icu/mine/dbg/icu4c
+```
 
 Do this twice: Once for a release build (optimized) and once for a debug build
 (unoptimized). They pull in slightly different sets of standard library symbols
@@ -194,6 +194,10 @@ should be fixed, like in [changeset
 of API that require conversion should depend on it; for example, group
 formattable_cnv depends on group unistr_cnv, but then nothing inside ICU depends
 on that.
+<!-- I did not find 30186 - I only found X-SVN-Rev's 30184 and 30188:
+https://github.com/unicode-org/icu/commit/b22717a642c2d416c56931efee61aa4ee386c027
+https://github.com/unicode-org/icu/commit/8cc8801c031f7e29b87d075ad39afd39dc4e95d6
+-->
 
 ---
 
@@ -204,7 +208,7 @@ requirement is for ICU's memory management to be customizable by changing
 cmemory.h and the common base class.
 
 **Note:** The requirement remains. The techniques to fix issues are valid.
-*==For testing==, see the section "Check library dependencies" above.*
+***For testing**, see the section "Check library dependencies" above.*
 
 *   No raw malloc/free/realloc but their uprv_ versions.
 *   All C++ classes must inherit the common base class UObject or UMemory
@@ -259,13 +263,13 @@ running these tools.
 
 Build ICU with debug information. On Linux,
 
-```none
+```sh
 runConfigureICU --enable-debug --disable-release Linux
 ```
 
 Run all of the standard tests under valgrind. For intltest, for example,
 
-```none
+```sh
 cd <where ever>/source/test/intltest
 LD_LIBRARY_PATH=../../lib:../../stubdata:../../tools/ctestfw:$LD_LIBRARY_PATH  valgrind  ./intltest
 ```
@@ -291,7 +295,7 @@ Testing external dependencies in header files:
 (on Unixes) Prerequisite: Configure with --prefix
 (../icu4c/source/runConfigureICU Linux --prefix=/some/temp/folder) and do 'make
 install'. Then set the PATH so that the installed icu-config script can be
-found. (export PATH=/some/temp/folder/**==bin==**:$PATH)
+found. (export PATH=/some/temp/folder/**bin**:$PATH)
 
 Then go to the 'icu4c/test/hdrtst' directory (note: not 'source/test/hdrtst')
 and do 'make check'. This will attempt to compile against each header file
@@ -301,8 +305,9 @@ no error springs up all is in order.
 ~~If a C++ file fails to compile as a C file, add it to the 'cxxfiles.txt'
 located in the hdrtst directory.~~
 
-**As of ICU 65, the hdrtst is now run as part of the regular CI builds, and the
-C++ headers are now guarded with the macro "U_SHOW_CPLUSPLUS_API".**
+<span style="color:red">**As of ICU 65, the hdrtst is now run as part of the
+regular CI builds, and the C++ headers are now guarded with the macro
+"U_SHOW_CPLUSPLUS_API".**</span>
 
 There is no longer any "cxxfiles.txt" file. Instead the public C++ headers are
 all guarded with the macro "U_SHOW_CPLUSPLUS_API" which is set to 1 by default
@@ -313,7 +318,7 @@ caught in the CI builds for a pull-request before it is merged.
 
 Run this test with all the uconfig.h variations (see below).
 
-```none
+```sh
 ctest unicode/docmain.h
 ctest unicode/icudataver.h
 ctest unicode/icuplug.h
@@ -330,15 +335,15 @@ particular directory.
 
 The command line is simply
 
-```none
+```sh
 ~/git.icu/icu4c/source$ test/hdrtst/testinternalheaders.sh
 ```
 
-See <http://bugs.icu-project.org/trac/ticket/12141> "every header file should
+See https://unicode-org.atlassian.net/browse/ICU-12141 "every header file should
 include all other headers if it depends on definitions from them"
 
-**As of ICU 68, the internal header test is now automated as part of Travis
-CI.**
+<span style="color:red">**As of ICU 68, the internal header test is now
+automated as part of Travis CI.**</span>
 
 ---
 
@@ -352,18 +357,18 @@ Test ICU completely, and run the header test (above) with:
     exception regarding [UCONFIG_NO_CONVERSION test](healthy-code.md) below.
 
 (See
-[common/unicode/uconfig.h](https://github.com/unicode-org/icu/blob/master/icu4c/source/common/unicode/uconfig.h)
+[common/unicode/uconfig.h](https://github.com/unicode-org/icu/blob/main/icu4c/source/common/unicode/uconfig.h)
 for more documentation.)
 
 There is a script available which will automatically test ICU in this way on
 UNIXes, it lives in:
-[tools/release/c/uconfigtest.sh](https://github.com/unicode-org/icu/blob/master/tools/release/c/uconfigtest.sh).
+[tools/release/c/uconfigtest.sh](https://github.com/unicode-org/icu/blob/main/tools/release/c/uconfigtest.sh).
 See docs at top of script for information.
 
-When guard conditionals (e.g. #ifndef U_HIDE_INTERNAL_API) are removed because
-they cause header test failures, please note in the header file the reason that
-guard conditionals cannot be used in that location, or they will lkeiely be
-re-added in the future.
+<span style="background-color:yellow">When guard conditionals (e.g. #ifndef
+U_HIDE_INTERNAL_API) are removed because they cause header test failures, please
+note in the header file the reason that guard conditionals cannot be used in
+that location, or they will lkeiely be re-added in the future.
 
 ---
 
@@ -372,7 +377,7 @@ re-added in the future.
 Verify that ICU builds without enabling the default use of the ICU namespace. To
 test on Linux,
 
-```none
+```sh
 ./runConfigureICU Linux CXXFLAGS="-DU_USING_ICU_NAMESPACE=0"
 make check
 ```
@@ -416,7 +421,7 @@ in [changeset 30186](http://bugs.icu-project.org/trac/changeset/30186).
 Verify that ICU builds with default charset hardcoded to UTF-8. To test on
 Linux,
 
-```none
+```sh
 ./runConfigureICU Linux CPPFLAGS="-DU_CHARSET_IS_UTF8=1"
 make -j6 check
 ```
@@ -441,18 +446,18 @@ The automated build system should have a machine that sets both
 Verify that ICU builds with U_OVERRIDE_CXX_ALLOCATION=0 on Linux. Problems will
 show as build failures.
 
-```none
+```sh
 CPPFLAGS="-DU_OVERRIDE_CXX_ALLOCATION=0" ./runConfigureICU Linux
 make clean
 make -j12 check
 ```
 
-## Test ICU_USE_THREADS=0 \[Obsolete\]
+## ~~Test ICU_USE_THREADS=0 \[Obsolete\]~~
 
-### ***Only necessary up to ICU4C 49.***
+***Only necessary up to ICU4C 49.***
 
 *   ICU 50m1 removes ICU_USE_THREADS from the runtime code (ticket
-    [#9010](http://bugs.icu-project.org/trac/ticket/9010)).
+    [ICU-9010](https://unicode-org.atlassian.net/browse/ICU-9010)).
 *   It is still possible to build and test intltest with ICU_USE_THREADS=0 but
     not nearly as important.
 *   In ICU 50m1, the `--disable-threads` configure option is gone. If you want
@@ -461,7 +466,7 @@ make -j12 check
 
 Verify that ICU builds and tests with threading disabled. To test on Linux,
 
-```none
+```sh
 ./runConfigureICU Linux --disable-threads
 make check
 ```
@@ -490,15 +495,15 @@ steps:
 To test the sample programs, run the "source\\samples\\all\\samplecheck.bat"
 script for each configuration, and ensure that they are successful.
 
-### **Test ICU4C Demos via Docker**
+## **Test ICU4C Demos via Docker**
 
-See <https://github.com/unicode-org/icu-demos/blob/master/icu-kube/README.md>
+See <https://github.com/unicode-org/icu-demos/blob/main/icu-kube/README.md>
 
 ---
 
 ## **Test ICU4J Web Demos via Docker**
 
-See: <https://github.com/unicode-org/icu-demos/blob/master/icu4jweb/README.md>
+See: <https://github.com/unicode-org/icu-demos/blob/main/icu4jweb/README.md>
 
 ---
 
@@ -509,10 +514,10 @@ These are the demo applets, see above for the icu4jweb demos.
 To test ICU4J demo applications, cd to ICU4J directory and build and run the
 demo.
 
-```none
+```sh
 $ cd icu4j
 $ ant jarDemos
-$  java -jar icu4jdemos.jar
+$ java -jar icu4jdemos.jar
 ```
 
 Above command invokes GUI demo applications. As such it has to connect to a
@@ -532,14 +537,14 @@ issues. Also run sample code with main and see if each sample code runs.
 
 For ICU4J,
 
-```none
+```sh
 $ ant exhaustiveCheck
 ```
 
 For ICU4C, testing with an optimized build will help reduce the elapsed time
 required for the tests to complete.
 
-```none
+```sh
 $ make -j6 check-exhaustive
 ```
 
@@ -551,7 +556,7 @@ The build bots run the thread sanitizer on the most interesting multithreaded
 tests. These instructions run the sanitizer on the entire test suite. The clang
 compiler is required.
 
-```none
+```sh
 $ CPPFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread ./runConfigureICU --enable-debug --disable-release Linux --disable-renaming
 $ make clean
 $ make -j6 check

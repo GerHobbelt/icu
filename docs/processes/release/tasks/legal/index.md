@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Legalities
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 70
@@ -17,7 +18,7 @@ License & terms of use: http://www.unicode.org/copyright.html
 Check source and data files, especially newly contributed ones, to make sure the
 proper copyright notice is in place. For example,
 
-```none
+```
 © 2016 and later: Unicode, Inc. and others.
 License & terms of use: http://www.unicode.org/copyright.html#License
 ```
@@ -36,8 +37,9 @@ Perl script attached to this page.) There are files without word "Copyright" in
 ICU source repository including some test data files (no comment syntax defined
 for these test data files), Unicode data files, tzcode source files and others.
 Review the output file list and determine if each of them should have ICU
-copyright statement or not.~~ ***The script attached in this document is not
-maintained. Use the ICU Copyright Scanner above instead.***
+copyright statement or not.~~ ***The script [find_textfiles](find_textfiles)
+associated with this document is not maintained. Use the ICU Copyright Scanner
+above instead.***
 
 ## 2. Update license files
 
@@ -48,5 +50,5 @@ number only). The easiest way to get the updated license is to do View Source on
 unicode.org/copyright.html and scroll down to the plaintext version of the
 software license ("Exhibit A").
 
-See <http://bugs.icu-project.org/trac/changeset/39632> for an example; there
-should be only two files to update.
+See [svn changeset r39632](https://github.com/unicode-org/icu/commit/0001f6c5e92f6f3a8d66c7dbc47cc24df7633a71)
+for an example; there should be only two files to update.

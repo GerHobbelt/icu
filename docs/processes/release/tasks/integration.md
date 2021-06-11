@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Integration Tests
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 60
@@ -32,61 +33,67 @@ version. Otherwise, there is no extra settings except for the standard ant set
 up ( necessary. To run the test cases, use ant with the top-level build.xml with
 target "localespiCheck"
 
+```sh
 $ ant localespiCheck
+```
 
 You should get the output like below -
 
+```
 ...
 build:
+
 _runLocalespiCheck:
-\[java\] TestAll {
-\[java\] BreakIteratorTest {
-\[java\] TestGetInstance (7.581s) Passed
-\[java\] TestICUEquivalent (0.832s) Passed
-\[java\] } (8.669s) Passed
-\[java\] CollatorTest {
-\[java\] TestGetInstance (0.900s) Passed
-\[java\] TestICUEquivalent (0.040s) Passed
-\[java\] } (0.966s) Passed
-\[java\] CurrencyNameTest {
-\[java\] TestCurrencySymbols (2.682s) Passed
-\[java\] } (2.683s) Passed
-\[java\] DateFormatSymbolsTest {
-\[java\] TestGetInstance (0.348s) Passed
-\[java\] TestICUEquivalent (0.207s) Passed
-\[java\] TestNynorsk (0.000s) Passed
-\[java\] TestSetSymbols (0.071s) Passed
-\[java\] } (0.631s) Passed
-\[java\] DateFormatTest {
-\[java\] TestGetInstance (0.456s) Passed
-\[java\] TestICUEquivalent (0.113s) Passed
-\[java\] TestThaiDigit (0.000s) Passed
-\[java\] } (0.571s) Passed
-\[java\] DecimalFormatSymbolsTest {
-\[java\] TestGetInstance (0.098s) Passed
-\[java\] TestICUEquivalent (0.000s) Passed
-\[java\] TestSetSymbols (0.000s) Passed
-\[java\] } (0.099s) Passed
-\[java\] LocaleNameTest {
-\[java\] TestCountryNames (2.500s) Passed
-\[java\] TestLanguageNames (14.262s) Passed
-\[java\] TestVariantNames (8.638s) Passed
-\[java\] } (25.402s) Passed
-\[java\] NumberFormatTest {
-\[java\] TestGetInstance (0.266s) Passed
-\[java\] TestICUEquivalent (0.209s) Passed
-\[java\] } (0.475s) Passed
-\[java\] TimeZoneNameTest {
-\[java\] TestTimeZoneNames (17.766s) Passed
-\[java\] } (17.766s) Passed
-\[java\] } (57.268s) Passed
-\[java\]
-\[java\] Test cases taking excessive time (>10s):
-\[java\] TestAll/LocaleNameTest/TestLanguageNames (14.262s)
-\[java\] TestAll/TimeZoneNameTest/TestTimeZoneNames (17.766s)
-\[java\]
+     [java] TestAll {
+     [java]   BreakIteratorTest {
+     [java]     TestGetInstance (7.581s) Passed
+     [java]     TestICUEquivalent (0.832s) Passed
+     [java]   } (8.669s) Passed
+     [java]   CollatorTest {
+     [java]     TestGetInstance (0.900s) Passed
+     [java]     TestICUEquivalent (0.040s) Passed
+     [java]   } (0.966s) Passed
+     [java]   CurrencyNameTest {
+     [java]     TestCurrencySymbols (2.682s) Passed
+     [java]   } (2.683s) Passed
+     [java]     DateFormatSymbolsTest {
+     [java]     TestGetInstance (0.348s) Passed
+     [java]     TestICUEquivalent (0.207s) Passed
+     [java]     TestNynorsk (0.000s) Passed
+     [java]     TestSetSymbols (0.071s) Passed
+     [java]   } (0.631s) Passed
+     [java]   DateFormatTest {
+     [java]     TestGetInstance (0.456s) Passed
+     [java]     TestICUEquivalent (0.113s) Passed
+     [java]     TestThaiDigit (0.000s) Passed
+     [java]   } (0.571s) Passed
+     [java]   DecimalFormatSymbolsTest {
+     [java]     TestGetInstance (0.098s) Passed
+     [java]     TestICUEquivalent (0.000s) Passed
+     [java]     TestSetSymbols (0.000s) Passed
+     [java]   } (0.099s) Passed
+     [java]   LocaleNameTest {
+     [java]     TestCountryNames (2.500s) Passed
+     [java]     TestLanguageNames (14.262s) Passed
+     [java]   TestVariantNames (8.638s) Passed
+     [java]   } (25.402s) Passed
+     [java]   NumberFormatTest {
+     [java]     TestGetInstance (0.266s) Passed
+     [java]     TestICUEquivalent (0.209s) Passed
+     [java]   } (0.475s) Passed
+     [java]   TimeZoneNameTest {
+     [java]     TestTimeZoneNames (17.766s) Passed
+     [java]   } (17.766s) Passed
+     [java] } (57.268s) Passed
+     [java]
+     [java] Test cases taking excessive time (>10s):
+     [java] TestAll/LocaleNameTest/TestLanguageNames (14.262s)
+     [java] TestAll/TimeZoneNameTest/TestTimeZoneNames (17.766s)
+     [java]
+
 BUILD SUCCESSFUL
 Total time: 1 minute 46 seconds
+```
 
 ---
 
@@ -106,7 +113,9 @@ local JRE.
 
 To run the test case, you just need to invoke the ant target "jdktzCheck".
 
+```sh
 $ ant jdktzCheck
+```
 
 **Note:** You might not be able to get the update tool matching the tzdata
 version used by ICU. In this case, some test cases may reports failures.
@@ -136,7 +145,7 @@ with the stubdata library and run the tests again with the -w option.
 
 On Linux (adjust the version number, 60.1 in this example, as required)
 
-```none
+```sh
 cd icu4c/source
 cp stubdata/libicudata.so.60.1 lib/
 cd test/intltest
@@ -154,7 +163,7 @@ now, this task is not required for ICU4J.
 
 ## Verify that ICU4C tests pass without collation rule strings
 
-==*ICU4C 53 and later*==
+***ICU4C 53 and later***
 
 Background: [ICU-10636](https://unicode-org.atlassian.net/browse/ICU-10636)
 
@@ -167,14 +176,14 @@ rule strings.
 
 The file syntax is nicer with hjson rather than json.
 
-```none
+```sh
 sudo apt install python3-pip
 pip3 install hjson
 ```
 
 Use an `~/icu/coll-norules.hjson` config file like this:
 
-```none
+```
 {
   resourceFilters: [
     {
@@ -192,7 +201,7 @@ Use an `~/icu/coll-norules.hjson` config file like this:
 
 Configure ICU using this file:
 
-```none
+```sh
 ICU_DATA_FILTER_FILE=~/icu/coll-norules.hjson ... runConfigureICU ...
 ```
 
@@ -204,7 +213,7 @@ This should work: `make GENRBOPTS='-k --omitCollationRules'` (-k is --strict)
 
 For ICU 54..63, I went into the build output folder and did:
 
-```none
+```sh
 cd data
 ICUDT=icudt63l
 rm out/build/$ICUDT/coll/*.res
@@ -212,7 +221,7 @@ make GENRBOPTS='-k --omitCollationRules'
 ```
 
 If this does not work, then add this option to the configure'd data/Makefile,
-see ticket [#10636](https://unicode-org.atlassian.net/browse/ICU-10636).
+see ticket [ICU-10636](https://unicode-org.atlassian.net/browse/ICU-10636).
 
 ### Run the tests with data-errors-as-warnings
 
@@ -229,8 +238,9 @@ examples.
 
 #### With ICU 64 and later:
 
-*   Reconfigure ICU4C with `==ICU_DATA_BUILDTOOL_OPTS=--include_uni_core_data==
-    ./runConfigureICU Linux` or similar
+*   Reconfigure ICU4C with
+    <code><b>ICU_DATA_BUILDTOOL_OPTS=--include_uni_core_data</b>
+    ./runConfigureICU Linux</code> or similar
     *   Should be little-endian for coverage
 *   Clean and build ICU4C: `make -j6 check`
 *   Make a clean directory for testing
@@ -247,8 +257,8 @@ examples.
 
 #### With ICU 55 through ICU 63:
 
-*   Rebuild ICU4C with `make ==INCLUDE_UNI_CORE_DATA=1== check` or similar, and
-    provide a path only for the .dat file.
+*   Rebuild ICU4C with <code>make <b>INCLUDE_UNI_CORE_DATA=1</b> check</code> or
+    similar, and provide a path only for the .dat file.
     *   Should be little-endian for coverage
     *   Find the .data file in the build output area, e.g.,
         `data/out/tmp/icudt59l.dat`
@@ -262,13 +272,13 @@ examples.
 
 #### ICU 54 method:
 
-In icu4j-core/src/com/ibm/icu/`ICUConfig.properties` set
+In `icu4j-core/src/com/ibm/icu/ICUConfig.properties` set
 `com.ibm.icu.impl.ICUBinary.dataPath` to a list of paths with all of the ICU4C
 data (should be little-endian for coverage), with a path to where the .dat file
 is and a path to the source/data/in files for data that is hardcoded in ICU4C
 and therefore not in the .dat file (e.g., uprops.icu).
 
-Change com.ibm.icu.impl.I`CUData.logBinaryDataFromInputStream` to `true`, maybe
+Change `com.ibm.icu.impl.ICUData.logBinaryDataFromInputStream` to `true`, maybe
 set a breakpoint where such a message is logged.
 
 Run all of the ICU4J tests, maybe in the debugger for the breakpoint, or look
@@ -281,7 +291,7 @@ Revert your config changes.
 Build and run the source/test/testmap project. (There is currently no Windows
 project defined for it.)
 
-```none
+```sh
 $ cd <root of your ICU build tree>
 $ CONFIG_FILES=test/testmap/Makefile CONFIG_HEADERS= ./config.status
 $ cd test/testmap
@@ -292,36 +302,47 @@ $ make check
 
 ## Verify XLIFF conversion
 
-**Note:** The following instruction does not work. Please read the comments with
+<span style="background-color:orange">**Note:** The following instruction does not work. Please read the comments with
 orange background. There are some issues in the current ICU XLIFF tools and the
 test case below. See the comments in
-[ticket#6383](http://bugs.icu-project.org/trac/ticket/6383).
+[ticket ICU-6383](https://unicode-org.atlassian.net/browse/ICU-6383).</span>
+
 Instructions for verifying the XLIFF conversion tools.
 
 *   Convert icu/source/test/testdata/ra.txt to XLIFF
-    genrb -s icu/source/test/testdata -d icu/source/test/testdata/ -x -l en ra.txt
 
--d icu/source/test/testdata/ overwrite the existing ra.xlf. Specify another
-directory.
-ra.txt has the top level item "ra", which is supposed to be the content
-language. Thus, with -l en, you'll get a warning -
-"The top level tag in the resource and language specified are not the same.
-Please check the input."
-We should use "-l ra" here.
+    `genrb -s icu/source/test/testdata -d icu/source/test/testdata/ -x -l en ra.txt`
+
+    <span style="background-color:orange">-d icu/source/test/testdata/ overwrite
+    the existing ra.xlf. Specify another directory.</span>
+
+    <span style="background-color:orange">ra.txt has the top level item "ra",
+    which is supposed to be the content language. Thus, with -l en, you'll get a
+    warning - "The top level tag in the resource and language specified are not
+    the same. Please check the input." We should use "-l ra" here.</span>
 
 *   Verify that the ra.xlf produced is identical to the one in CVS HEAD (except
     for generation date)
-    If you use "-l ra" above, you'll get <file .... source-language = "ra" ....
-    />, which is different from ra.xlf in the repository.
-    Also, new line codes is broken for imported contents.
+
+    <span style="background-color:orange">If you use "-l ra" above, you'll get
+    <file .... source-language = "ra" .... />, which is different from ra.xlf in
+    the repository. Also, new line codes is broken for imported contents.</span>
+
 *   Convert icu/source/test/testdata/ra.xlf back to ICU format
-    java -cp icu4j/classes com.ibm.icu.dev.tool.localeconverter.XLIFF2ICUConverter -d . -t ra ra.xlf
-    The option "-t ra" does not work, because ra.xlf does not contain target language data. Use "-c ra" instead.
+
+    `java -cp icu4j/classes com.ibm.icu.dev.tool.localeconverter.XLIFF2ICUConverter -d . -t ra ra.xlf`
+
+    <span style="background-color:orange">The option "-t ra" does not work,
+    because ra.xlf does not contain target language data. Use "-c ra"
+    instead.</span>
+
 *   Verify that the ra.txt produced is identical to the one in CVS HEAD (except
     for generation date)
-    You cannot expect the generated ra.txt exactly matches the original one
-    because of table item re-ordering, new line code changes,
-    and explicit resource types (e.g. "ra {" vs. "ra:table {").
+
+    <span style="background-color:orange">You cannot expect the generated ra.txt
+    exactly matches the original one because of table item re-ordering, new line
+    code changes, and explicit resource types (e.g. "ra {" vs. "ra:table
+    {").</span>
 *   Go through the steps given in
     <http://icu.sourceforge.net/docs/papers/localize_with_XLIFF_and_ICU.pdf>
 
@@ -360,7 +381,7 @@ option. When it's not available, you would do the following:
 ## Run the environment tests
 
 Run
-[environmentTest.sh](https://github.com/unicode-org/icu/blob/master/tools/release/c/environmentTest.sh)
+[environmentTest.sh](https://github.com/unicode-org/icu/blob/main/tools/release/c/environmentTest.sh)
 on a Linux machine which has many (all possible?) POSIX locales installed. This
 test verifies that the ICU test suite will work regardless of a user's default
 locale and timezone. This test should be run on a fast machine with several CPU
@@ -384,10 +405,13 @@ Thread sanitizer testing is one of the standard Travis builds. If it is passing
 there, nothing further is required.
 
 To run manually, on a Linux system with clang,
-> `cd icu4c/source`
-> CPPFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread ./runConfigureICU --enable-debug --disable-release Linux`
-> make clean`
-> make -j6 check`
+
+```sh
+cd icu4c/source
+CPPFLAGS=-fsanitize=thread LDFLAGS=-fsanitize=thread ./runConfigureICU --enable-debug --disable-release Linux
+make clean
+make -j6 check
+```
 
 Errors are displayed at the point they occur, and stop further testing.
 
@@ -399,10 +423,13 @@ Address sanitizer testing is included in the standard Linux with Clang Travis
 builds. If it is passing there, nothing further is required.
 
 To run manually, on a Linux system with clang,
-> `cd icu4c/source`
-> CPPFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address ./runConfigureICU --enable-debug --disable-release Linux`
-> make clean`
-> make -j6 check`
+
+```sh
+cd icu4c/source
+CPPFLAGS=-fsanitize=address LDFLAGS=-fsanitize=address ./runConfigureICU --enable-debug --disable-release Linux
+make clean
+make -j6 check
+```
 
 Memory leaks are summarized at the end. Other errors are displayed at the point
 they occur, and stop further testing.
@@ -417,12 +444,12 @@ version of ICU. When we prepare a new release, the serialization compatibility
 test data should be created and checked in for future testing. This task is
 usually done just before publishing release candidate.
 
-1.  Run regular ICU4J unit tests - **ant check**
+1.  Run regular ICU4J unit tests - `ant check`
 2.  Make sure the unit tests pass successfully.
-3.  Run - **ant serialTestData**
+3.  Run - `ant serialTestData`
 4.  Copy a folder with ICU version (e.g. ICU_61.1) generated under <icu4j
     root>/out/serialTestData to <icu4j
     root>/main/tests/core/src/com/ibm/icu/dev/test/serializable/data.
 5.  You may delete older serialization test data from the directory (but keep
     the oldest one - ICU_3.6).
-6.  Run **ant check** again before committing the changes.
+6.  Run `ant check` again before committing the changes.

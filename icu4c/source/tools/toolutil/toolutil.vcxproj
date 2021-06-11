@@ -80,7 +80,7 @@
       <TypeLibraryName>.\..\..\..\lib\icutu.tlb</TypeLibraryName>
     </Midl>
     <Link>
-      <OutputFile>..\..\..\bin\icutu69.dll</OutputFile>
+      <OutputFile>..\..\..\bin\icutu70.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\lib\icutu.pdb</ProgramDatabaseFile>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -92,7 +92,7 @@
       <TypeLibraryName>.\..\..\..\lib\icutud.tlb</TypeLibraryName>
     </Midl>
     <Link>
-      <OutputFile>..\..\..\bin\icutu69d.dll</OutputFile>
+      <OutputFile>..\..\..\bin\icutu70d.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\lib\icutud.pdb</ProgramDatabaseFile>
       <DataExecutionPrevention>
       </DataExecutionPrevention>
@@ -119,7 +119,7 @@
       <WholeProgramOptimization>true</WholeProgramOptimization>
     </ClCompile>
     <Link>
-      <OutputFile>..\..\..\bin64\icutu69.dll</OutputFile>
+      <OutputFile>..\..\..\bin64\icutu70.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\lib64\icutu.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\lib64\icutu.lib</ImportLibrary>
     </Link>
@@ -129,7 +129,7 @@
       <TypeLibraryName>.\..\..\..\lib64\icutud.tlb</TypeLibraryName>
     </Midl>
     <Link>
-      <OutputFile>..\..\..\bin64\icutu69d.dll</OutputFile>
+      <OutputFile>..\..\..\bin64\icutu70d.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\lib64\icutud.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\lib64\icutud.lib</ImportLibrary>
     </Link>
@@ -150,7 +150,7 @@
       <TypeLibraryName>..\..\..\libARM\icutu.tlb</TypeLibraryName>
     </Midl>
     <Link>
-      <OutputFile>..\..\..\binARM\icutu69.dll</OutputFile>
+      <OutputFile>..\..\..\binARM\icutu70.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\libARM\icutu.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\libARM\icutu.lib</ImportLibrary>
     </Link>
@@ -163,7 +163,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>..\..\..\binARM\icutu69d.dll</OutputFile>
+      <OutputFile>..\..\..\binARM\icutu70d.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\libARM\icutud.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\libARM\icutud.lib</ImportLibrary>
     </Link>
@@ -184,7 +184,7 @@
       <TypeLibraryName>.\..\..\..\libARM64\icutu.tlb</TypeLibraryName>
     </Midl>
     <Link>
-      <OutputFile>..\..\..\binARM64\icutu69.dll</OutputFile>
+      <OutputFile>..\..\..\binARM64\icutu70.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\libARM64\icutu.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\libARM64\icutu.lib</ImportLibrary>
     </Link>
@@ -197,7 +197,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <OutputFile>..\..\..\binARM64\icutu69d.dll</OutputFile>
+      <OutputFile>..\..\..\binARM64\icutu70d.dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\..\libARM64\icutud.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\..\libARM64\icutud.lib</ImportLibrary>
     </Link>

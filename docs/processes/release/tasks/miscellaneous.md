@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Miscellaneous
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 80
@@ -26,8 +27,6 @@ License & terms of use: http://www.unicode.org/copyright.html
 Nag all the reviewers to finish reviewing the code and change the status of
 bugs.
 
-[TOC]
-
 ---
 
 ## Check in serialization compatibility test data
@@ -38,8 +37,9 @@ and use it for future testing.
 
 1.  Run "ant serialTestData" at ICU4J root directory
 2.  The target generates test data and runs some serialization test cases.
-3.  Once you confirm the test runs clean, copy out/serialTestData/ICU_<version>
-    to main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_<version>.
+3.  Once you confirm the test runs clean, copy
+    `out/serialTestData/ICU_<version>` to
+    `main/tests/core/src/com/ibm/icu/dev/test/serializable/data/ICU_<version>`.
 
 ---
 
@@ -60,7 +60,7 @@ ticket that is marked as fixed with the correct fix version. Further, there
 should be no Jira tickets marked as fixed with the current fixVersion that do
 not have commits. To check this, run the following tool:
 
-<https://github.com/unicode-org/icu/tree/master/tools/commit-checker>
+<https://github.com/unicode-org/icu/tree/main/tools/commit-checker>
 
 Follow the instructions in the README file to generate the report and send it
 for review.
@@ -70,11 +70,12 @@ for review.
 ## Fix Mis-ticketted commits
 
 If the commit checker tool above reports any malformed commit messages, it might
-mean that a bad commit made its way onto ICU master. To fix this, a rebase is
-required. Since rebases can be disruptive, confirm with ICU-TC before performing
-one. If ICU-TC agrees to perform a rebase, initiate the process as follows:
+mean that a bad commit made its way onto ICU main branch. To fix this, a rebase
+is required. Since rebases can be disruptive, confirm with ICU-TC before
+performing one. If ICU-TC agrees to perform a rebase, initiate the process as
+follows:
 
-$ git checkout master; git pull --ff-only upstream master
+$ git checkout main; git pull --ff-only upstream main
 
 $ git rebase -i --preserve-merges latest
 
@@ -85,12 +86,12 @@ In the interactive rebase window, choose commit messages to rewrite using the
 "reword" option. Save and exit the interactive screen, and then edit each commit
 message.
 
-When ready, force-push master to your fork and give ICU-TC a day or two to
-review. Before force-pushing to upstream, create a new branch on upstream with
-the latest commit on the old master; name it something like "pre63-old-master".
-When ready, disable branch protection on master, force-push, and then reapply
-branch protection. Create a new branch named something like "pre63-new-master"
-to allow users to easily switch between the two heads.
+When ready, force-push the main branch to your fork and give ICU-TC a day or two
+to review. Before force-pushing to upstream, create a new branch on upstream
+with the latest commit on the old main branch; name it something like
+"pre63-old-main".  When ready, disable branch protection on main, force-push,
+and then reapply branch protection. Create a new branch named something like
+"pre63-new-main" to allow users to easily switch between the two heads.
 
 Send an email to icu-support explaining the change and how to deal with it. You
 can use [this email](https://sourceforge.net/p/icu/mailman/message/36426642/) as

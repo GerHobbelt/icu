@@ -1,5 +1,6 @@
 ---
 layout: default
+title: Publish
 parent: Release & Milestone Tasks
 grand_parent: Contributors
 nav_order: 90
@@ -21,7 +22,7 @@ License & terms of use: http://www.unicode.org/copyright.html
 
 ---
 
-### Create a release branch in GitHub
+## Create a release branch in GitHub
 
 Once the branch is created, only changes necessary for the target release are
 merged in from the trunk.
@@ -52,7 +53,7 @@ available collators.
     1.  Otherwise, the data build may not pick up a new locale into the
         coll/res_index.txt file.
 2.  Run [icu-demos >
-    webdemo/collation/build.sh](https://github.com/unicode-org/icu-demos/blob/master/webdemo/collation/build.sh)
+    webdemo/collation/build.sh](https://github.com/unicode-org/icu-demos/blob/main/webdemo/collation/build.sh)
     (after modifying it for your system).
 3.  Copy-paste the output `available-collators.txt` into `index.html`.
     1.  Or, easier: Use a GUI difftool (e.g., meld) to compare the two and move
@@ -71,16 +72,16 @@ For details see the comments at the start of the build.sh file.
 numbers. Adjust them for the current release! Easiest: Paste into an editor,
 fix, then paste into the terminal.
 
-#### Creating Maintenance Branch.
+### Creating Maintenance Branch.
 
-Sanity check: Update to the latest repository revision. (Master branch if you
-copy from master, maintenance branch if you copy from there.)
+Sanity check: Update to the latest repository revision. (Main branch if you
+copy from main, maintenance branch if you copy from there.)
 
-```none
-git checkout master 
-git pull upstream master 
+```sh
+git checkout main 
+git pull upstream main 
 git log -n1 
-commit bcd0... (HEAD -> master, upstream/master, ...)
+commit bcd0... (HEAD -> main, upstream/main, ...)
 ```
 
 Ensure that your local branch is in sync with the upstream branch. Make sure you
@@ -88,9 +89,9 @@ are checking the upstream remote, and not your fork!
 
 Build & test ICU4C & ICU4J on your machine.
 
-Create the maintenance branch from the current known good master ref.
+Create the maintenance branch from the current known good main ref.
 
-```none
+```sh
 git checkout -b maint/maint-63 
 git push -u upstream maint/maint-63
 ```
@@ -110,7 +111,7 @@ possibly re-use some of the generic text, such as links to the API docs, etc.)
 
 Your screen should look like this:
 
-![image](maint-63-rc-screenshot.png){width="320" height="171"}
+![image](maint-63-rc-screenshot.png)
 
 For the release candidate tag, please check the box that says "Pre-Release".
 
@@ -208,7 +209,7 @@ For a maintenance release, look at the ICU 60 page which includes 60.2.
 
 We had the following HTML on the main download page for ICU 4.8M1 = 4.7.1:
 
-```none
+```html
 <h3 style="background-color:rgb(102, 102, 102);color:white;margin-bottom:0pt;margin-top:12pt;padding-left:0.75em;font-size:1em;font-family:Arial,Helvetica,sans-serif">Development Milestones</h3>
 <table border="0"><p style="font-size:10pt;font-family:Arial,Helvetica,sans-serif">Development milestone versions of ICU can be downloaded below. A development milestone is a stable snapshot build for next ICU major version.  These binaries and source code are provided for evaluation purpose and should be not be used in production environments.  New APIs or features in a milestone release might be changed or removed without notice.&nbsp;</p>
 <tbody>
@@ -233,26 +234,26 @@ We had the following HTML on the main download page for ICU 4.8M1 = 4.7.1:
 ## Upload Release Source / Binaries
 
 Download Directories are located at, for example,
-**icu-project.org:/home/htdocs/ex/files/icu4c/4.4.2**
+`icu-project.org:/home/htdocs/ex/files/icu4c/4.4.2`
 corresponding to <http://download.icu-project.org/ex/files/icu4c/4.4.2/>
 Look at previous releases for an example.
 
-### **Java Source/Bin:**
+### Java Source/Bin:
 
 Follow instructions here: [Building ICU4J Release Files](../release-build.md)
 
-### **C source/binary:**
+### C source/binary:
 
-***WORK IN PROGRESS***
+<span style="background:yellow">***WORK IN PROGRESS***</a>
 
-#### **Source and Linux Binaries:**
+#### Source and Linux Binaries:
 
-#### Important: this step works with Unix make + docker.
+Important: this step works with Unix make + docker.
 
 First, install *docker* and *docker-compose. D*o not proceed until *docker run
 hello-world* works!
 
-```none
+```sh
 $ git clone https://github.com/unicode-org/icu-docker.git
 $ cd icu-docker/src
 $ git clone --branch release-64-rc --depth 1 https://github.com/unicode-org/icu.git
@@ -260,7 +261,7 @@ $ cd icu
 $ git lfs fetch
 $ git lfs checkout
 $ cd ../..
-$ less [README.md](https://github.com/unicode-org/icu-docker/blob/master/README.md)  # Follow these instructions.
+$ less [README.md](https://github.com/unicode-org/icu-docker/blob/main/README.md)  # Follow these instructions.
 ```
 
 *   Source and binaries are created in ./dist/.
@@ -278,18 +279,20 @@ run \`make dist\`.
 *   Note that the source is taken from the git repository itself, and not your
     local checkout. (Thus it will exclude any local uncommitted changes).
 
-#### **Windows Binary:**
+#### Windows Binary:
 
 *   Manual process:
     *   Build with MSVC x64 Release. (See the ICU
-        [readme.html](https://github.com/unicode-org/icu/blob/master/icu4c/readme.html)
+        [readme.html](https://github.com/unicode-org/icu/blob/main/icu4c/readme.html)
         file for details).
     *   Open a command prompt.
-    *   > cd C:\\icu\\icu4c\\ (or wherever you have ICU located).
-    *   > powershell
-    *   > Set-ExecutionPolicy -Scope Process Unrestricted
-    *   > .\\packaging\\distrelease.ps1 -arch x64
-    *   This will produce the file "source\\dist\\icu-windows.zip", which will
+        ```
+        cd C:\icu\icu4c\ (or wherever you have ICU located).
+        powershell
+        Set-ExecutionPolicy -Scope Process Unrestricted
+        .\packaging\distrelease.ps1 -arch x64
+        ```
+        This will produce the file "source\dist\icu-windows.zip", which will
         need to be renamed before uploading.
         *   For example, the binaries for ICU4C v61.1 generated with VS2017 were
             named "icu4c-61_1-Win64-MSVC2017.zip".
@@ -297,27 +300,27 @@ run \`make dist\`.
             MSVC2017.
 *   Using the output from the build bots:
     *   Navigate to the GitHub page for the commits on the
-        "maint/maint-<version>" branch.
+        `maint/maint-<version>` branch.
         *   Ex: https://github.com/unicode-org/icu/commits/maint/maint-64
     *   Click on the green check mark (✔) on the most recent/last commit. (It
         might be a red X if the builds failed, hopefully not).
         *   This will open up a pop-up with links to various CI builds.
     *   Click on one of the various links that says "Details" for the Azure CI
         builds.
-        *   This will open up the GitHub overview of the build status.
-
+        *   This will open up the GitHub overview of the build status.<br>
+            ![image](azure-ci-builds.png)<br>
     *   Click on the link "View more details on Azure Pipelines" link.
         *   This will take you to the actual Azure CI build page.
     *   On the top right of the page there should be a button titled
         "Artifacts". Click this and it should show a drop-down with various ZIP
-        files that you can download.
-
+        files that you can download.<br>
+        ![image](azure-ci-builds-artifacts.png)<br>
     *   The ZIP may automatically download for you.
     *   However, if you are signed-in to visualstudio.com then you might see a
         dialog titled "Artifacts explorer".
     *   In this case click on the name, then the "..." button to download the
-        zip file.
-
+        zip file.<br>
+        ![image](azure-ci-builds-artifacts-download.png)<br>
     *   Download both the x64 (64-bit) and x86 (32-bit) ZIP files.
     *   For each architecture:
         *   Extract the Zip file. (It will have a name like
@@ -339,7 +342,7 @@ run \`make dist\`.
     *   ~~$ cd icu~~
     *   ~~$ PATH=/opt/IBM/xlC/13.1.3/bin:$PATH source/runConfigureICU AIX~~
     *   ~~(The above command line doesn't actually work, see [ICU Ticket
-        #13639](http://bugs.icu-project.org/trac/ticket/13639) for a
+        ICU-13639](https://unicode-org.atlassian.net/browse/ICU-13639) for a
         workaround.)~~
     *   ~~$ gmake DESTDIR=/tmp/icu releaseDist~~
     *   ~~That last step will create a directory in **/tmp/icu** - zip that up
@@ -348,35 +351,37 @@ run \`make dist\`.
         archive](https://sourceforge.net/p/icu/mailman/message/36275940/) for
         advice.~~
 
-### **Signing archives and creating checksums:**
+### Signing archives and creating checksums:
 
-#### **Step 1. PGP files:**
+#### Step 1. PGP files:
 
 Sign all archives created above with your own personal PGP key. This creates a
 file with .asc as the suffix.
 
-```none
-$ gpg --armor --detach-sign icu4c-xxx-xxx.zip# To verify$ gpg --verify icu4c-xxx-xxx.zip.asc
+```sh
+$ gpg --armor --detach-sign icu4c-xxx-xxx.zip
+# To verify
+$ gpg --verify icu4c-xxx-xxx.zip.asc
 ```
 
-#### **Step 2. MD5 files:**
+#### Step 2. MD5 files:
 
-**Use md5sum or [cfv](http://cfv.sf.net) to create [md5](https://en.wikipedia.org/wiki/MD5) hash sums for three groups of files:**
+Use md5sum or [cfv](http://cfv.sf.net) to create [md5](https://en.wikipedia.org/wiki/MD5) hash sums for three groups of files:
 
-*   **icu4j (all files),**
-*   **icu4c (source),**
-*   **icu4c (binaries).**
+*   icu4j (all files),
+*   icu4c (source),
+*   icu4c (binaries).
 
-**Using md5sum to create and verify the checksum files:**
+Using md5sum to create and verify the checksum files:
 
 <pre><code><b><b>md5sum source1 source2 ... sourceN &gt; icu4c_sources.md5</b></b> # To verifymd5sum -c icu4c_sources.md5 
 </code></pre>
 
-**Alternatively, use cfv to create and verify md5 files:**
+Alternatively, use cfv to create and verify md5 files:
 
-```none
+```sh
 cfv -t md5 -C -f icu-……-src.md5 somefile.zip somefile.tgz …
- # To verify 
+# To verify 
 cfv -f icu-……-src.md5
 ```
 
@@ -384,7 +389,7 @@ cfv -f icu-……-src.md5
 
 Create an additional hash sum file SHASUM512.txt file with:
 
-```none
+```sh
 shasum -a 512 *.zip *.tgz | tee SHASUM512.txt
 ```
 
@@ -402,18 +407,18 @@ binaries.
     1.  For example: The ICU4C 63.1 Binaries URL was:
         <http://apps.icu-project.org/icu-jsp/downloadSection.jsp?ver=63.1&base=c&svn=release-63-1>
 
-## Check the ICU public site for the new release
+#### Check the ICU public site for the new release
 
 Make sure that, aside from download pages, homepages, news items, feature lists
 and feature comparisons, etc. are updated. Upload the new API references. Update
 the User Guide.
 
-## Update the Trac release number list for ICU4C and ICU4J. <<?? STILL VALID ??>>
+#### Update the Trac release number list for ICU4C and ICU4J. <<?? STILL VALID ??>>
 
 Update the ICU release number list by going to "Admin>Versions" in Trac, and add
 the new ICU version.
 
-## Post-release cleanup
+#### Post-release cleanup
 
 *   Cleanup the milestone in the ICU Trac. Move left over items to future
     milestones. Close the milestone.
@@ -433,12 +438,12 @@ Update online demos/tools to the latest version:
 *   CLDR Survey tool (eg <http://unicode.org/cldr/apps/about.jsp>)
 *   Unicode Utilities (eg <http://unicode.org/cldr/utility/character.jsp>)
 
-## Online information update
+### Online information update
 
 Collation and [comparison](../../../../charts/comparison/index.md) charts need
 to be updated. See [charts/Performance & Size](../../../../charts/index.md).
 
-## Old sensitive tickets
+### Old sensitive tickets
 
 Unset the "sensitive" flag on old tickets. For example, on tickets that were
 fixed two or more releases ago.
@@ -490,12 +495,12 @@ Jira.
 2.  Use the drop-down to change the fix version to the next ICU version
 3.  Click "Save" next to the filter title
 
-### Update readme
+## Update readme
 
 Update [ICU4C
-readme.html](https://github.com/unicode-org/icu/blob/master/icu4c/readme.html)
+readme.html](https://github.com/unicode-org/icu/blob/main/icu4c/readme.html)
 and [ICU4J
-readme.html](https://github.com/unicode-org/icu/blob/master/icu4j/readme.html)
+readme.html](https://github.com/unicode-org/icu/blob/main/icu4j/readme.html)
 before every milestone (GA / RC / Milestone-N). Make sure the following items
 are up to date.
 
