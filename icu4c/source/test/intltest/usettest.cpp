@@ -99,6 +99,7 @@ UnicodeSetTest::runIndexedTest(int32_t index, UBool exec,
     TESTCASE_AUTO(TestUnusedCcc);
     TESTCASE_AUTO(TestDeepPattern);
     TESTCASE_AUTO(TestEmptyString);
+    TESTCASE_AUTO(TestSkipToStrings);
     TESTCASE_AUTO_END;
 }
 
@@ -882,6 +883,8 @@ void UnicodeSetTest::TestStrings() {
     if (U_FAILURE(ec)) {
         errln("FAIL: couldn't construct test sets");
     }
+    assertFalse("[a-c].hasStrings()", testList[0]->hasStrings());
+    assertTrue("[{ll}{ch}a-z].hasStrings()", testList[2]->hasStrings());
 
     for (int32_t i = 0; testList[i] != NULL; i+=2) {
         if (U_SUCCESS(ec)) {
@@ -896,7 +899,7 @@ void UnicodeSetTest::TestStrings() {
         }
         delete testList[i];
         delete testList[i+1];
-    }        
+    }
 }
 
 /**
@@ -1081,12 +1084,12 @@ void UnicodeSetTest::TestPropertySet() {
 
         "[:Assigned:]",
         "A\\uE000\\uF8FF\\uFDC7\\U00010000\\U0010FFFD",
-        "\\u0888\\uFDD3\\uFFFE\\U00050005",
+        "\\u0558\\uFDD3\\uFFFE\\U00050005",
 
         // Script_Extensions, new in Unicode 6.0
         "[:scx=Arab:]",
         "\\u061E\\u061F\\u0620\\u0621\\u063F\\u0640\\u0650\\u065E\\uFDF1\\uFDF2\\uFDF3",
-        "\\u061D\\uFDEF\\uFDFE",
+        "\\u088F\\uFDEF\\uFEFE",
 
         // U+FDF2 has Script=Arabic and also Arab in its Script_Extensions,
         // so scx-sc is missing U+FDF2.
@@ -4058,4 +4061,50 @@ void UnicodeSetTest::TestEmptyString() {
     assertEquals("frozen spanBack", 2, set.spanBack(u"abc", 3, USET_SPAN_SIMPLE));
     assertTrue("frozen containsNone", set.containsNone(u"def"));
     assertFalse("frozen containsSome", set.containsSome(u"def"));
+}
+
+void UnicodeSetTest::assertNext(UnicodeSetIterator &iter, const UnicodeString &expected) {
+    assertTrue(expected + ".next()", iter.next());
+    assertEquals(expected + ".getString()", expected, iter.getString());
+}
+
+void UnicodeSetTest::TestSkipToStrings() {
+    IcuTestErrorCode errorCode(*this, "TestSkipToStrings");
+    UnicodeSet set(u"[0189{}{ch}]", errorCode);
+    UnicodeSetIterator iter(set);
+    assertNext(iter.skipToStrings(), u"");
+    assertNext(iter, u"ch");
+    assertFalse("no next", iter.next());
+
+    iter.reset();
+    assertNext(iter, u"0");
+    assertNext(iter, u"1");
+    assertNext(iter, u"8");
+    assertNext(iter, u"9");
+    assertNext(iter, u"");
+    assertNext(iter, u"ch");
+    assertFalse("no next", iter.next());
+
+    iter.reset();
+    assertNext(iter, u"0");
+    iter.skipToStrings();
+    assertNext(iter, u"");
+    assertNext(iter, u"ch");
+    assertFalse("no next", iter.next());
+
+    iter.reset();
+    iter.nextRange();
+    assertNext(iter, u"8");
+    iter.skipToStrings();
+    assertNext(iter, u"");
+    assertNext(iter, u"ch");
+    assertFalse("no next", iter.next());
+
+    iter.reset();
+    iter.nextRange();
+    iter.nextRange();
+    iter.nextRange();
+    iter.skipToStrings();
+    assertNext(iter, u"ch");
+    assertFalse("no next", iter.next());
 }
