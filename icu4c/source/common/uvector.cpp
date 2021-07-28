@@ -96,7 +96,7 @@ UVector::~UVector() {
  * Use the 'assign' function to assign each element.
  */
 void UVector::assign(const UVector& other, UElementAssigner *assign, UErrorCode &ec) {
-    if (ensureCapacityX(other.count, ec)) {
+    if (ensureCapacity(other.count, ec)) {
         setSize(other.count, ec);
         if (U_SUCCESS(ec)) {
             for (int32_t i=0; i<other.count; ++i) {
@@ -130,8 +130,18 @@ void UVector::addElementX(void* obj, UErrorCode &status) {
     }
 }
 
+void UVector::addElement(void* obj, UErrorCode &status) {
+    if (ensureCapacity(count + 1, status)) {
+        elements[count++].pointer = obj;
+    } else {
+        if (deleter != nullptr) {
+            (*deleter)(obj);
+        }
+    }
+}
+
 void UVector::addElement(int32_t elem, UErrorCode &status) {
-    if (ensureCapacityX(count + 1, status)) {
+    if (ensureCapacity(count + 1, status)) {
         elements[count].pointer = NULL;     // Pointers may be bigger than ints.
         elements[count].integer = elem;
         count++;
@@ -160,6 +170,8 @@ void UVector::setElementAt(int32_t elem, int32_t index) {
     /* else index out of range */
 }
 
+// TODO: Update to delete obj on error, switch from ensureCapacityX.
+//       Tricky usage in translitorator, so postponing to a separate PR to address that.
 void UVector::insertElementAt(void* obj, int32_t index, UErrorCode &status) {
     // must have 0 <= index <= count
     if (0 <= index && index <= count && ensureCapacityX(count + 1, status)) {
@@ -174,7 +186,7 @@ void UVector::insertElementAt(void* obj, int32_t index, UErrorCode &status) {
 
 void UVector::insertElementAt(int32_t elem, int32_t index, UErrorCode &status) {
     // must have 0 <= index <= count
-    if (0 <= index && index <= count && ensureCapacityX(count + 1, status)) {
+    if (ensureCapacity(count + 1, status) && 0 <= index && index <= count) {
         for (int32_t i=count; i>index; --i) {
             elements[i] = elements[i-1];
         }
@@ -329,7 +341,7 @@ int32_t UVector::indexOf(UElement key, int32_t startIndex, int8_t hint) const {
 }
 
 UBool UVector::ensureCapacityX(int32_t minimumCapacity, UErrorCode &status) {
-	if (minimumCapacity < 0) {
+    if (minimumCapacity < 0) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return FALSE;
 	}
@@ -359,6 +371,40 @@ UBool UVector::ensureCapacityX(int32_t minimumCapacity, UErrorCode &status) {
     return TRUE;
 }
 
+
+UBool UVector::ensureCapacity(int32_t minimumCapacity, UErrorCode &status) {
+    if (U_FAILURE(status)) {
+        return false;
+    }
+    if (minimumCapacity < 0) {
+        status = U_ILLEGAL_ARGUMENT_ERROR;
+        return false;
+	}
+    if (capacity < minimumCapacity) {
+        if (capacity > (INT32_MAX - 1) / 2) {        	// integer overflow check
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return false;
+        }
+        int32_t newCap = capacity * 2;
+        if (newCap < minimumCapacity) {
+            newCap = minimumCapacity;
+        }
+        if (newCap > (int32_t)(INT32_MAX / sizeof(UElement))) {	// integer overflow check
+            // We keep the original memory contents on bad minimumCapacity.
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return false;
+        }
+        UElement* newElems = (UElement *)uprv_realloc(elements, sizeof(UElement)*newCap);
+        if (newElems == nullptr) {
+            // We keep the original contents on the memory failure on realloc or bad minimumCapacity.
+            status = U_MEMORY_ALLOCATION_ERROR;
+            return false;
+        }
+        elements = newElems;
+        capacity = newCap;
+    }
+    return true;
+}
 /**
  * Change the size of this vector as follows: If newSize is smaller,
  * then truncate the array, possibly deleting held elements for i >=
@@ -366,23 +412,19 @@ UBool UVector::ensureCapacityX(int32_t minimumCapacity, UErrorCode &status) {
  * slots with NULL.
  */
 void UVector::setSize(int32_t newSize, UErrorCode &status) {
-    int32_t i;
-    if (newSize < 0) {
+    if (!ensureCapacity(newSize, status)) {
         return;
     }
     if (newSize > count) {
-        if (!ensureCapacityX(newSize, status)) {
-            return;
-        }
         UElement empty;
         empty.pointer = NULL;
         empty.integer = 0;
-        for (i=count; i<newSize; ++i) {
+        for (int32_t i=count; i<newSize; ++i) {
             elements[i] = empty;
         }
     } else {
         /* Most efficient to count down */
-        for (i=count-1; i>=newSize; --i) {
+        for (int32_t i=count-1; i>=newSize; --i) {
             removeElementAt(i);
         }
     }
@@ -463,6 +505,9 @@ void UVector::sortedInsert(UElement e, UElementComparator *compare, UErrorCode& 
     // tok && tok < b, where there is a 'virtual' elements[-1] always
     // less than tok and a 'virtual' elements[count] always greater
     // than tok.
+    if (!ensureCapacity(count + 1, ec)) {
+        return;
+    }
     int32_t min = 0, max = count;
     while (min != max) {
         int32_t probe = (min + max) / 2;
@@ -474,13 +519,11 @@ void UVector::sortedInsert(UElement e, UElementComparator *compare, UErrorCode& 
             min = probe + 1;
         }
     }
-    if (ensureCapacityX(count + 1, ec)) {
-        for (int32_t i=count; i>min; --i) {
-            elements[i] = elements[i-1];
-        }
-        elements[min] = e;
-        ++count;
+    for (int32_t i=count; i>min; --i) {
+        elements[i] = elements[i-1];
     }
+    elements[min] = e;
+    ++count;
 }
 
 /**

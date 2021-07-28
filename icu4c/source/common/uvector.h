@@ -130,6 +130,8 @@ public:
      */
     void addElementX(void* obj, UErrorCode &status);
 
+    void addElement(void *obj, UErrorCode &status);
+
     void addElement(int32_t elem, UErrorCode &status);
 
     void setElementAt(void* obj, int32_t index);
@@ -181,6 +183,8 @@ public:
      * Will be removed once all uses have been switched to the new ensureCapacity().
      */
     UBool ensureCapacityX(int32_t minimumCapacity, UErrorCode &status);
+
+    UBool ensureCapacity(int32_t minimumCapacity, UErrorCode &status);
 
     /**
      * Change the size of this vector as follows: If newSize is
