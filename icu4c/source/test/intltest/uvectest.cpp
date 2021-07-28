@@ -124,6 +124,21 @@ void UVectorTest::UVector_API() {
     TEST_ASSERT(a->contains((int32_t)15));
     TEST_ASSERT(!a->contains((int32_t)5));
     delete a;
+
+    status = U_ZERO_ERROR;
+    UVector vec(status);
+    vec.setDeleter(uprv_deleteUObject);
+    vec.addElement(new UnicodeString(), status);
+    vec.addElement(new UnicodeString(), status);
+    assertSuccess(WHERE, status);
+    assertEquals(WHERE, 2, vec.size());
+
+    // With an incoming error, addElement will not add to the vector,
+    // and will delete the object. Failure here will show as a memory leak.
+    status = U_ILLEGAL_ARGUMENT_ERROR;
+    vec.addElement(new UnicodeString(), status);
+    assertEquals(WHERE, U_ILLEGAL_ARGUMENT_ERROR, status);
+    assertEquals(WHERE, 2, vec.size());
 }
 
 void UVectorTest::UStack_API() {
