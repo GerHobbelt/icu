@@ -154,8 +154,11 @@ void UVector::setElementAt(void* obj, int32_t index) {
             (*deleter)(elements[index].pointer);
         }
         elements[index].pointer = obj;
+    } else {  /* index out of range */
+        if (deleter != nullptr) {
+            (*deleter)(obj);
+        }
     }
-    /* else index out of range */
 }
 
 void UVector::setElementAt(int32_t elem, int32_t index) {
@@ -170,18 +173,20 @@ void UVector::setElementAt(int32_t elem, int32_t index) {
     /* else index out of range */
 }
 
-// TODO: Update to delete obj on error, switch from ensureCapacityX.
-//       Tricky usage in translitorator, so postponing to a separate PR to address that.
 void UVector::insertElementAt(void* obj, int32_t index, UErrorCode &status) {
     // must have 0 <= index <= count
-    if (0 <= index && index <= count && ensureCapacityX(count + 1, status)) {
+    if (ensureCapacity(count + 1, status) &&  0 <= index && index <= count) {
         for (int32_t i=count; i>index; --i) {
             elements[i] = elements[i-1];
         }
         elements[index].pointer = obj;
         ++count;
+    } else {  /* index out of range */
+        if (deleter != nullptr) {
+            (*deleter)(obj);
+        }
     }
-    /* else index out of range */
+
 }
 
 void UVector::insertElementAt(int32_t elem, int32_t index, UErrorCode &status) {

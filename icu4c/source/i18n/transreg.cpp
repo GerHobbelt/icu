@@ -161,15 +161,15 @@ Transliterator* TransliteratorAlias::create(UParseError& pe,
                 aliasesOrRules.extract(0, blockSeparatorPos, idBlock);
                 aliasesOrRules.remove(0, blockSeparatorPos + 1);
                 if (!idBlock.isEmpty())
-                    transliterators.addElementX(Transliterator::createInstance(idBlock, UTRANS_FORWARD, pe, ec), ec);
+                    transliterators.addElement(Transliterator::createInstance(idBlock, UTRANS_FORWARD, pe, ec), ec);
                 if (!transes->isEmpty())
-                    transliterators.addElementX(transes->orphanElementAt(0), ec);
+                    transliterators.addElement(transes->orphanElementAt(0), ec);
                 blockSeparatorPos = aliasesOrRules.indexOf((UChar)(0xffff));
             }
             if (!aliasesOrRules.isEmpty())
-                transliterators.addElementX(Transliterator::createInstance(aliasesOrRules, UTRANS_FORWARD, pe, ec), ec);
+                transliterators.addElement(Transliterator::createInstance(aliasesOrRules, UTRANS_FORWARD, pe, ec), ec);
             while (!transes->isEmpty())
-                transliterators.addElementX(transes->orphanElementAt(0), ec);
+                transliterators.addElement(transes->orphanElementAt(0), ec);
 
             if (U_SUCCESS(ec)) {
                 t = new CompoundTransliterator(ID, transliterators,
@@ -543,7 +543,7 @@ TransliteratorRegistry::TransliteratorRegistry(UErrorCode& status) :
     variantList.setComparer(uhash_compareCaselessUnicodeString);
     UnicodeString *emptyString = new UnicodeString();
     if (emptyString != NULL) {
-        variantList.addElementX(emptyString, status);
+        variantList.addElement(emptyString, status);
     }
     availableIDs.setDeleter(uprv_deleteUObject);
     availableIDs.setComparer(uhash_compareCaselessUnicodeString);
@@ -625,7 +625,7 @@ Transliterator* TransliteratorRegistry::reget(const UnicodeString& ID,
                 }
                 if (!parser.dataVector.isEmpty()) {
                     TransliterationRuleData* data = (TransliterationRuleData*)parser.dataVector.orphanElementAt(0);
-                    entry->u.dataVector->addElementX(data, status);
+                    entry->u.dataVector->addElement(data, status);
                     entry->stringArg += (UChar)0xffff;  // use U+FFFF to mark position of RBTs in ID block
                 }
             }
@@ -951,7 +951,7 @@ void TransliteratorRegistry::registerEntry(const UnicodeString& ID,
             if (newID != NULL) {
                 // NUL-terminate the ID string
                 newID->getTerminatedBuffer();
-                availableIDs.addElementX(newID, status);
+                availableIDs.addElement(newID, status);
             }
         }
     } else {
@@ -992,7 +992,7 @@ void TransliteratorRegistry::registerSTV(const UnicodeString& source,
         }
         UnicodeString *variantEntry = new UnicodeString(variant);
         if (variantEntry != NULL) {
-            variantList.addElementX(variantEntry, status);
+            variantList.addElement(variantEntry, status);
             if (U_SUCCESS(status)) {
                 variantListIndex = variantList.size() - 1;
             }
@@ -1334,7 +1334,7 @@ Transliterator* TransliteratorRegistry::instantiateEntry(const UnicodeString& ID
                 if (tl == 0)
                     status = U_MEMORY_ALLOCATION_ERROR;
                 else
-                    rbts->addElementX(tl, status);
+                    rbts->addElement(tl, status);
             }
             if (U_FAILURE(status)) {
                 delete rbts;

@@ -976,7 +976,7 @@ void TransliteratorParser::parseRules(const UnicodeString& rule,
             if (!parsingIDs) {
                 if (curData != NULL) {
                     if (direction == UTRANS_FORWARD)
-                        dataVector.addElementX(curData, status);
+                        dataVector.addElement(curData, status);
                     else
                         dataVector.insertElementAt(curData, 0, status);
                     curData = NULL;
@@ -1032,7 +1032,7 @@ void TransliteratorParser::parseRules(const UnicodeString& rule,
                     return;
                 }
                 if (direction == UTRANS_FORWARD)
-                    idBlockVector.addElementX(tempstr, status);
+                    idBlockVector.addElement(tempstr, status);
                 else
                     idBlockVector.insertElementAt(tempstr, 0, status);
                 idBlockResult.remove();
@@ -1073,15 +1073,20 @@ void TransliteratorParser::parseRules(const UnicodeString& rule,
             return;
         }
         if (direction == UTRANS_FORWARD)
-            idBlockVector.addElementX(tempstr, status);
+            idBlockVector.addElement(tempstr, status);
         else
             idBlockVector.insertElementAt(tempstr, 0, status);
     }
     else if (!parsingIDs && curData != NULL) {
-        if (direction == UTRANS_FORWARD)
-            dataVector.addElementX(curData, status);
-        else
-            dataVector.insertElementAt(curData, 0, status);
+        UErrorCode localStatus = U_ZERO_ERROR;   // Memory leak on some parse errors without this.
+        if (direction == UTRANS_FORWARD) {
+            dataVector.addElement(curData, localStatus);
+        } else {
+            dataVector.insertElementAt(curData, 0, localStatus);
+        }
+        if (U_FAILURE(localStatus) && U_SUCCESS(status)) {
+            status = localStatus;
+        }
     }
     
     if (U_SUCCESS(status)) {
@@ -1537,7 +1542,11 @@ UChar TransliteratorParser::generateStandInFor(UnicodeFunctor* adopted, UErrorCo
         status = U_VARIABLE_RANGE_EXHAUSTED;
         return 0;
     }
-    variablesVector.addElementX(adopted, status);
+    UErrorCode localStatus = U_ZERO_ERROR;   // Memory leak on some parse errors without this.
+    variablesVector.addElement(adopted, localStatus);
+    if (U_FAILURE(localStatus) && U_SUCCESS(status)) {
+        status = localStatus;
+    }
     return variableNext++;
 }
 
@@ -1560,7 +1569,7 @@ UChar TransliteratorParser::getSegmentStandin(int32_t seg, UErrorCode& status) {
         // Set a placeholder in the primary variables vector that will be
         // filled in later by setSegmentObject().  We know that we will get
         // called first because setSegmentObject() will call us.
-        variablesVector.addElementX((void*) NULL, status);
+        variablesVector.addElement((void*) NULL, status);
         segmentStandins.setCharAt(seg-1, c);
     }
     return c;

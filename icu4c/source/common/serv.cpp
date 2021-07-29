@@ -257,20 +257,13 @@ public:
     }
 };
 
-// UObjectDeleter for serviceCache
+// Deleter for serviceCache
 U_CDECL_BEGIN
 static void U_CALLCONV
 cacheDeleter(void* obj) {
     U_NAMESPACE_USE ((CacheEntry*)obj)->unref();
 }
 
-/**
-* Deleter for UObjects
-*/
-static void U_CALLCONV
-deleteUObject(void *obj) {
-    U_NAMESPACE_USE delete (UObject*) obj;
-}
 U_CDECL_END
 
 /*
@@ -534,11 +527,10 @@ ICUService::getKey(ICUServiceKey& key, UnicodeString* actualReturn, const ICUSer
                 status = U_MEMORY_ALLOCATION_ERROR;
                 return NULL;
             }
-            cacheDescriptorList->addElementX(idToCache.getAlias(), status);
+            cacheDescriptorList->addElement(idToCache.orphan(), status);
             if (U_FAILURE(status)) {
                 return NULL;
             }
-            idToCache.orphan(); // cacheDescriptorList now owns the string.
         } while (key.fallback());
 outerEnd:
 
@@ -612,6 +604,7 @@ ICUService::getVisibleIDs(UVector& result, const UnicodeString* matchID, UErrorC
     if (U_FAILURE(status)) {
         return result;
     }
+    UObjectDeleter *savedDeleter = result.setDeleter(uprv_deleteUObject);
 
     {
         Mutex mutex(&lock);
@@ -640,7 +633,6 @@ ICUService::getVisibleIDs(UVector& result, const UnicodeString* matchID, UErrorC
                 }
                 result.addElementX(idClone, status);
                 if (U_FAILURE(status)) {
-                    delete idClone;
                     break;
                 }
             }
@@ -650,6 +642,7 @@ ICUService::getVisibleIDs(UVector& result, const UnicodeString* matchID, UErrorC
     if (U_FAILURE(status)) {
         result.removeAllElements();
     }
+    result.setDeleter(savedDeleter);
     return result;
 }
 
@@ -797,7 +790,7 @@ ICUService::getDisplayNames(UVector& result,
         }
         const UnicodeString* dn = (const UnicodeString*)entry->key.pointer;
         StringPair* sp = StringPair::create(*id, *dn, status);
-        result.addElementX(sp, status);
+        result.addElement(sp, status);
         if (U_FAILURE(status)) {
             result.removeAllElements();
             break;
@@ -851,7 +844,7 @@ ICUService::registerFactory(ICUServiceFactory* factoryToAdopt, UErrorCode& statu
         Mutex mutex(&lock);
 
         if (factories == NULL) {
-            factories = new UVector(deleteUObject, NULL, status);
+            factories = new UVector(uprv_deleteUObject, NULL, status);
             if (U_FAILURE(status)) {
                 delete factories;
                 return NULL;
@@ -861,7 +854,6 @@ ICUService::registerFactory(ICUServiceFactory* factoryToAdopt, UErrorCode& statu
         if (U_SUCCESS(status)) {
             clearCaches();
         } else {
-            delete factoryToAdopt;
             factoryToAdopt = NULL;
         }
     }
