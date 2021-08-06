@@ -652,7 +652,6 @@ public:
      */
     virtual void setTimeZone(const TimeZone& zone);
 
-#ifndef U_FORCE_HIDE_DRAFT_API
     /**
      * Set a particular UDisplayContext value in the formatter, such as
      * UDISPCTX_CAPITALIZATION_FOR_STANDALONE. This causes the formatted
@@ -663,7 +662,7 @@ public:
      * @param status Input/output status. If at entry this indicates a failure
      *               status, the function will do nothing; otherwise this will be
      *               updated with any new status from the function.
-     * @draft ICU 68
+     * @stable ICU 68
      */
     virtual void setContext(UDisplayContext value, UErrorCode& status);
 
@@ -675,10 +674,9 @@ public:
      *               status, the function will do nothing; otherwise this will be
      *               updated with any new status from the function.
      * @return The UDisplayContextValue for the specified type.
-     * @draft ICU 68
+     * @stable ICU 68
      */
     virtual UDisplayContext getContext(UDisplayContextType type, UErrorCode& status) const;
-#endif  // U_FORCE_HIDE_DRAFT_API
 
     /**
      * Return the class ID for this class. This is useful only for comparing to
@@ -742,7 +740,7 @@ private:
          * Whether the first date in interval pattern is later date or not.
          * Fallback format set the default ordering.
          * And for a particular interval pattern, the order can be
-         * overriden by prefixing the interval pattern with "latestFirst:" or
+         * overridden by prefixing the interval pattern with "latestFirst:" or
          * "earliestFirst:"
          * For example, given 2 date, Jan 10, 2007 to Feb 10, 2007.
          * if the fallback format is "{0} - {1}",
