@@ -15,7 +15,7 @@
 #include "unicode/decimfmt.h"
 #include "unicode/locid.h"
 #include "unicode/uclean.h"
-#include "util.h"
+#include "numutil.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

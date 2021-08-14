@@ -32,7 +32,7 @@
 #include "unicode/udat.h"
 #include "unicode/ucal.h"
 
-#include "uprint.h"
+#include "date-uprint.h"
 
 int main(int argc, char **argv);
 

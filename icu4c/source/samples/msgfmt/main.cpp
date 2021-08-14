@@ -13,7 +13,7 @@
 #include "unicode/calendar.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "util.h"
+#include "msgutil.h"
 
 // The message format pattern.  It takes a single argument, an integer,
 // and formats it as "no", "one", or a number, using a NumberFormat.
