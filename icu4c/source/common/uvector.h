@@ -23,43 +23,44 @@
 U_NAMESPACE_BEGIN
 
 /**
- * <p>Ultralightweight C++ implementation of a <tt>void*</tt> vector
+ * Ultralightweight C++ implementation of a `void*` vector
  * that is (mostly) compatible with java.util.Vector.
  *
- * <p>This is a very simple implementation, written to satisfy an
+ * This is a very simple implementation, written to satisfy an
  * immediate porting need.  As such, it is not completely fleshed out,
  * and it aims for simplicity and conformity.  Nonetheless, it serves
  * its purpose (porting code from java that uses java.util.Vector)
  * well, and it could be easily made into a more robust vector class.
  *
- * <p><b>Design notes</b>
+ * *Design notes*
  *
- * <p>There is index bounds checking, but little is done about it.  If
- * indices are out of bounds, either nothing happens, or zero is
- * returned.  We <em>do</em> avoid indexing off into the weeds.
+ * There is index bounds checking. Out of bounds indexing will
+ * raise an assertion failure. In release builds, with assertion
+ * checking disabled, either nothing happens, or zero is
+ * returned.  We *do* avoid indexing off into the weeds.
  *
- * <p>There is detection of out of memory, but the handling is very
- * coarse-grained -- similar to UnicodeString's protocol, but even
- * coarser.  The class contains <em>one static flag</em> that is set
- * when any call to <tt>new</tt> returns zero.  This allows the caller
- * to use several vectors and make just one check at the end to see if
- * a memory failure occurred.  This is more efficient than making a
- * check after each call on each vector when doing many operations on
- * multiple vectors.  The single static flag works best when memory
- * failures are infrequent, and when recovery options are limited or
- * nonexistent.
- *
- * <p>Since we don't have garbage collection, UVector was given the
- * option to <em>own</em>its contents.  To employ this, set a deleter
- * function.  The deleter is called on a void* pointer when that
+ * Since we don't have garbage collection, UVector was given the
+ * option to *own* its contents.  To employ this, set a deleter
+ * function.  The deleter is called on a `void *` pointer when that
  * pointer is released by the vector, either when the vector itself is
- * destructed, or when a call to setElementAt() overwrites an element,
- * or when a call to remove() or one of its variants explicitly
+ * destructed, or when a call to `setElementAt()` overwrites an element,
+ * or when a call to remove()` or one of its variants explicitly
  * removes an element.  If no deleter is set, or the deleter is set to
  * zero, then it is assumed that the caller will delete elements as
  * needed.
  *
- * <p>In order to implement methods such as contains() and indexOf(),
+ * *Error Handling* Functions that can fail, from out of memory conditions
+ * for example, include a UErrorCode parameter. Any function called
+ * with an error code already indicating a failure will not modify the
+ * vector in any way.
+ *
+ * For vectors that have a deleter function, any failure in inserting
+ * an element into the vector will instead delete the element that
+ * could not be adopted. This simplifies object ownership
+ * management around calls to `addElement()` and `insertElementAt()`;
+ * Error or no, the function always transfers ownership to the vector.
+ *
+ * In order to implement methods such as `contains()` and `indexOf()`,
  * UVector needs a way to compare objects for equality.  To do so, it
  * uses a comparison function, or "comparer."  If the comparer is not
  * set, or is set to zero, then all such methods will act as if the
@@ -81,15 +82,15 @@ class U_COMMON_API UVector : public UObject {
     // support functions.
 
 private:
-    int32_t count;
+    int32_t count = 0;
 
-    int32_t capacity;
+    int32_t capacity = 0;
 
-    UElement* elements;
+    UElement* elements = nullptr;
 
-    UObjectDeleter *deleter;
+    UObjectDeleter *deleter = nullptr;
 
-    UElementsAreEqual *comparer;
+    UElementsAreEqual *comparer = nullptr;
 
 public:
     UVector(UErrorCode &status);
@@ -113,12 +114,12 @@ public:
      * equal if they are of the same size and all elements are equal,
      * as compared using this object's comparer.
      */
-    UBool operator==(const UVector& other);
+    UBool operator==(const UVector& other) const;
 
     /**
      * Equivalent to !operator==()
      */
-    inline UBool operator!=(const UVector& other);
+    inline UBool operator!=(const UVector& other) const {return !operator==(other);};
 
     //------------------------------------------------------------
     // java.util.Vector API
@@ -130,11 +131,19 @@ public:
      */
     void addElementX(void* obj, UErrorCode &status);
 
+    void addElement(void *obj, UErrorCode &status);
+
     void addElement(int32_t elem, UErrorCode &status);
 
     void setElementAt(void* obj, int32_t index);
 
     void setElementAt(int32_t elem, int32_t index);
+
+    /*
+     * New version of insertElementAt. A subsequent PR will replace the old one
+     * with this, and update call sites as needed.
+     */
+    void insertElementAtNew(void* obj, int32_t index, UErrorCode &status);
 
     void insertElementAt(void* obj, int32_t index, UErrorCode &status);
 
@@ -146,19 +155,19 @@ public:
 
     UBool equals(const UVector &other) const;
 
-    inline void* firstElement(void) const;
+    inline void* firstElement(void) const {return elementAt(0);};
 
-    inline void* lastElement(void) const;
+    inline void* lastElement(void) const {return elementAt(count-1);};
 
-    inline int32_t lastElementi(void) const;
+    inline int32_t lastElementi(void) const {return elementAti(count-1);};
 
     int32_t indexOf(void* obj, int32_t startIndex = 0) const;
 
     int32_t indexOf(int32_t obj, int32_t startIndex = 0) const;
 
-    inline UBool contains(void* obj) const;
+    inline UBool contains(void* obj) const {return indexOf(obj) >= 0;};
 
-    inline UBool contains(int32_t obj) const;
+    inline UBool contains(int32_t obj) const {return indexOf(obj) >= 0;};
 
     UBool containsAll(const UVector& other) const;
 
@@ -172,15 +181,17 @@ public:
 
     void removeAllElements();
 
-    inline int32_t size(void) const;
+    inline int32_t size(void) const {return count;} ;
 
-    inline UBool isEmpty(void) const;
+    inline UBool isEmpty(void) const {return count == 0;};
 
     /*
      * Old version of ensureCapacity, with non-standard error handling.
      * Will be removed once all uses have been switched to the new ensureCapacity().
      */
     UBool ensureCapacityX(int32_t minimumCapacity, UErrorCode &status);
+
+    UBool ensureCapacity(int32_t minimumCapacity, UErrorCode &status);
 
     /**
      * Change the size of this vector as follows: If newSize is
@@ -203,7 +214,7 @@ public:
 
     UElementsAreEqual *setComparer(UElementsAreEqual *c);
 
-    inline void* operator[](int32_t index) const;
+    inline void* operator[](int32_t index) const {return elementAt(index);};
 
     /**
      * Removes the element at the given index from this vector and
@@ -277,11 +288,12 @@ private:
 
     void sortedInsert(UElement e, UElementComparator *compare, UErrorCode& ec);
 
+public:
     // Disallow
-    UVector(const UVector&);
+    UVector(const UVector&) = delete;
 
     // Disallow
-    UVector& operator=(const UVector&);
+    UVector& operator=(const UVector&) = delete;
 
 };
 
@@ -317,19 +329,25 @@ public:
     // It's okay not to have a virtual destructor (in UVector)
     // because UStack has no special cleanup to do.
 
-    inline UBool empty(void) const;
+    inline UBool empty(void) const {return isEmpty();};
 
-    inline void* peek(void) const;
+    inline void* peek(void) const {return lastElement();};
 
-    inline int32_t peeki(void) const;
+    inline int32_t peeki(void) const {return lastElementi();};
     
     void* pop(void);
     
     int32_t popi(void);
     
-    inline void* push(void* obj, UErrorCode &status);
+    inline void* push(void* obj, UErrorCode &status) {
+        addElementX(obj, status);
+        return obj;
+        };
 
-    inline int32_t push(int32_t i, UErrorCode &status);
+    inline int32_t push(int32_t i, UErrorCode &status) {
+        addElement(i, status);
+        return i;
+    };
 
     /*
     If the object o occurs as an item in this stack,
@@ -347,76 +365,12 @@ public:
      */
     virtual UClassID getDynamicClassID() const;
 
-private:
     // Disallow
-    UStack(const UStack&);
+    UStack(const UStack&) = delete;
 
     // Disallow
-    UStack& operator=(const UStack&);
+    UStack& operator=(const UStack&) = delete;
 };
-
-
-// UVector inlines
-
-inline int32_t UVector::size(void) const {
-    return count;
-}
-
-inline UBool UVector::isEmpty(void) const {
-    return count == 0;
-}
-
-inline UBool UVector::contains(void* obj) const {
-    return indexOf(obj) >= 0;
-}
-
-inline UBool UVector::contains(int32_t obj) const {
-    return indexOf(obj) >= 0;
-}
-
-inline void* UVector::firstElement(void) const {
-    return elementAt(0);
-}
-
-inline void* UVector::lastElement(void) const {
-    return elementAt(count-1);
-}
-
-inline int32_t UVector::lastElementi(void) const {
-    return elementAti(count-1);
-}
-
-inline void* UVector::operator[](int32_t index) const {
-    return elementAt(index);
-}
-
-inline UBool UVector::operator!=(const UVector& other) {
-    return !operator==(other);
-}
-
-// UStack inlines
-
-inline UBool UStack::empty(void) const {
-    return isEmpty();
-}
-
-inline void* UStack::peek(void) const {
-    return lastElement();
-}
-
-inline int32_t UStack::peeki(void) const {
-    return lastElementi();
-}
-
-inline void* UStack::push(void* obj, UErrorCode &status) {
-    addElementX(obj, status);
-    return obj;
-}
-
-inline int32_t UStack::push(int32_t i, UErrorCode &status) {
-    addElement(i, status);
-    return i;
-}
 
 U_NAMESPACE_END
 
