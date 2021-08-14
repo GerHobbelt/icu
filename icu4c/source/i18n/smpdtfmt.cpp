@@ -250,7 +250,7 @@ SimpleDateFormat::NSOverride::~NSOverride() {
 }
 
 
-void SimpleDateFormat::NSOverride::free() {
+void SimpleDateFormat::NSOverride::_free() {
     NSOverride *cur = this;
     while (cur) {
         NSOverride *next_temp = cur->next;
