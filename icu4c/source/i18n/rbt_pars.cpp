@@ -1078,10 +1078,15 @@ void TransliteratorParser::parseRules(const UnicodeString& rule,
             idBlockVector.insertElementAt(tempstr, 0, status);
     }
     else if (!parsingIDs && curData != NULL) {
-        if (direction == UTRANS_FORWARD)
-            dataVector.addElementX(curData, status);
-        else
-            dataVector.insertElementAt(curData, 0, status);
+        UErrorCode localStatus = U_ZERO_ERROR;   // Memory leak on some parse errors without this.
+        if (direction == UTRANS_FORWARD) {
+            dataVector.addElementX(curData, localStatus);
+        } else {
+            dataVector.insertElementAt(curData, 0, localStatus);
+        }
+        if (U_FAILURE(localStatus) && U_SUCCESS(status)) {
+            status = localStatus;
+        }
     }
     
     if (U_SUCCESS(status)) {
@@ -1537,7 +1542,11 @@ UChar TransliteratorParser::generateStandInFor(UnicodeFunctor* adopted, UErrorCo
         status = U_VARIABLE_RANGE_EXHAUSTED;
         return 0;
     }
-    variablesVector.addElementX(adopted, status);
+    UErrorCode localStatus = U_ZERO_ERROR;   // Memory leak on some parse errors without this.
+    variablesVector.addElementX(adopted, localStatus);
+    if (U_FAILURE(localStatus) && U_SUCCESS(status)) {
+        status = localStatus;
+    }
     return variableNext++;
 }
 
