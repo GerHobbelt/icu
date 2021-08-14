@@ -90,15 +90,15 @@ UnicodeString AffixUtils::escape(const UnicodeString &input) {
         UChar32 cp = input.char32At(offset);
 
         switch (cp) {
-            case u'\'':
+            case U'\'':
                 output.append(u"''", -1);
                 break;
 
-            case u'-':
-            case u'+':
-            case u'%':
-            case u'‰':
-            case u'¤':
+            case U'-':
+            case U'+':
+            case U'%':
+            case U'‰':
+            case U'¤':
                 if (state == STATE_BASE) {
                     output.append(u'\'');
                     output.append(cp);
@@ -294,17 +294,17 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                         offset += count;
                         // continue to the next code point
                         break;
-                    case u'-':
+                    case U'-':
                         return makeTag(offset + count, TYPE_MINUS_SIGN, STATE_BASE, 0);
-                    case u'+':
+                    case U'+':
                         return makeTag(offset + count, TYPE_PLUS_SIGN, STATE_BASE, 0);
-                    case u'~':
+                    case U'~':
                         return makeTag(offset + count, TYPE_APPROXIMATELY_SIGN, STATE_BASE, 0);
-                    case u'%':
+                    case U'%':
                         return makeTag(offset + count, TYPE_PERCENT, STATE_BASE, 0);
-                    case u'‰':
+                    case U'‰':
                         return makeTag(offset + count, TYPE_PERMILLE, STATE_BASE, 0);
-                    case u'¤':
+                    case U'¤':
                         state = STATE_FIRST_CURR;
                         offset += count;
                         // continue to the next code point
@@ -337,7 +337,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     break;
                 }
             case STATE_FIRST_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     state = STATE_SECOND_CURR;
                     offset += count;
                     // continue to the next code point
@@ -346,7 +346,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_SINGLE, STATE_BASE, 0);
                 }
             case STATE_SECOND_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     state = STATE_THIRD_CURR;
                     offset += count;
                     // continue to the next code point
@@ -355,7 +355,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_DOUBLE, STATE_BASE, 0);
                 }
             case STATE_THIRD_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     state = STATE_FOURTH_CURR;
                     offset += count;
                     // continue to the next code point
@@ -364,7 +364,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_TRIPLE, STATE_BASE, 0);
                 }
             case STATE_FOURTH_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     state = STATE_FIFTH_CURR;
                     offset += count;
                     // continue to the next code point
@@ -373,7 +373,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_QUAD, STATE_BASE, 0);
                 }
             case STATE_FIFTH_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     state = STATE_OVERFLOW_CURR;
                     offset += count;
                     // continue to the next code point
@@ -382,7 +382,7 @@ AffixTag AffixUtils::nextToken(AffixTag tag, const UnicodeString &patternString,
                     return makeTag(offset, TYPE_CURRENCY_QUINT, STATE_BASE, 0);
                 }
             case STATE_OVERFLOW_CURR:
-                if (cp == u'¤') {
+                if (cp == U'¤') {
                     offset += count;
                     // continue to the next code point and loop back to this state
                     break;

@@ -228,11 +228,11 @@ void ParsedPatternInfo::consumeAffix(Endpoints& endpoints, UErrorCode& status) {
                 currentSubpattern->hasPercentSign = true;
                 break;
 
-            case u'‰':
+            case U'‰':
                 currentSubpattern->hasPerMilleSign = true;
                 break;
 
-            case u'¤':
+            case U'¤':
                 currentSubpattern->hasCurrencySign = true;
                 break;
 
@@ -900,7 +900,7 @@ PatternStringUtils::convertLocalized(const UnicodeString& input, const DecimalFo
     // Special case: quotes are NOT allowed to be in any localIdx strings.
     // Substitute them with '’' instead.
     for (int32_t i = 0; i < LEN; i++) {
-        table[i][localIdx].findAndReplace(u'\'', u'’');
+        table[i][localIdx].findAndReplace(u'\'', U'’');
     }
 
     // Iterate through the string and convert.
@@ -1076,7 +1076,7 @@ void PatternStringUtils::patternInfoToStringBuilder(const AffixPatternProvider& 
             }
         }
         if (perMilleReplacesPercent && candidate == u'%') {
-            candidate = u'‰';
+            candidate = U'‰';
         }
         output.append(candidate);
     }

@@ -126,11 +126,11 @@ static const struct {
     Key key;
     UChar32 exemplar;
 } kCurrencyEntries[] = {
-    {DOLLAR_SIGN, u'$'},
-    {POUND_SIGN, u'£'},
-    {RUPEE_SIGN, u'₹'},
-    {YEN_SIGN, u'¥'},
-    {WON_SIGN, u'₩'},
+    {DOLLAR_SIGN, U'$'},
+    {POUND_SIGN, U'£'},
+    {RUPEE_SIGN, U'₹'},
+    {YEN_SIGN, U'¥'},
+    {WON_SIGN, U'₩'},
 };
 
 } // namespace unisets
