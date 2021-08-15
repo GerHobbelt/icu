@@ -114,12 +114,6 @@ UBool UVector::operator==(const UVector& other) const {
 void UVector::addElementX(void* obj, UErrorCode &status) {
     if (ensureCapacityX(count + 1, status)) {
         elements[count++].pointer = obj;
-    }
-}
-
-void UVector::addElementX(void* obj, UErrorCode &status) {
-    if (ensureCapacityX(count + 1, status)) {
-        elements[count++].pointer = obj;
     } else {
         if (deleter != nullptr) {
             (*deleter)(obj);

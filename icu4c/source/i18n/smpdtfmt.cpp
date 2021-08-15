@@ -1424,7 +1424,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
                        createSharedNumberFormat(ovrLoc, status), cur->snf);
                if (U_FAILURE(status)) {
                    if (overrideList) {
-                       overrideList->free();
+                       overrideList->_free();
                    }
                    return;
                }
@@ -1433,7 +1433,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
            } else {
                status = U_MEMORY_ALLOCATION_ERROR;
                if (overrideList) {
-                   overrideList->free();
+                   overrideList->_free();
                }
                return;
            }
@@ -1467,7 +1467,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
            if (patternCharIndex == UDAT_FIELD_COUNT) {
                status = U_INVALID_FORMAT_ERROR;
                if (overrideList) {
-                   overrideList->free();
+                   overrideList->_free();
                }
                return;
            }
@@ -1477,7 +1477,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
         start = delimiterPosition + 1;
     }
     if (overrideList) {
-        overrideList->free();
+        overrideList->_free();
     }
 }
 

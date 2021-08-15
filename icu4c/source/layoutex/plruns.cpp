@@ -6,6 +6,8 @@
  *
  */
 
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 #include "layout/LETypes.h"
 #include "layout/loengine.h"
 #include "layout/plruns.h"
@@ -501,3 +503,5 @@ pl_addLocaleRun(pl_localeRuns *localeRuns,
 
     return lr->add(locale, limit);
 }
+
+#endif

@@ -6,6 +6,8 @@
  *
  */
 
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 /*
  * paragraphLayout doesn't make much sense without
  * BreakIterator...
@@ -328,5 +330,7 @@ pl_getVisualRunLeading(const pl_visualRun *run)
 
     return vr->getLeading();
 }
+
+#endif
 
 #endif

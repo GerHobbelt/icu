@@ -7,6 +7,8 @@
  **********************************************************************
  */
 
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 #include "layout/LETypes.h"
 #include "layout/LEFontInstance.h"
 
@@ -230,3 +232,5 @@ le_int32 ValueRuns::getValue(le_int32 run) const
 }
 
 U_NAMESPACE_END
+
+#endif

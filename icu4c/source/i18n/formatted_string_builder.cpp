@@ -401,7 +401,7 @@ UnicodeString FormattedStringBuilder::toDebugString() const {
                     c = u'%';
                     break;
                 case UNUM_PERMILL_FIELD:
-                    c = u'‰';
+                    c = L'‰';
                     break;
                 case UNUM_CURRENCY_FIELD:
                     c = u'$';
