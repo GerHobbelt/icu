@@ -26,7 +26,9 @@
  #include <unistd.h>
  #endif /* HAVE_UNISTD_H */
  #include <stdio.h>
+ #ifdef HAVE_DIRENT_H
  #include <dirent.h>
+ #endif 
  #include <string.h>
  #include <sys/stat.h>
 
