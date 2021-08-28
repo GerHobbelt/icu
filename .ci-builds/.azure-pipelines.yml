@@ -82,7 +82,7 @@ jobs:
         CXX: clang++
 #-------------------------------------------------------------------------
 - job: ICU4C_Clang_Cpp14_Debug_Ubuntu_1804
-  displayName: 'C: Linux Clang C++14 Debug (Ubuntu 18.04)'
+  displayName: 'C: Linux Clang C++17 Debug (Ubuntu 18.04)'
   timeoutInMinutes: 30
   pool:
     vmImage: 'ubuntu-18.04'
@@ -96,8 +96,8 @@ jobs:
         sudo apt remove libgcc-11-dev gcc-11
       displayName: Remove GCC 11 (work-around)
     - script: |
-        export CXXFLAGS="-std=c++14 -Winvalid-constexpr" && cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j2 check
-      displayName: 'Build and Test C++14'
+        export CXXFLAGS="-std=c++17 -Winvalid-constexpr" && cd icu4c/source && ./runConfigureICU --enable-debug --disable-release Linux && make -j2 check
+      displayName: 'Build and Test C++17'
       env:
         CC: clang
         CXX: clang++
@@ -129,8 +129,8 @@ jobs:
       fetchDepth: 10
     - script: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt-get update
-        sudo apt-get install gcc-11 g++-11
+        sudo apt update
+        sudo apt install gcc-11 g++-11
       displayName: 'Install GCC-11'
     - script: |
         cd icu4c/source && ./runConfigureICU Linux && make -j2 check
@@ -219,6 +219,28 @@ jobs:
       inputs:
         PathtoPublish: 'icu4c/source/dist/icu-windows.zip'
         ArtifactName: '$(Build.BuildNumber)_ICU4C_MSVC_x64_Release'
+#-------------------------------------------------------------------------
+- job: ICU4C_MSVC_x64_Release_DataFilter
+  displayName: 'C: MSVC 64-bit Release DataFilter (VS 2019)'
+  timeoutInMinutes: 30
+  pool:
+    vmImage: 'windows-2019'
+    demands: 
+      - msbuild
+      - visualstudio
+      - Cmd
+  steps:
+    - powershell: |
+        $filterPath = $Env:BUILD_SOURCESDIRECTORY + "\.ci-builds\data-filter.json"
+        $vstsCommandString = "vso[task.setvariable variable=ICU_DATA_FILTER_FILE]" + $filterPath
+        Write-Host "##$vstsCommandString"
+    - task: VSBuild@1
+      displayName: 'Build Solution with Data Filter'
+      inputs:
+        solution: icu4c/source/allinone/allinone.sln
+        platform: x64
+        configuration: Release
+        msbuildArgs: '/p:SkipUWP=true'
 #-------------------------------------------------------------------------
 - job: ICU4C_MSVC_x86_Release_Distrelease
   displayName: 'C: MSVC 32-bit Release (VS 2019) + Distrelease'
