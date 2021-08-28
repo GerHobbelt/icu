@@ -13,6 +13,8 @@
 #ifndef __UNIFIED_CACHE_H__
 #define __UNIFIED_CACHE_H__
 
+#include <type_traits>
+
 #include "utypeinfo.h"  // for 'typeid' to work
 
 #include "unicode/uobject.h"
@@ -56,7 +58,7 @@ class U_COMMON_API CacheKeyBase : public UObject {
    /**
     * Equality operator.
     */
-   virtual UBool operator == (const CacheKeyBase &other) const = 0;
+   virtual bool operator == (const CacheKeyBase &other) const = 0;
 
    /**
     * Create a new object for this key. Called by cache on cache miss.
@@ -83,7 +85,7 @@ class U_COMMON_API CacheKeyBase : public UObject {
    /**
     * Inequality operator.
     */
-   UBool operator != (const CacheKeyBase &other) const {
+   bool operator != (const CacheKeyBase &other) const {
        return !(*this == other);
    }
  private:
@@ -123,7 +125,7 @@ class CacheKey : public CacheKeyBase {
    /**
     * Two objects are equal if they are of the same type.
     */
-   virtual UBool operator == (const CacheKeyBase &other) const {
+   virtual bool operator == (const CacheKeyBase &other) const {
        return typeid(*this) == typeid(other);
    }
 };
@@ -144,7 +146,7 @@ class LocaleCacheKey : public CacheKey<T> {
    virtual int32_t hashCode() const {
        return (int32_t)(37u * (uint32_t)CacheKey<T>::hashCode() + (uint32_t)fLoc.hashCode());
    }
-   virtual UBool operator == (const CacheKeyBase &other) const {
+   virtual bool operator == (const CacheKeyBase &other) const {
        // reflexive
        if (this == &other) {
            return true;
@@ -158,6 +160,17 @@ class LocaleCacheKey : public CacheKey<T> {
                static_cast<const LocaleCacheKey<T> *>(&other);
        return fLoc == fOther->fLoc;
    }
+
+#if defined(__cpp_impl_three_way_comparison) && \
+       __cpp_impl_three_way_comparison >= 201711
+    // Manually resolve C++20 reversed argument order ambiguity.
+    template <typename U,
+              typename = typename std::enable_if_t<!std::is_same_v<T, U>>>
+    inline bool operator==(const LocaleCacheKey<U>& other) const {
+        return operator==(static_cast<const CacheKeyBase&>(other));
+    }
+#endif
+
    virtual CacheKeyBase *clone() const {
        return new LocaleCacheKey<T>(*this);
    }
