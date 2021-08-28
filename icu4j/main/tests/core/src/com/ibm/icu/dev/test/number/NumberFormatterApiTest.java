@@ -1187,7 +1187,7 @@ public class NumberFormatterApiTest extends TestFmwk {
             NumberFormatter.with()
                 .unit(MeasureUnit.forIdentifier("kilowatt-hour-per-100-kilometer"))
                 .unitWidth(UnitWidth.FULL_NAME),
-            new ULocale("en-ZA"), 2.4, "2,4 kilowatt-hours per 100 kilometers");
+            new ULocale("en-ZA"), 2.4, "2,4 kilowatt-hours per 100 kilometres");
     }
 
     // TODO: merge these tests into NumberSkeletonTest.java instead of here:
@@ -4271,7 +4271,7 @@ public class NumberFormatterApiTest extends TestFmwk {
                 NumberFormatter.with().sign(SignDisplay.ACCOUNTING).unit(USD).unitWidth(UnitWidth.FULL_NAME),
                 ULocale.CANADA,
                 -444444,
-                "-444,444.00 US dollars");
+                "-444,444.00 U.S. dollars");
     }
 
     @Test

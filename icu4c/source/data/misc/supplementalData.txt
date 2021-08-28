@@ -19762,7 +19762,6 @@ supplementalData:table(nofallback){
             "en_BS",
             "en_BW",
             "en_BZ",
-            "en_CA",
             "en_CC",
             "en_CK",
             "en_CM",
@@ -19810,7 +19809,6 @@ supplementalData:table(nofallback){
             "en_NU",
             "en_NZ",
             "en_PG",
-            "en_PH",
             "en_PK",
             "en_PN",
             "en_PW",
@@ -26950,7 +26948,7 @@ supplementalData:table(nofallback){
                 populationShareF:int{45470000}
             }
             yrl{
-                populationShareF:int{45520000}
+                populationShareF:int{46104000}
             }
         }
         BS{
@@ -27520,6 +27518,9 @@ supplementalData:table(nofallback){
                 61711600,
                 49936000,
                 57490848,
+            }
+            yrl{
+                populationShareF:int{45620000}
             }
         }
         CP{
@@ -32631,6 +32632,9 @@ supplementalData:table(nofallback){
                 49955000,
                 57286446,
             }
+            yrl{
+                populationShareF:int{45630000}
+            }
         }
         VG{
             en{
@@ -35086,7 +35090,7 @@ supplementalData:table(nofallback){
             86400000,
         }
         AU:intvector{
-            1,
+            2,
             1,
             7,
             0,
