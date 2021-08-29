@@ -137,7 +137,7 @@ struct UOption {
  * @param options This parameter is modified
  */
 U_CAPI int U_EXPORT2
-u_parseArgs(int argc, char* argv[],
+u_parseArgs(int argc, const char* argv[],
             int optionCount, UOption options[]);
 
 #endif

@@ -48,7 +48,8 @@
 
 U_NAMESPACE_USE
 
-static char *progName;
+static const char *progName;
+
 static UOption options[]={
     UOPTION_HELP_H,             /* 0 */
     UOPTION_HELP_QUESTION_MARK, /* 1 */
@@ -61,7 +62,7 @@ static UOption options[]={
     UOPTION_QUIET,              /* 8 */
 };
 
-void usageAndDie(int retCode) {
+static void usageAndDie(int retCode) {
         printf("Usage: %s [-v] [-options] -r rule-file -o output-file\n", progName);
         printf("\tRead in break iteration rules text and write out the binary data\n"
             "options:\n"
@@ -100,7 +101,7 @@ static UDataInfo dummyDataInfo = {
 //
 //  Set up the ICU data header, defined in ucmndata.h
 //
-DataHeader dh ={
+static DataHeader dh ={
     {sizeof(DataHeader),           // Struct MappedData
         0xda,
         0x27},

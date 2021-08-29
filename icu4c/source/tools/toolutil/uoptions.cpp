@@ -23,9 +23,9 @@
 #include "uoptions.h"
 
 U_CAPI int U_EXPORT2
-u_parseArgs(int argc, char* argv[],
+u_parseArgs(int argc, const char* argv[],
             int optionCount, UOption options[]) {
-    char *arg;
+    const char *arg;
     int i=1, remaining=1;
     char c, stopOptions=0;
 

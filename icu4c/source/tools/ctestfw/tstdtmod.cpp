@@ -21,13 +21,13 @@ TestLog::~TestLog() {}
 IcuTestErrorCode::~IcuTestErrorCode() {
     // Safe because our errlog() does not throw exceptions.
     if(isFailure()) {
-        errlog(FALSE, u"destructor: expected success", nullptr);
+        errlog(FALSE, UnicodeString(u"destructor: expected success"), nullptr);
     }
 }
 
 UBool IcuTestErrorCode::errIfFailureAndReset() {
     if(isFailure()) {
-        errlog(FALSE, u"expected success", nullptr);
+        errlog(FALSE, UnicodeString(u"expected success"), nullptr);
         reset();
         return TRUE;
     } else {
@@ -43,7 +43,7 @@ UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
         va_start(ap, fmt);
         vsprintf(buffer, fmt, ap);
         va_end(ap);
-        errlog(FALSE, u"expected success", buffer);
+        errlog(FALSE, UnicodeString(u"expected success"), buffer);
         reset();
         return TRUE;
     } else {
@@ -54,7 +54,7 @@ UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
 
 UBool IcuTestErrorCode::errDataIfFailureAndReset() {
     if(isFailure()) {
-        errlog(TRUE, u"data: expected success", nullptr);
+        errlog(TRUE, UnicodeString(u"data: expected success"), nullptr);
         reset();
         return TRUE;
     } else {
@@ -70,7 +70,7 @@ UBool IcuTestErrorCode::errDataIfFailureAndReset(const char *fmt, ...) {
         va_start(ap, fmt);
         vsprintf(buffer, fmt, ap);
         va_end(ap);
-        errlog(TRUE, u"data: expected success", buffer);
+        errlog(TRUE, UnicodeString(u"data: expected success"), buffer);
         reset();
         return TRUE;
     } else {
@@ -81,7 +81,7 @@ UBool IcuTestErrorCode::errDataIfFailureAndReset(const char *fmt, ...) {
 
 UBool IcuTestErrorCode::expectErrorAndReset(UErrorCode expectedError) {
     if(get() != expectedError) {
-        errlog(FALSE, UnicodeString(u"expected: ") + u_errorName(expectedError), nullptr);
+        errlog(FALSE, UnicodeString(u"expected: ") + UnicodeString(u_errorName(expectedError)), nullptr);
     }
     UBool retval = isFailure();
     reset();
@@ -95,7 +95,7 @@ UBool IcuTestErrorCode::expectErrorAndReset(UErrorCode expectedError, const char
         va_start(ap, fmt);
         vsprintf(buffer, fmt, ap);
         va_end(ap);
-        errlog(FALSE, UnicodeString(u"expected: ") + u_errorName(expectedError), buffer);
+        errlog(FALSE, UnicodeString(u"expected: ") + UnicodeString(u_errorName(expectedError)), buffer);
     }
     UBool retval = isFailure();
     reset();
@@ -111,7 +111,7 @@ void IcuTestErrorCode::setScope(const UnicodeString& message) {
 }
 
 void IcuTestErrorCode::handleFailure() const {
-    errlog(FALSE, u"(handleFailure)", nullptr);
+    errlog(FALSE, UnicodeString(u"(handleFailure)"), nullptr);
 }
 
 void IcuTestErrorCode::errlog(UBool dataErr, const UnicodeString& mainMessage, const char* extraMessage) const {

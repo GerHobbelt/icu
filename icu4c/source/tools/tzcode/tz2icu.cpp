@@ -609,10 +609,10 @@ void handleFile(string path, string id) {
 
 void scandir(string dirname, string prefix="") {
     HANDLE          hList;
-    WIN32_FIND_DATA FileData;
+    WIN32_FIND_DATAA FileData;
     
     // Get the first file
-    hList = FindFirstFile((dirname + "\\*").c_str(), &FileData);
+    hList = FindFirstFileA((dirname + "\\*").c_str(), &FileData);
     if (hList == INVALID_HANDLE_VALUE) {
         cerr << "Error: Invalid directory: " << dirname << endl;
         exit(1);

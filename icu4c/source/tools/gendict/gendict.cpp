@@ -48,7 +48,8 @@ static int elapsedTime() {
 
 U_NAMESPACE_USE
 
-static char *progName;
+static const char *progName;
+
 static UOption options[]={
     UOPTION_HELP_H,             /* 0 */
     UOPTION_HELP_QUESTION_MARK, /* 1 */
