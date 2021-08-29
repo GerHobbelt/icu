@@ -127,7 +127,13 @@ DataHeader dh ={
 //  main      for genbrk
 //
 //----------------------------------------------------------------------------
-int  main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_genbrk_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     UErrorCode  status = U_ZERO_ERROR;
     const char *ruleFileName;
     const char *outFileName;

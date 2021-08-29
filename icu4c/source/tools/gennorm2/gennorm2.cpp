@@ -78,8 +78,13 @@ static UOption options[]={
     UOPTION_DEF("fast", '\1', UOPT_NO_ARG)
 };
 
-extern "C" int
-main(int argc, char* argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_gennorm2_main(cnt, arr)
+#endif
+
+extern "C" int main(int argc, const char** argv)
+{
     U_MAIN_INIT_ARGS(argc, argv);
 
     /* preset then read command line options */

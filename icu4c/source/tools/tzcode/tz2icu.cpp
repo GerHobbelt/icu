@@ -1433,7 +1433,13 @@ void FinalRule::print(ostream& os) const {
 #define ICU_ZONE_OVERRIDE_SUFFIX "--ICU"
 #define ICU_ZONE_OVERRIDE_SUFFIX_LEN 5
 
-int main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_tzcode_tz2icu_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     string rootpath, zonetab, version;
     bool validArgs = false;
 

@@ -70,8 +70,13 @@ static UBool verbose = FALSE;
 static UBool suppressAliases = FALSE;
 static UFILE *ustderr = NULL;
 
-extern int
-main(int argc, char* argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_genrb_derb_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *encoding = NULL;
     const char *outputDir = NULL; /* NULL = no output directory, use current */
     const char *inputDir  = ".";

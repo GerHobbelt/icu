@@ -122,9 +122,12 @@ static ResFile poolBundle;
 /*added by Jing*/
 static     const char* language = NULL;
 static     const char* xliffOutputFileName = NULL;
-int
-main(int argc,
-     char* argv[])
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_genrb_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
     UErrorCode  status    = U_ZERO_ERROR;
     const char *arg       = NULL;

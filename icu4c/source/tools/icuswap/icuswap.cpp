@@ -101,8 +101,13 @@ printUsage(const char *pname, UBool ishelp) {
     return !ishelp;
 }
 
-extern int
-main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_swap_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     FILE *in, *out;
     const char *pname;
     char *data;

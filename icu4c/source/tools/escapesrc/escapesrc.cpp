@@ -412,7 +412,13 @@ fail:
 /**
  * Main function
  */
-int main(int argc, const char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_escape_sourcecode_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   prog = argv[0];
 
   if(argc != 3) {

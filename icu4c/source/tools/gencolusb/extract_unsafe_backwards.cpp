@@ -21,7 +21,13 @@
 #define RANGES 0      //< Enumerate ranges (works, not as fast. No support in collationdatareader.cpp)
 #define PATTERN 0     //< Generate a UnicodeSet pattern (depends on #11891 AND probably slower. No support in collationdatareader.cpp)
 
-int main(int argc, const char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_gencolusb_extract_unsafe_backwards_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     UErrorCode errorCode = U_ZERO_ERROR;
 
     // Get the unsafeBackwardsSet

@@ -269,8 +269,13 @@ const char options_help[][320]={
 
 const char  *progname = "PKGDATA";
 
-int
-main(int argc, char* argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_pkgdata_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int result = 0;
     /* FileStream  *out; */
     UPKGOptions  o;

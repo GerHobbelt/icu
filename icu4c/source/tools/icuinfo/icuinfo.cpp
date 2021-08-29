@@ -229,8 +229,13 @@ void cmd_listplugins() {
 
 
 
-extern int
-main(int argc, char* argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_info_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     UErrorCode errorCode = U_ZERO_ERROR;
     UBool didSomething = FALSE;
     

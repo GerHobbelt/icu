@@ -241,7 +241,13 @@ static UBool readLine(UCHARBUF *f, UnicodeString &fileLine, IcuToolErrorCode &er
 //  main      for gendict
 //
 //----------------------------------------------------------------------------
-int  main(int argc, char **argv) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_gendict_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     //
     // Pick up and check the command line arguments,
     //    using the standard ICU tool utils option handling.

@@ -332,8 +332,12 @@ _("%s: usage: %s [--version] [--help] [-{vV}] [-{ct} [lo,]hi] zonename ...\n"
 	exit(status);
 }
 
-int
-main(int argc, char *argv[])
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_tzcode_zdump_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
 	register int		i;
 	register int		vflag;

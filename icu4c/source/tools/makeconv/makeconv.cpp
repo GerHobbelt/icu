@@ -197,7 +197,12 @@ static UOption options[]={
     UOPTION_SOURCEDIR,
 };
 
-int main(int argc, char* argv[])
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_makeconv_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
 {
     ConvData data;
     char cnvName[UCNV_MAX_FULL_FILE_NAME_LENGTH];

@@ -16,7 +16,13 @@
 #include "collunsafe.h"
 
 
-int main(int argc, const char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_gencolusb_verify_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   puts("verify");
   UErrorCode errorCode = U_ZERO_ERROR;
 #if defined (COLLUNSAFE_PATTERN)

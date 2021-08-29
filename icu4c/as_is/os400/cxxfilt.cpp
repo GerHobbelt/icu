@@ -25,7 +25,13 @@ void showSym(char *str) {
 
 
 
-int main(int argc, /*const*/ char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_cxxfilter_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
   if(argc>1) {
     for(int i=1;i<argc;i++) {
        showSym(argv[i]);

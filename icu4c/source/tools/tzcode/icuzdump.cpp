@@ -284,8 +284,13 @@ static UOption options[]={
     UOPTION_DEF("linesep", 'l', UOPT_REQUIRES_ARG)
 };
 
-extern int
-main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_tzcode_icuzdump_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     int32_t low = 1902;
     int32_t high = 2038;
     UBool bAll = false;

@@ -261,8 +261,13 @@ So when \* is used, it turns into a list of files instead of a literal "*"
 */
 int _CRT_glob = 0;
 
-extern int
-main(int argc, char *argv[]) {
+
+#if defined(BUILD_MONOLITHIC)
+#define main(cnt, arr)      icu_pkg_main(cnt, arr)
+#endif
+
+int main(int argc, const char** argv)
+{
     const char *pname, *sourcePath, *destPath, *inFilename, *outFilename, *outComment;
     char outType;
     UBool isHelp, isModified, isPackage;
