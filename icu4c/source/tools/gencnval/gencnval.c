@@ -221,13 +221,8 @@ static UOption options[]={
     UOPTION_QUIET
 };
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_gencnval_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+extern int
+main(int argc, char* argv[]) {
     int i, n;
     char pathBuf[512];
     FileStream *in;

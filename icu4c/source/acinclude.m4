@@ -78,8 +78,6 @@ x86_64-*-cygwin)
 *-*-os400*)	icu_cv_host_frag=mh-os400 ;;
 *-apple-rhapsody*)	icu_cv_host_frag=mh-darwin ;;
 *-apple-darwin*)	icu_cv_host_frag=mh-darwin ;;
-*-apple-ios*)       icu_cv_host_frag=mh-darwin ;;
-*-apple-macos*)     icu_cv_host_frag=mh-darwin ;;
 *-*-beos)       icu_cv_host_frag=mh-beos ;; 
 *-*-haiku)      icu_cv_host_frag=mh-haiku ;; 
 *-*-irix*)	icu_cv_host_frag=mh-irix ;;

@@ -606,12 +606,8 @@ static const char *	directory;
 static const char *	leapsec;
 static const char *	yitcommand;
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_tzcode_zic_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
+int
+main(int argc, char **argv)
 {
 	register int	i;
 	register int	j;

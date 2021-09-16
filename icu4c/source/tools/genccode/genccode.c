@@ -94,13 +94,8 @@ static UOption options[]={
 #define CALL_WRITECCODE     'c'
 #define CALL_WRITEASSEMBLY  'a'
 #define CALL_WRITEOBJECT    'o'
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_genccode_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+extern int
+main(int argc, char* argv[]) {
     UBool verbose = TRUE;
     char writeCode;
 

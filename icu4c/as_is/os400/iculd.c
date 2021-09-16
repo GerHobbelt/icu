@@ -54,13 +54,7 @@ static int runcmd(const char *cmd) {
   }
 }
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_ld_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+int main(int argc, const char *argv[]) {
   int i;
 
   char buf[8048];

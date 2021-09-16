@@ -29,11 +29,11 @@ constexpr int8_t HINT_KEY_INTEGER = 0;
  
 UOBJECT_DEFINE_RTTI_IMPLEMENTATION(UVector)
 
-UVector::UVector(UErrorCode &status)
+UVector::UVector(UErrorCode &status) :
         UVector(nullptr, nullptr, DEFAULT_CAPACITY, status) {
 }
 
-UVector::UVector(int32_t initialCapacity, UErrorCode &status)
+UVector::UVector(int32_t initialCapacity, UErrorCode &status) :
         UVector(nullptr, nullptr, initialCapacity, status) {
 }
 
@@ -104,10 +104,6 @@ bool UVector::operator==(const UVector& other) const {
 void UVector::addElementX(void* obj, UErrorCode &status) {
     if (ensureCapacityX(count + 1, status)) {
         elements[count++].pointer = obj;
-    } else {
-        if (deleter != nullptr) {
-            (*deleter)(obj);
-        }
     }
 }
 
@@ -136,7 +132,6 @@ void UVector::addElement(int32_t elem, UErrorCode &status) {
 }
 
 void UVector::setElementAt(void* obj, int32_t index) {
-    U_ASSERT(0 <=  index && index < count);
     if (0 <= index && index < count) {
         if (elements[index].pointer != nullptr && deleter != nullptr) {
             (*deleter)(elements[index].pointer);
@@ -151,7 +146,6 @@ void UVector::setElementAt(void* obj, int32_t index) {
 }
 
 void UVector::setElementAt(int32_t elem, int32_t index) {
-    U_ASSERT(0 <=  index && index < count);
     U_ASSERT(deleter == nullptr);  // Usage error. Mixing up ints and pointers.
     if (0 <= index && index < count) {
         elements[index].pointer = nullptr;
@@ -160,28 +154,6 @@ void UVector::setElementAt(int32_t elem, int32_t index) {
     /* else index out of range */
 }
 
-void UVector::insertElementAtNew(void* obj, int32_t index, UErrorCode &status) {
-    if (ensureCapacity(count + 1, status)) {
-        U_ASSERT(0 <= index && index <= count);
-        if (0 <= index && index <= count) {
-            for (int32_t i=count; i>index; --i) {
-                elements[i] = elements[i-1];
-            }
-            elements[index].pointer = obj;
-            ++count;
-        } else {
-            /* index out of range */
-            status = U_ILLEGAL_ARGUMENT_ERROR;
-        }
-    }
-    if (U_FAILURE(status) && deleter != nullptr) {
-        (*deleter)(obj);
-    }
-
-}
-// TODO: Replace this function with the new one, above. The original thought was to
-//       update this function and the call sites all at once, but there is
-//       tricky usage in translitorator, so postponing to a separate PR to address that.
 void UVector::insertElementAt(void* obj, int32_t index, UErrorCode &status) {
     if (ensureCapacity(count + 1, status)) {
         if (0 <= index && index <= count) {
@@ -484,7 +456,6 @@ UElementsAreEqual *UVector::setComparer(UElementsAreEqual *d) {
  */
 void* UVector::orphanElementAt(int32_t index) {
     void* e = nullptr;
-    U_ASSERT(0 <= index && index < count);
     if (0 <= index && index < count) {
         e = elements[index].pointer;
         for (int32_t i=index; i<count-1; ++i) {

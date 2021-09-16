@@ -22,13 +22,9 @@
 
 #else
 
- #ifdef HAVE_UNISTD_H
  #include <unistd.h>
- #endif /* HAVE_UNISTD_H */
  #include <stdio.h>
- #ifdef HAVE_DIRENT_H
  #include <dirent.h>
- #endif 
  #include <string.h>
  #include <sys/stat.h>
 
@@ -609,10 +605,10 @@ void handleFile(string path, string id) {
 
 void scandir(string dirname, string prefix="") {
     HANDLE          hList;
-    WIN32_FIND_DATAA FileData;
+    WIN32_FIND_DATA FileData;
     
     // Get the first file
-    hList = FindFirstFileA((dirname + "\\*").c_str(), &FileData);
+    hList = FindFirstFile((dirname + "\\*").c_str(), &FileData);
     if (hList == INVALID_HANDLE_VALUE) {
         cerr << "Error: Invalid directory: " << dirname << endl;
         exit(1);
@@ -1433,13 +1429,7 @@ void FinalRule::print(ostream& os) const {
 #define ICU_ZONE_OVERRIDE_SUFFIX "--ICU"
 #define ICU_ZONE_OVERRIDE_SUFFIX_LEN 5
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_tzcode_tz2icu_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+int main(int argc, char *argv[]) {
     string rootpath, zonetab, version;
     bool validArgs = false;
 

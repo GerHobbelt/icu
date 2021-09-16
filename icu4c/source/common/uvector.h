@@ -157,12 +157,6 @@ public:
 
     void setElementAt(int32_t elem, int32_t index);
 
-    /*
-     * New version of insertElementAt. A subsequent PR will replace the old one
-     * with this, and update call sites as needed.
-     */
-    void insertElementAtNew(void* obj, int32_t index, UErrorCode &status);
-
     void insertElementAt(void* obj, int32_t index, UErrorCode &status);
 
     void insertElementAt(int32_t elem, int32_t index, UErrorCode &status);

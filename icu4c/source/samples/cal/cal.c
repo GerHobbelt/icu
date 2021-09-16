@@ -27,7 +27,7 @@
 #include "unicode/ustring.h"
 #include "unicode/uclean.h"
 
-#include "cal-uprint.h"
+#include "uprint.h"
 
 #if UCONFIG_NO_FORMATTING
 

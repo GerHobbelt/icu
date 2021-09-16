@@ -135,13 +135,8 @@ static int printHelp(int argc, char* argv[]){
 }
 
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_gensprep_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+extern int
+main(int argc, char* argv[]) {
 #if !UCONFIG_NO_IDNA
     char* filename = NULL;
 #endif

@@ -48,8 +48,7 @@
 
 U_NAMESPACE_USE
 
-static const char *progName;
-
+static char *progName;
 static UOption options[]={
     UOPTION_HELP_H,             /* 0 */
     UOPTION_HELP_QUESTION_MARK, /* 1 */
@@ -62,7 +61,7 @@ static UOption options[]={
     UOPTION_QUIET,              /* 8 */
 };
 
-static void usageAndDie(int retCode) {
+void usageAndDie(int retCode) {
         printf("Usage: %s [-v] [-options] -r rule-file -o output-file\n", progName);
         printf("\tRead in break iteration rules text and write out the binary data\n"
             "options:\n"
@@ -101,7 +100,7 @@ static UDataInfo dummyDataInfo = {
 //
 //  Set up the ICU data header, defined in ucmndata.h
 //
-static DataHeader dh ={
+DataHeader dh ={
     {sizeof(DataHeader),           // Struct MappedData
         0xda,
         0x27},
@@ -128,13 +127,7 @@ static DataHeader dh ={
 //  main      for genbrk
 //
 //----------------------------------------------------------------------------
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_genbrk_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+int  main(int argc, char **argv) {
     UErrorCode  status = U_ZERO_ERROR;
     const char *ruleFileName;
     const char *outFileName;

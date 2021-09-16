@@ -1161,7 +1161,7 @@ public final class ULocale implements Serializable, Comparable<ULocale> {
         }
 
         // If not starts with "und", return.
-        if (!localeID.regionMatches(true /* ignoreCase */, 0, "und", 0, 3 /* len */)) {
+        if (!localeID.regionMatches(/*ignoreCase=*/true, 0, "und", 0, /*len=*/3)) {
             return localeID;
         }
 

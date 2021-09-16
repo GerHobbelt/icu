@@ -18,8 +18,6 @@
 #include <algorithm>
 #include "cstring.h"
 #include "util.h"
-#include <pluralmap.h>
-#include <currencydisplaynames.h>
 
 using namespace icu;
 using namespace icu::number;
@@ -532,14 +530,14 @@ void getCurrencyLongNameData(const Locale &locale, const CurrencyUnit &currency,
         if (pattern.isBogus()) {
             continue;
         }
-
-        const CurrencyDisplayNames *currencyDisplayNames = CurrencyDisplayNames::getInstance(&locale, status);
-        const UChar *longName = currencyDisplayNames->getPluralName(
-            currency.getISOCurrency(),
-            PluralMapBase::toCategory(StandardPlural::getKeyword(static_cast<StandardPlural::Form>(i))),
-            status);
-        int32_t longNameLen = u_strlen(longName);
-
+        int32_t longNameLen = 0;
+        const char16_t *longName = ucurr_getPluralName(
+                currency.getISOCurrency(),
+                locale.getName(),
+                nullptr /* isChoiceFormat */,
+                StandardPlural::getKeyword(static_cast<StandardPlural::Form>(i)),
+                &longNameLen,
+                &status);
         // Example pattern from data: "{0} {1}"
         // Example output after find-and-replace: "{0} US dollars"
         pattern.findAndReplace(UnicodeString(u"{1}"), UnicodeString(longName, longNameLen));

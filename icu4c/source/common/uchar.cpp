@@ -698,17 +698,17 @@ uchar_addPropertyStarts(const USetAdder *sa, UErrorCode *pErrorCode) {
     sa->add(sa->set, u'A');
     sa->add(sa->set, u'Z'+1);
     // fullwidth
-    sa->add(sa->set, L'ａ');
-    sa->add(sa->set, L'ｚ'+1);
-    sa->add(sa->set, L'Ａ');
-    sa->add(sa->set, L'Ｚ'+1);
+    sa->add(sa->set, u'ａ');
+    sa->add(sa->set, u'ｚ'+1);
+    sa->add(sa->set, u'Ａ');
+    sa->add(sa->set, u'Ｚ'+1);
 
     /* add for u_isxdigit() */
     sa->add(sa->set, u'f'+1);
     sa->add(sa->set, u'F'+1);
     // fullwidth
-    sa->add(sa->set, L'ｆ'+1);
-    sa->add(sa->set, L'Ｆ'+1);
+    sa->add(sa->set, u'ｆ'+1);
+    sa->add(sa->set, u'Ｆ'+1);
 
     /* add for UCHAR_DEFAULT_IGNORABLE_CODE_POINT what was not added above */
     sa->add(sa->set, 0x2060); /* range 2060..206f */

@@ -5,7 +5,6 @@
     <Keyword>MakeFileProj</Keyword>
     <ConfigurationType>Makefile</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <!-- The following import will include the 'default' configuration options for VS projects. -->
@@ -16,18 +15,18 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
-    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
-    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir>.\data\tmp\$(Platform)\</OutDir>
+    <IntDir>.\data\build\</IntDir>
+    <MakeCFG>$(Platform)\$(Configuration)</MakeCFG>
     <DebugBuild Condition="'$(Configuration)'=='Debug'">true</DebugBuild>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
-    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
-    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir Condition="'$(Platform)'=='Win32'">.\data\tmp\x86\</OutDir>
+    <MakeCFG Condition="'$(Platform)'=='Win32'">x86\$(Configuration)</MakeCFG>
     <!-- NMake -->
-    <NMakeBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)" CFG=$(MakeCFG) DEBUG=$(DebugBuild)</NMakeBuildCommandLine>
-    <NMakeReBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)" CFG=$(MakeCFG) clean all</NMakeReBuildCommandLine>
-    <NMakeCleanCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)" CFG=$(MakeCFG) clean</NMakeCleanCommandLine>
-    <NMakeOutput />
+    <NMakeBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) DEBUG=$(DebugBuild)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) clean all</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) clean</NMakeCleanCommandLine>
+    <NMakeOutput/>
     <NMakePreprocessorDefinitions>$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
     <NMakeIncludeSearchPath>$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes>$(NMakeForcedIncludes)</NMakeForcedIncludes>
@@ -35,6 +34,9 @@
     <NMakeForcedUsingAssemblies>$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <BuildLog>
+      <Path>.\data\log\$(Platform)\$(Configuration)BuildLog.html</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="brkitr\brkfiles.mk" />

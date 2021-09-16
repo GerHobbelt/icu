@@ -6,7 +6,7 @@
 #**********************************************************************
 # nmake file for creating data files on win32
 # invoke with
-# nmake /f makedata.mak ICUMAKE=$(ProjectDir)
+# nmake /f makedata.mak icumake=$(ProjectDir)
 #
 #	12/10/1999	weiv	Created
 
@@ -28,13 +28,13 @@ ICU_LIB_TARGET=$(DLL_OUTPUT)\$(U_ICUDATA_NAME).dll
 #     Is the directory into which most data is built (prior to packaging)
 #     Is icu\source\data\
 #
-!IF "$(ICUMAKE)" == ""
-!ERROR "Can't find ICUMAKE (ICU Data Make dir, should point to icu\source\data\ )!"
+!IF "$(ICUMAKE)"==""
+!ERROR Can't find ICUMAKE (ICU Data Make dir, should point to icu\source\data\ )!
 !ENDIF
 !MESSAGE ICU data make path is $(ICUMAKE)
 
-!IF [py -3 -c "exit(0)"] != 0
-!MESSAGE "Information: Unable to find Python 3. Data will fail to build from source."
+!IF [py -3 -c "exit(0)"]!=0
+!MESSAGE Information: Unable to find Python 3. Data will fail to build from source.
 !ENDIF
 
 # Suffixes for data files
@@ -246,7 +246,7 @@ ALL : GODATA "$(ICU_LIB_TARGET)" "$(TESTDATAOUT)\testdata.dat"
 
 !IF "$(UWP)" == "UWP"
 	@if not exist "$(ICUMAKE)\..\..\commondata\" mkdir "$(ICUMAKE)\..\..\commondata\"
-	copy "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat" "$(ICUMAKE)\..\..\commondata\"
+    copy "$(ICUOUT)\$(U_ICUDATA_NAME)$(U_ICUDATA_ENDIAN_SUFFIX).dat" "$(ICUMAKE)\..\..\commondata\"
 !ENDIF
 
 !ELSE

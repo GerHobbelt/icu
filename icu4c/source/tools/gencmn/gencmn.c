@@ -47,13 +47,8 @@ static UOption options[]={
 /*10*/UOPTION_SOURCEDIR,
 };
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_gencmn_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+extern int
+main(int argc, char* argv[]) {
     UBool sourceTOC, verbose;
     uint32_t maxSize;
 

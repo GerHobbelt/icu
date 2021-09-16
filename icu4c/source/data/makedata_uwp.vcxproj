@@ -40,7 +40,6 @@
     <DefaultLanguage>en-US</DefaultLanguage>
     <ConfigurationType>Makefile</ConfigurationType>
     <UseOfMfc>false</UseOfMfc>
-    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <!-- The following import will include the 'default' configuration options for VS UWP projects. -->
   <Import Project="..\allinone\Build.Windows.UWP.ProjectConfiguration.props" />
@@ -51,22 +50,31 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
-    <IntDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\$(ProjectName)\</IntDir>
-    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir>.\data\tmp\$(Platform)\</OutDir>
+    <IntDir>.\data\build\</IntDir>
+    <MakeCFG>$(Platform)\$(Configuration)</MakeCFG>
     <!-- The ICU projects use "Win32" to mean "x86", so we need to special case it. -->
-    <OutDir>$(SolutionDir)$(Configuration)-$(PlatformShortname)\</OutDir>
-    <MakeCFG>$(PlatformShortname)\$(Configuration)</MakeCFG>
+    <OutDir Condition="'$(Platform)'=='Win32'">.\data\tmp\x86\</OutDir>
+    <MakeCFG Condition="'$(Platform)'=='Win32'">x86\$(Configuration)</MakeCFG>
     <!-- NMake -->
     <NMakeBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP</NMakeBuildCommandLine>
     <NMakeReBuildCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP clean all</NMakeReBuildCommandLine>
     <NMakeCleanCommandLine>NMAKE /f makedata.mak ICUMAKE="$(ProjectDir)\" CFG=$(MakeCFG) UWP=UWP clean</NMakeCleanCommandLine>
   </PropertyGroup>
   <ItemDefinitionGroup>
+    <BuildLog>
+      <Path>$(OutDir)$(Configuration)UWPBuildLog.html</Path>
+    </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="brkitr\brkfiles.mk" />
+    <None Include="coll\colfiles.mk" />
     <None Include="makedata.mak" />
+    <None Include="misc\miscfiles.mk" />
+    <None Include="rbnf\rbnffiles.mk" />
+    <None Include="locales\resfiles.mk" />
     <None Include="..\test\testdata\testdata.mak" />
+    <None Include="translit\trnsfiles.mk" />
     <None Include="mappings\ucmcore.mk" />
     <None Include="mappings\ucmebcdic.mk" />
     <None Include="mappings\ucmfiles.mk" />

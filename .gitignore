@@ -278,8 +278,3 @@ tools/unicode/c/genprops/genprops.[0-9]
 tools/unicode/c/genuca/genuca
 tools/unicode/c/genuca/genuca.8
 tools/unicode/c/icudefs.txt
-
-# Visual Studio intermediates
-/icu4c/source/allinone/Debug-*/
-/icu4c/source/allinone/Release-*/
-

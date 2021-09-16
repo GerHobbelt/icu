@@ -7,8 +7,6 @@
  **********************************************************************
  */
 
-#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
-
 /*
  * paragraphLayout doesn't make much sense without
  * BreakIterator...
@@ -1281,4 +1279,3 @@ U_NAMESPACE_END
 
 #endif
 
-#endif

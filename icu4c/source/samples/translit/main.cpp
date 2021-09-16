@@ -15,7 +15,7 @@
 #include "unicode/datefmt.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "transutil.h"
+#include "util.h"
 #include "unaccent.h"
 
 // RuleBasedTransliterator rules to remove accents from characters

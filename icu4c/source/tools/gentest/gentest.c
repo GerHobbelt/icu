@@ -61,13 +61,8 @@ static UOption options[]={
   /*4*/ UOPTION_DEF("javastuff", 'j', UOPT_NO_ARG),  
 };
 
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_gentest_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+extern int
+main(int argc, char* argv[]) {
     UErrorCode errorCode = U_ZERO_ERROR;
 
     /* preset then read command line options */

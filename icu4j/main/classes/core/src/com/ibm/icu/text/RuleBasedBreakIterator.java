@@ -727,7 +727,7 @@ public class RuleBasedBreakIterator extends BreakIterator {
                     try {
                         eng = LSTMBreakEngine.create(script, LSTMBreakEngine.createData(script));
                     } catch (MissingResourceException e) {
-                        eng = new ThaiLSTMBreakEngine();
+                        eng = new ThaiBreakEngine();
                     }
                     break;
                 case UScript.LAO:
@@ -737,7 +737,7 @@ public class RuleBasedBreakIterator extends BreakIterator {
                     try {
                         eng = LSTMBreakEngine.create(script, LSTMBreakEngine.createData(script));
                     } catch (MissingResourceException e) {
-                        eng = new BurmeseLSTMBreakEngine();
+                        eng = new BurmeseBreakEngine();
                     }
                     break;
                 case UScript.KHMER:

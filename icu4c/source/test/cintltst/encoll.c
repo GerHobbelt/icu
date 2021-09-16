@@ -307,6 +307,7 @@ static void TestTertiary( )
 
 static void TestPrimary()
 {
+    
     int32_t i;
     UErrorCode status = U_ZERO_ERROR;
     myCollation = ucol_open("en_US", &status);

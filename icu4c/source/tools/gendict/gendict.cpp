@@ -48,8 +48,7 @@ static int elapsedTime() {
 
 U_NAMESPACE_USE
 
-static const char *progName;
-
+static char *progName;
 static UOption options[]={
     UOPTION_HELP_H,             /* 0 */
     UOPTION_HELP_QUESTION_MARK, /* 1 */
@@ -242,13 +241,7 @@ static UBool readLine(UCHARBUF *f, UnicodeString &fileLine, IcuToolErrorCode &er
 //  main      for gendict
 //
 //----------------------------------------------------------------------------
-
-#if defined(BUILD_MONOLITHIC)
-#define main(cnt, arr)      icu_gendict_main(cnt, arr)
-#endif
-
-int main(int argc, const char** argv)
-{
+int  main(int argc, char **argv) {
     //
     // Pick up and check the command line arguments,
     //    using the standard ICU tool utils option handling.
