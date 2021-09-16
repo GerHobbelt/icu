@@ -128,15 +128,15 @@ void UVectorTest::UVector_API() {
     status = U_ZERO_ERROR;
     UVector vec(status);
     vec.setDeleter(uprv_deleteUObject);
-    vec.addElement(new UnicodeString(), status);
-    vec.addElement(new UnicodeString(), status);
+    vec.adoptElement(new UnicodeString(), status);
+    vec.adoptElement(new UnicodeString(), status);
     assertSuccess(WHERE, status);
     assertEquals(WHERE, 2, vec.size());
 
-    // With an incoming error, addElement will not add to the vector,
+    // With an incoming error, adoptElement will not add to the vector,
     // and will delete the object. Failure here will show as a memory leak.
     status = U_ILLEGAL_ARGUMENT_ERROR;
-    vec.addElement(new UnicodeString(), status);
+    vec.adoptElement(new UnicodeString(), status);
     assertEquals(WHERE, U_ILLEGAL_ARGUMENT_ERROR, status);
     assertEquals(WHERE, 2, vec.size());
 }

@@ -34,9 +34,8 @@ U_NAMESPACE_BEGIN
  *
  * *Design notes*
  *
- * There is index bounds checking. Out of bounds indexing will
- * raise an assertion failure. In release builds, with assertion
- * checking disabled, either nothing happens, or zero is
+ * There is index bounds checking, but little is done about it.  If
+ * indices are out of bounds, either nothing happens, or zero is
  * returned.  We *do* avoid indexing off into the weeds.
  *
  * Since we don't have garbage collection, UVector was given the
@@ -58,7 +57,8 @@ U_NAMESPACE_BEGIN
  * an element into the vector will instead delete the element that
  * could not be adopted. This simplifies object ownership
  * management around calls to `addElement()` and `insertElementAt()`;
- * Error or no, the function always transfers ownership to the vector.
+ * error or no, the function always takes ownership of an incoming object
+ * from the caller.
  *
  * In order to implement methods such as `contains()` and `indexOf()`,
  * UVector needs a way to compare objects for equality.  To do so, it
@@ -74,12 +74,10 @@ U_NAMESPACE_BEGIN
  * @author Alan Liu
  */
 class U_COMMON_API UVector : public UObject {
-    // NOTE: UVector uses the UHashKey (union of void* and int32_t) as
+    // NOTE: UVector uses the UElement (union of void* and int32_t) as
     // its basic storage type.  It uses UElementsAreEqual as its
     // comparison function.  It uses UObjectDeleter as its deleter
-    // function.  These are named for hashtables, but used here as-is
-    // rather than duplicating the type.  This allows sharing of
-    // support functions.
+    // function.  This allows sharing of support functions with UHashtable.
 
 private:
     int32_t count = 0;
@@ -119,7 +117,7 @@ public:
     /**
      * Equivalent to !operator==()
      */
-    inline bool operator!=(const UVector& other) const {return !operator==(other);};
+    inline bool operator!=(const UVector& other) const {return !operator==(other);}
 
     //------------------------------------------------------------
     // java.util.Vector API
@@ -131,7 +129,27 @@ public:
      */
     void addElementX(void* obj, UErrorCode &status);
 
+    /**
+     * Add an element at the end of the vector.
+     * For use only with vectors that do not adopt their elements, which is to say,
+     * have not set an element deleter function. See `adoptElement()`.
+     */
     void addElement(void *obj, UErrorCode &status);
+
+    /**
+     * Add an element at the end of the vector.
+     * For use only with vectors that adopt their elements, which is to say,
+     * have set an element deleter function. See `addElement()`.
+     *
+     * If the element cannot be successfully added, it will be deleted. This is
+     * normal ICU _adopt_ behavior - one way or another ownership of the incoming
+     * object is transferred from the caller.
+     *
+     * `addElement()` and `adoptElement()` are separate functions to make it easier
+     * to see what the function is doing at call sites. Having a single combined function,
+     * as in earlier versions of UVector, had proved to be error-prone.
+     */
+    void adoptElement(void *obj, UErrorCode &status);
 
     void addElement(int32_t elem, UErrorCode &status);
 
@@ -155,19 +173,19 @@ public:
 
     UBool equals(const UVector &other) const;
 
-    inline void* firstElement(void) const {return elementAt(0);};
+    inline void* firstElement(void) const {return elementAt(0);}
 
-    inline void* lastElement(void) const {return elementAt(count-1);};
+    inline void* lastElement(void) const {return elementAt(count-1);}
 
-    inline int32_t lastElementi(void) const {return elementAti(count-1);};
+    inline int32_t lastElementi(void) const {return elementAti(count-1);}
 
     int32_t indexOf(void* obj, int32_t startIndex = 0) const;
 
     int32_t indexOf(int32_t obj, int32_t startIndex = 0) const;
 
-    inline UBool contains(void* obj) const {return indexOf(obj) >= 0;};
+    inline UBool contains(void* obj) const {return indexOf(obj) >= 0;}
 
-    inline UBool contains(int32_t obj) const {return indexOf(obj) >= 0;};
+    inline UBool contains(int32_t obj) const {return indexOf(obj) >= 0;}
 
     UBool containsAll(const UVector& other) const;
 
@@ -181,9 +199,9 @@ public:
 
     void removeAllElements();
 
-    inline int32_t size(void) const {return count;} ;
+    inline int32_t size(void) const {return count;}
 
-    inline UBool isEmpty(void) const {return count == 0;};
+    inline UBool isEmpty(void) const {return count == 0;}
 
     /*
      * Old version of ensureCapacity, with non-standard error handling.
@@ -211,10 +229,11 @@ public:
     //------------------------------------------------------------
 
     UObjectDeleter *setDeleter(UObjectDeleter *d);
+    bool hasDeleter() {return deleter != nullptr;}
 
     UElementsAreEqual *setComparer(UElementsAreEqual *c);
 
-    inline void* operator[](int32_t index) const {return elementAt(index);};
+    inline void* operator[](int32_t index) const {return elementAt(index);}
 
     /**
      * Removes the element at the given index from this vector and
@@ -279,11 +298,9 @@ public:
     /**
      * ICU "poor man's RTTI", returns a UClassID for the actual class.
      */
-    virtual UClassID getDynamicClassID() const;
+    virtual UClassID getDynamicClassID() const override;
 
 private:
-    void _init(int32_t initialCapacity, UErrorCode &status);
-
     int32_t indexOf(UElement key, int32_t startIndex = 0, int8_t hint = 0) const;
 
     void sortedInsert(UElement e, UElementComparator *compare, UErrorCode& ec);
@@ -299,17 +316,17 @@ public:
 
 
 /**
- * <p>Ultralightweight C++ implementation of a <tt>void*</tt> stack
+ * Ultralightweight C++ implementation of a `void*` stack
  * that is (mostly) compatible with java.util.Stack.  As in java, this
  * is merely a paper thin layer around UVector.  See the UVector
  * documentation for further information.
  *
- * <p><b>Design notes</b>
+ * *Design notes*
  *
- * <p>The element at index <tt>n-1</tt> is (of course) the top of the
+ * The element at index `n-1` is (of course) the top of the
  * stack.
  *
- * <p>The poorly named <tt>empty()</tt> method doesn't empty the
+ * The poorly named `empty()` method doesn't empty the
  * stack; it determines if the stack is empty.
  *
  * @author Alan Liu
@@ -329,25 +346,30 @@ public:
     // It's okay not to have a virtual destructor (in UVector)
     // because UStack has no special cleanup to do.
 
-    inline UBool empty(void) const {return isEmpty();};
+    inline UBool empty(void) const {return isEmpty();}
 
-    inline void* peek(void) const {return lastElement();};
+    inline void* peek(void) const {return lastElement();}
 
-    inline int32_t peeki(void) const {return lastElementi();};
+    inline int32_t peeki(void) const {return lastElementi();}
     
     void* pop(void);
     
     int32_t popi(void);
     
     inline void* push(void* obj, UErrorCode &status) {
-        addElementX(obj, status);
-        return obj;
-        };
+        if (hasDeleter()) {
+            adoptElement(obj, status);
+            return (U_SUCCESS(status)) ? obj : nullptr;
+        } else {
+            addElement(obj, status);
+            return obj;
+        }
+    }
 
     inline int32_t push(int32_t i, UErrorCode &status) {
         addElement(i, status);
         return i;
-    };
+    }
 
     /*
     If the object o occurs as an item in this stack,
@@ -363,7 +385,7 @@ public:
     /**
      * ICU "poor man's RTTI", returns a UClassID for the actual class.
      */
-    virtual UClassID getDynamicClassID() const;
+    virtual UClassID getDynamicClassID() const override;
 
     // Disallow
     UStack(const UStack&) = delete;
