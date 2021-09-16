@@ -48,11 +48,13 @@ void NumberRangeFormatterTest::runIndexedTest(int32_t index, UBool exec, const c
         TESTCASE_AUTO(testCollapse);
         TESTCASE_AUTO(testIdentity);
         TESTCASE_AUTO(testDifferentFormatters);
+        TESTCASE_AUTO(testNaNInfinity);
         TESTCASE_AUTO(testPlurals);
         TESTCASE_AUTO(testFieldPositions);
         TESTCASE_AUTO(testCopyMove);
         TESTCASE_AUTO(toObject);
         TESTCASE_AUTO(testGetDecimalNumbers);
+        TESTCASE_AUTO(test21684_Performance);
         TESTCASE_AUTO(test21358_SignPosition);
     TESTCASE_AUTO_END;
 }
@@ -665,6 +667,25 @@ void NumberRangeFormatterTest::testDifferentFormatters() {
         u"5,000–5,000,000");
 }
 
+void NumberRangeFormatterTest::testNaNInfinity() {
+    IcuTestErrorCode status(*this, "testNaNInfinity");
+
+    auto lnf = NumberRangeFormatter::withLocale("en");
+    auto result1 = lnf.formatFormattableRange(-uprv_getInfinity(), 0, status);
+    auto result2 = lnf.formatFormattableRange(0, uprv_getInfinity(), status);
+    auto result3 = lnf.formatFormattableRange(-uprv_getInfinity(), uprv_getInfinity(), status);
+    auto result4 = lnf.formatFormattableRange(uprv_getNaN(), 0, status);
+    auto result5 = lnf.formatFormattableRange(0, uprv_getNaN(), status);
+    auto result6 = lnf.formatFormattableRange(uprv_getNaN(), uprv_getNaN(), status);
+
+    assertEquals("0 - inf", u"-∞ – 0", result1.toTempString(status));
+    assertEquals("-inf - 0", u"0–∞", result2.toTempString(status));
+    assertEquals("-inf - inf", u"-∞ – ∞", result3.toTempString(status));
+    assertEquals("NaN - 0", u"NaN–0", result4.toTempString(status));
+    assertEquals("0 - NaN", u"0–NaN", result5.toTempString(status));
+    assertEquals("NaN - NaN", u"~NaN", result6.toTempString(status));
+}
+
 void NumberRangeFormatterTest::testPlurals() {
     IcuTestErrorCode status(*this, "testPlurals");
 
@@ -908,6 +929,14 @@ void NumberRangeFormatterTest::testGetDecimalNumbers() {
             assertEquals("Second decimal number", "3.00", decimalNumbers.second.c_str());
         }
     }
+}
+
+void NumberRangeFormatterTest::test21684_Performance() {
+    IcuTestErrorCode status(*this, "test21684_Performance");
+    LocalizedNumberRangeFormatter lnf = NumberRangeFormatter::withLocale("en");
+    // The following two lines of code should finish quickly.
+    lnf.formatFormattableRange({"-1e99999", status}, {"0", status}, status);
+    lnf.formatFormattableRange({"0", status}, {"1e99999", status}, status);
 }
 
 void NumberRangeFormatterTest::test21358_SignPosition() {

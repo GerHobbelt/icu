@@ -73,6 +73,7 @@ class NumberFormatterApiTest : public IntlTestWithFieldPosition {
     void roundingFigures();
     void roundingFractionFigures();
     void roundingOther();
+    void roundingIncrementSkeleton();
     void grouping();
     void padding();
     void integerWidth();
@@ -310,11 +311,13 @@ class NumberRangeFormatterTest : public IntlTestWithFieldPosition {
     void testCollapse();
     void testIdentity();
     void testDifferentFormatters();
+    void testNaNInfinity();
     void testPlurals();
     void testFieldPositions();
     void testCopyMove();
     void toObject();
     void testGetDecimalNumbers();
+    void test21684_Performance();
     void test21358_SignPosition();
 
     void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par = 0) override;

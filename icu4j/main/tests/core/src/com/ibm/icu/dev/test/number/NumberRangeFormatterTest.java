@@ -2,6 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html
 package com.ibm.icu.dev.test.number;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -684,6 +685,24 @@ public class NumberRangeFormatterTest extends TestFmwk {
     }
 
     @Test
+    public void testNaNInfinity() {
+        LocalizedNumberRangeFormatter lnf = NumberRangeFormatter.withLocale(ULocale.ENGLISH);
+        FormattedNumberRange result1 = lnf.formatRange(Double.NEGATIVE_INFINITY, 0);
+        FormattedNumberRange result2 = lnf.formatRange(0, Double.POSITIVE_INFINITY);
+        FormattedNumberRange result3 = lnf.formatRange(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+        FormattedNumberRange result4 = lnf.formatRange(Double.NaN, 0);
+        FormattedNumberRange result5 = lnf.formatRange(0, Double.NaN);
+        FormattedNumberRange result6 = lnf.formatRange(Double.NaN, Double.NaN);
+    
+        assertEquals("0 - inf", "-∞ – 0", result1.toString());
+        assertEquals("-inf - 0", "0–∞", result2.toString());
+        assertEquals("-inf - inf", "-∞ – ∞", result3.toString());
+        assertEquals("NaN - 0", "NaN–0", result4.toString());
+        assertEquals("0 - NaN", "0–NaN", result5.toString());
+        assertEquals("NaN - NaN", "~NaN", result6.toString());
+    }
+
+    @Test
     public void testPlurals() {
         // Locale sl has interesting plural forms:
         // GBP{
@@ -852,6 +871,14 @@ public class NumberRangeFormatterTest extends TestFmwk {
             resource.getAllItemsWithFallback("NumberElements", sink);
             sink.checkAndReset(locale);
         }
+    }
+
+    @Test
+    public void test21684_Performance() {
+        LocalizedNumberRangeFormatter lnf = NumberRangeFormatter.withLocale(ULocale.ENGLISH);
+        // The following two lines of code should finish quickly.
+        lnf.formatRange(new BigDecimal("-1e99999"), new BigDecimal("0"));
+        lnf.formatRange(new BigDecimal("0"), new BigDecimal("1e99999"));
     }
 
     @Test

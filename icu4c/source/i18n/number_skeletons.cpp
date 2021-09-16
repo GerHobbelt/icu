@@ -177,7 +177,7 @@ Notation stem_to_object::notation(skeleton::StemEnum stem) {
         case STEM_NOTATION_SIMPLE:
             return Notation::simple();
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -190,7 +190,7 @@ MeasureUnit stem_to_object::unit(skeleton::StemEnum stem) {
         case STEM_PERMILLE:
             return MeasureUnit::getPermille();
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -205,7 +205,7 @@ Precision stem_to_object::precision(skeleton::StemEnum stem) {
         case STEM_PRECISION_CURRENCY_CASH:
             return Precision::currency(UCURR_USAGE_CASH);
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -234,7 +234,7 @@ UNumberFormatRoundingMode stem_to_object::roundingMode(skeleton::StemEnum stem) 
         case STEM_ROUNDING_MODE_UNNECESSARY:
             return UNUM_ROUND_UNNECESSARY;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -349,7 +349,7 @@ void enum_to_stem_string::roundingMode(UNumberFormatRoundingMode value, UnicodeS
             sb.append(u"rounding-mode-unnecessary", -1);
             break;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -371,7 +371,7 @@ void enum_to_stem_string::groupingStrategy(UNumberGroupingStrategy value, Unicod
             sb.append(u"group-thousands", -1);
             break;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -399,7 +399,7 @@ void enum_to_stem_string::unitWidth(UNumberUnitWidth value, UnicodeString& sb) {
             sb.append(u"unit-width-hidden", -1);
             break;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -433,7 +433,7 @@ void enum_to_stem_string::signDisplay(UNumberSignDisplay value, UnicodeString& s
             sb.append(u"sign-accounting-negative", -1);
             break;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -447,7 +447,7 @@ enum_to_stem_string::decimalSeparatorDisplay(UNumberDecimalSeparatorDisplay valu
             sb.append(u"decimal-always", -1);
             break;
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -791,7 +791,7 @@ skeleton::parseStem(const StringSegment& segment, const UCharsTrie& stemTrie, Se
             return STATE_SCALE;
 
         default:
-            UPRV_UNREACHABLE;
+            UPRV_UNREACHABLE_EXIT;
     }
 }
 
@@ -1397,18 +1397,14 @@ void blueprint_helpers::parseIncrementOption(const StringSegment &segment, Macro
     number::impl::parseIncrementOption(segment, macros.precision, status);
 }
 
-void blueprint_helpers::generateIncrementOption(double increment, int32_t trailingZeros, UnicodeString& sb,
+void blueprint_helpers::generateIncrementOption(double increment, int32_t minFrac, UnicodeString& sb,
                                                 UErrorCode&) {
     // Utilize DecimalQuantity/double_conversion to format this for us.
     DecimalQuantity dq;
     dq.setToDouble(increment);
     dq.roundToInfinity();
+    dq.setMinFraction(minFrac);
     sb.append(dq.toPlainString());
-
-    // We might need to append extra trailing zeros for min fraction...
-    if (trailingZeros > 0) {
-        appendMultiple(sb, u'0', trailingZeros);
-    }
 }
 
 void blueprint_helpers::parseIntegerWidthOption(const StringSegment& segment, MacroProps& macros,
@@ -1632,7 +1628,7 @@ bool GeneratorHelpers::precision(const MacroProps& macros, UnicodeString& sb, UE
         sb.append(u"precision-increment/", -1);
         blueprint_helpers::generateIncrementOption(
                 impl.fIncrement,
-                impl.fMinFrac - impl.fMaxFrac,
+                impl.fMinFrac,
                 sb,
                 status);
     } else if (macros.precision.fType == Precision::RND_CURRENCY) {
