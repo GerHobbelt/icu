@@ -59,6 +59,9 @@ static void TestBug20321UnicodeLocaleKey(void);
 
 static void TestUsingDefaultWarning(void);
 static void TestExcessivelyLongIDs(void);
+#if !UCONFIG_NO_FORMATTING
+static void TestUldnNameVariants(void);
+#endif
 
 void PrintDataTable();
 
@@ -240,6 +243,7 @@ void addLocaleTest(TestNode** root)
     TESTCASE(TestKeywordSet);
     TESTCASE(TestKeywordSetError);
     TESTCASE(TestDisplayKeywords);
+    TESTCASE(TestCanonicalization21749StackUseAfterScope);
     TESTCASE(TestDisplayKeywordValues);
     TESTCASE(TestGetBaseName);
 #if !UCONFIG_NO_FILE_IO
@@ -283,6 +287,9 @@ void addLocaleTest(TestNode** root)
     TESTCASE(TestUsingDefaultWarning);
     TESTCASE(TestBug21449InfiniteLoop);
     TESTCASE(TestExcessivelyLongIDs);
+#if !UCONFIG_NO_FORMATTING
+    TESTCASE(TestUldnNameVariants);
+#endif
 }
 
 
@@ -2485,6 +2492,19 @@ static void TestCanonicalizationBuffer(void)
     if (uprv_strncmp(name, buffer, len) != 0) {
         log_err("FAIL: uloc_canonicalize(%s) => \"%.*s\", expected \"%s\"\n",
                 name, reslen, buffer, name);
+        return;
+    }
+}
+
+static void TestCanonicalization21749StackUseAfterScope(void)
+{
+    UErrorCode status = U_ZERO_ERROR;
+    char buffer[256];
+    const char* input = "- _";
+    uloc_canonicalize(input, buffer, -1, &status);
+    if (U_SUCCESS(status)) {
+        log_err("FAIL: uloc_canonicalize(%s) => %s, expected U_FAILURE()\n",
+                input, u_errorName(status));
         return;
     }
 }
@@ -6916,6 +6936,187 @@ static void TestBug20149() {
         log_err("ERROR: in uloc_forLanguageTag %s return %s\n", myErrorName(status), locale);
     }
 }
+
+#if !UCONFIG_NO_FORMATTING
+typedef enum UldnNameType {
+    TEST_ULDN_LOCALE,
+    TEST_ULDN_LANGUAGE,
+    TEST_ULDN_SCRIPT,
+    TEST_ULDN_REGION,
+    TEST_ULOC_LOCALE,   // only valid with optStdMidLong
+    TEST_ULOC_LANGUAGE, // only valid with optStdMidLong
+    TEST_ULOC_SCRIPT,   // only valid with optStdMidLong
+    TEST_ULOC_REGION,   // only valid with optStdMidLong
+} UldnNameType;
+
+typedef struct {
+    const char * localeToName; // NULL to terminate a list of these
+    UldnNameType nameType;
+    const UChar * expectResult;
+} UldnItem;
+
+typedef struct {
+    const char *            displayLocale;
+    const UDisplayContext * displayOptions; // set of 3 UDisplayContext items
+    const UldnItem *        testItems;
+    int32_t                 countItems;
+} UldnLocAndOpts;
+
+static const UDisplayContext optStdMidLong[3] = {UDISPCTX_STANDARD_NAMES, UDISPCTX_CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,    UDISPCTX_LENGTH_FULL};
+static const UDisplayContext optStdMidShrt[3] = {UDISPCTX_STANDARD_NAMES, UDISPCTX_CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,    UDISPCTX_LENGTH_SHORT};
+static const UDisplayContext optDiaMidLong[3] = {UDISPCTX_DIALECT_NAMES,  UDISPCTX_CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,    UDISPCTX_LENGTH_FULL};
+static const UDisplayContext optDiaMidShrt[3] = {UDISPCTX_DIALECT_NAMES,  UDISPCTX_CAPITALIZATION_FOR_MIDDLE_OF_SENTENCE,    UDISPCTX_LENGTH_SHORT};
+
+static const UldnItem en_StdMidLong[] = {
+	{ "en_US",                  TEST_ULDN_LOCALE, u"English (United States)" },
+	{ "en",                     TEST_ULDN_LANGUAGE, u"English" },
+	{ "en_US",                  TEST_ULOC_LOCALE, u"English (United States)" },
+	{ "en_US",                  TEST_ULOC_LANGUAGE, u"English" },
+	{ "en",                     TEST_ULOC_LANGUAGE, u"English" },
+	// https://unicode-org.atlassian.net/browse/ICU-20870
+	{ "fa_AF",                  TEST_ULDN_LOCALE, u"Persian (Afghanistan)" },
+	{ "prs",                    TEST_ULDN_LOCALE, u"Dari" },
+	{ "prs_AF",                 TEST_ULDN_LOCALE, u"Dari (Afghanistan)" },
+	{ "prs_TJ",                 TEST_ULDN_LOCALE, u"Dari (Tajikistan)" },
+	{ "prs",                    TEST_ULDN_LANGUAGE, u"Dari" },
+	{ "prs",                    TEST_ULOC_LANGUAGE, u"Dari" },
+	// https://unicode-org.atlassian.net/browse/ICU-21742
+	{ "ji",                     TEST_ULDN_LOCALE, u"Yiddish" },
+	{ "ji_US",                  TEST_ULDN_LOCALE, u"Yiddish (United States)" },
+	{ "ji",                     TEST_ULDN_LANGUAGE, u"Yiddish" },
+	{ "ji_US",                  TEST_ULOC_LOCALE, u"Yiddish (United States)" },
+	{ "ji",                     TEST_ULOC_LANGUAGE, u"Yiddish" },
+	// https://unicode-org.atlassian.net/browse/ICU-11563
+	{ "mo",                     TEST_ULDN_LOCALE, u"Romanian" },
+	{ "mo_MD",                  TEST_ULDN_LOCALE, u"Romanian (Moldova)" },
+	{ "mo",                     TEST_ULDN_LANGUAGE, u"Romanian" },
+	{ "mo_MD",                  TEST_ULOC_LOCALE, u"Romanian (Moldova)" },
+	{ "mo",                     TEST_ULOC_LANGUAGE, u"Romanian" },
+};
+
+static const UldnItem en_StdMidShrt[] = {
+	{ "en_US",                  TEST_ULDN_LOCALE, u"English (US)" },
+	{ "en",                     TEST_ULDN_LANGUAGE, u"English" },
+};
+
+static const UldnItem en_DiaMidLong[] = {
+	{ "en_US",                  TEST_ULDN_LOCALE, u"American English" },
+	{ "fa_AF",                  TEST_ULDN_LOCALE, u"Dari" },
+	{ "prs",                    TEST_ULDN_LOCALE, u"Dari" },
+	{ "prs_AF",                 TEST_ULDN_LOCALE, u"Dari (Afghanistan)" },
+	{ "prs_TJ",                 TEST_ULDN_LOCALE, u"Dari (Tajikistan)" },
+	{ "prs",                    TEST_ULDN_LANGUAGE, u"Dari" },
+	{ "mo",                     TEST_ULDN_LOCALE, u"Romanian" },
+	{ "mo",                     TEST_ULDN_LANGUAGE, u"Romanian" },
+};
+
+static const UldnItem en_DiaMidShrt[] = {
+	{ "en_US",                  TEST_ULDN_LOCALE, u"US English" },
+};
+
+static const UldnItem ro_StdMidLong[] = { // https://unicode-org.atlassian.net/browse/ICU-11563
+	{ "mo",                     TEST_ULDN_LOCALE, u"română" },
+	{ "mo_MD",                  TEST_ULDN_LOCALE, u"română (Republica Moldova)" },
+	{ "mo",                     TEST_ULDN_LANGUAGE, u"română" },
+	{ "mo_MD",                  TEST_ULOC_LOCALE, u"română (Republica Moldova)" },
+	{ "mo",                     TEST_ULOC_LANGUAGE, u"română" },
+};
+
+static const UldnItem yi_StdMidLong[] = { // https://unicode-org.atlassian.net/browse/ICU-21742
+	{ "ji",                     TEST_ULDN_LOCALE, u"ייִדיש" },
+	{ "ji_US",                  TEST_ULDN_LOCALE, u"ייִדיש (פֿאַראייניגטע שטאַטן)" },
+	{ "ji",                     TEST_ULDN_LANGUAGE, u"ייִדיש" },
+	{ "ji_US",                  TEST_ULOC_LOCALE, u"ייִדיש (פֿאַראייניגטע שטאַטן)" },
+	{ "ji",                     TEST_ULOC_LANGUAGE, u"ייִדיש" },
+};
+
+static const UldnLocAndOpts uldnLocAndOpts[] = {
+    { "en", optStdMidLong, en_StdMidLong, UPRV_LENGTHOF(en_StdMidLong) },
+    { "en", optStdMidShrt, en_StdMidShrt, UPRV_LENGTHOF(en_StdMidShrt) },
+    { "en", optDiaMidLong, en_DiaMidLong, UPRV_LENGTHOF(en_DiaMidLong) },
+    { "en", optDiaMidShrt, en_DiaMidShrt, UPRV_LENGTHOF(en_DiaMidShrt) },
+    { "ro", optStdMidLong, ro_StdMidLong, UPRV_LENGTHOF(ro_StdMidLong) },
+    { "yi", optStdMidLong, yi_StdMidLong, UPRV_LENGTHOF(yi_StdMidLong) },
+    { NULL, NULL, NULL, 0 }
+};
+
+enum { kUNameBuf = 128, kBNameBuf = 256 };
+
+static void TestUldnNameVariants() {
+    const UldnLocAndOpts * uloPtr;
+    for (uloPtr = uldnLocAndOpts; uloPtr->displayLocale != NULL; uloPtr++) {
+        UErrorCode status = U_ZERO_ERROR;
+        ULocaleDisplayNames * uldn = uldn_openForContext(uloPtr->displayLocale, (UDisplayContext*)uloPtr->displayOptions, 3, &status);
+        if (U_FAILURE(status)) {
+            log_data_err("uldn_openForContext fails, displayLocale %s, contexts %03X %03X %03X: %s - Are you missing data?\n",
+                    uloPtr->displayLocale, uloPtr->displayOptions[0], uloPtr->displayOptions[1], uloPtr->displayOptions[2],
+                    u_errorName(status) );
+            continue;
+        }
+        const UldnItem * itemPtr = uloPtr->testItems;
+        int32_t itemCount = uloPtr->countItems;
+        for (; itemCount-- > 0; itemPtr++) {
+            UChar uget[kUNameBuf];
+            int32_t ulenget, ulenexp;
+            const char* typeString;
+            status = U_ZERO_ERROR;
+            switch (itemPtr->nameType) {
+                case TEST_ULDN_LOCALE:
+                    ulenget = uldn_localeDisplayName(uldn, itemPtr->localeToName, uget, kUNameBuf, &status);
+                    typeString = "uldn_localeDisplayName";
+                    break;
+                case TEST_ULDN_LANGUAGE:
+                    ulenget = uldn_languageDisplayName(uldn, itemPtr->localeToName, uget, kUNameBuf, &status);
+                    typeString = "uldn_languageDisplayName";
+                  break;
+                case TEST_ULDN_SCRIPT:
+                    ulenget = uldn_scriptDisplayName(uldn, itemPtr->localeToName, uget, kUNameBuf, &status);
+                    typeString = "uldn_scriptDisplayName";
+                    break;
+                case TEST_ULDN_REGION:
+                    ulenget = uldn_regionDisplayName(uldn, itemPtr->localeToName, uget, kUNameBuf, &status);
+                    typeString = "uldn_regionDisplayName";
+                    break;
+                case TEST_ULOC_LOCALE:
+                    ulenget = uloc_getDisplayName(itemPtr->localeToName, uloPtr->displayLocale, uget, kUNameBuf, &status);
+                    typeString = "uloc_getDisplayName";
+                    break;
+                case TEST_ULOC_LANGUAGE:
+                    ulenget = uloc_getDisplayLanguage(itemPtr->localeToName, uloPtr->displayLocale, uget, kUNameBuf, &status);
+                    typeString = "uloc_getDisplayLanguage";
+                    break;
+                case TEST_ULOC_SCRIPT:
+                    ulenget = uloc_getDisplayScript(itemPtr->localeToName, uloPtr->displayLocale, uget, kUNameBuf, &status);
+                    typeString = "uloc_getDisplayScript";
+                    break;
+                case TEST_ULOC_REGION:
+                    ulenget = uloc_getDisplayCountry(itemPtr->localeToName, uloPtr->displayLocale, uget, kUNameBuf, &status);
+                    typeString = "uloc_getDisplayCountry";
+                    break;
+                default:
+                    continue;
+            }
+            if (U_FAILURE(status)) {
+                log_data_err("%s fails, displayLocale %s, contexts %03X %03X %03X, localeToName %s: %s\n",
+                        typeString, uloPtr->displayLocale, uloPtr->displayOptions[0], uloPtr->displayOptions[1], uloPtr->displayOptions[2],
+                        itemPtr->localeToName, u_errorName(status) );
+                continue;
+            }
+            ulenexp = u_strlen(itemPtr->expectResult);
+            if (ulenget != ulenexp || u_strncmp(uget, itemPtr->expectResult, ulenexp) != 0) {
+                char bexp[kBNameBuf], bget[kBNameBuf];
+                u_strToUTF8(bexp, kBNameBuf, NULL, itemPtr->expectResult, ulenexp, &status);
+                u_strToUTF8(bget, kBNameBuf, NULL, uget, ulenget, &status);
+                log_data_err("%s fails, displayLocale %s, contexts %03X %03X %03X, localeToName %s:\n    expect %2d: %s\n    get    %2d: %s\n",
+                        typeString, uloPtr->displayLocale, uloPtr->displayOptions[0], uloPtr->displayOptions[1], uloPtr->displayOptions[2],
+                        itemPtr->localeToName, ulenexp, bexp, ulenget, bget );
+            }
+        }
+
+        uldn_close(uldn);
+    }
+}
+#endif
 
 static void TestUsingDefaultWarning() {
     UChar buff[256];
