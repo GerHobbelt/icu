@@ -104,7 +104,7 @@ files {
   "icu4c/source/common/utrie2.cpp",
   "icu4c/source/common/uvector.cpp",
   "icu4c/source/common/wintz.cpp",
-  "icu4c/source/data/icudt68_dat.c",
+  "icu4c/source/data/icudt69_dat.c",
   "icu4c/source/extra/scrptrun/scrptrun.cpp",
 }
 
