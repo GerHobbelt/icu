@@ -58,6 +58,8 @@ group: c_strings
     # We must not use tolower and toupper because they are system-locale-sensitive (Turkish i).
     strlen strchr strrchr strstr strcmp strncmp strcpy strncpy strcat strncat
     memchr memcmp memcpy memmove memset
+    # BSD version of memcmp().
+    bcmp
     # Additional symbols in an optimized build.
     # BSD version of memcmp().
     bcmp
