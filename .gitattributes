@@ -76,7 +76,7 @@ configure text !eol
 
 # The following file types are stored in Git-LFS.
 # Only .jars
-*.jar filter=lfs diff=lfs merge=lfs -text
+# *.jar filter=lfs diff=lfs merge=lfs -text
 
 # Enable syntax highlighting on GitHub.com
 .cpyskip.txt linguist-language=Ignore-List
