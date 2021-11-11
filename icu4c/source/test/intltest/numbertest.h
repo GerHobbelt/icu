@@ -67,6 +67,7 @@ class NumberFormatterApiTest : public IntlTestWithFieldPosition {
     void unitCurrency();
     void unitInflections();
     void unitGender();
+    void unitNotConvertible();
     void unitPercent();
     void percentParity();
     void roundingFraction();
@@ -254,12 +255,13 @@ class PatternModifierTest : public IntlTest {
     UnicodeString getSuffix(const MutablePatternModifier &mod, UErrorCode &status);
 };
 
-class PatternStringTest : public IntlTest {
+class PatternStringTest : public IntlTestWithFieldPosition {
   public:
     void testLocalized();
     void testToPatternSimple();
     void testExceptionOnInvalid();
     void testBug13117();
+    void testCurrencyDecimal();
 
     void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par = 0) override;
 
@@ -319,6 +321,7 @@ class NumberRangeFormatterTest : public IntlTestWithFieldPosition {
     void testGetDecimalNumbers();
     void test21684_Performance();
     void test21358_SignPosition();
+    void test21683_StateLeak();
 
     void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par = 0) override;
 

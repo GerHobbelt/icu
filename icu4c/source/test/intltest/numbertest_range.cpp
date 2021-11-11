@@ -56,6 +56,7 @@ void NumberRangeFormatterTest::runIndexedTest(int32_t index, UBool exec, const c
         TESTCASE_AUTO(testGetDecimalNumbers);
         TESTCASE_AUTO(test21684_Performance);
         TESTCASE_AUTO(test21358_SignPosition);
+        TESTCASE_AUTO(test21683_StateLeak);
     TESTCASE_AUTO_END;
 }
 
@@ -677,6 +678,8 @@ void NumberRangeFormatterTest::testNaNInfinity() {
     auto result4 = lnf.formatFormattableRange(uprv_getNaN(), 0, status);
     auto result5 = lnf.formatFormattableRange(0, uprv_getNaN(), status);
     auto result6 = lnf.formatFormattableRange(uprv_getNaN(), uprv_getNaN(), status);
+    auto result7 = lnf.formatFormattableRange({"1000", status}, {"Infinity", status}, status);
+    auto result8 = lnf.formatFormattableRange({"-Infinity", status}, {"NaN", status}, status);
 
     assertEquals("0 - inf", u"-∞ – 0", result1.toTempString(status));
     assertEquals("-inf - 0", u"0–∞", result2.toTempString(status));
@@ -684,6 +687,8 @@ void NumberRangeFormatterTest::testNaNInfinity() {
     assertEquals("NaN - 0", u"NaN–0", result4.toTempString(status));
     assertEquals("0 - NaN", u"0–NaN", result5.toTempString(status));
     assertEquals("NaN - NaN", u"~NaN", result6.toTempString(status));
+    assertEquals("1000 - inf", u"1,000–∞", result7.toTempString(status));
+    assertEquals("-inf - NaN", u"-∞ – NaN", result8.toTempString(status));
 }
 
 void NumberRangeFormatterTest::testPlurals() {
@@ -1002,6 +1007,70 @@ void NumberRangeFormatterTest::test21358_SignPosition() {
         UnicodeString actual = lnrf.formatFormattableRange(2, -3, status).toString(status);
         assertEquals("Positive to negative percent", u"2% – -3%", actual);
     }
+}
+
+void NumberRangeFormatterTest::test21683_StateLeak() {
+    IcuTestErrorCode status(*this, "test21683_StateLeak");
+    UNumberRangeFormatter* nrf = nullptr;
+    UFormattedNumberRange* result = nullptr;
+    UConstrainedFieldPosition* fpos = nullptr;
+
+    struct Range {
+        double start;
+        double end;
+        const char16_t* expected;
+        int numFields;
+    } ranges[] = {
+        {1, 2, u"1\u20132", 4},
+        {1, 1, u"~1", 2},
+    };
+
+    UParseError* perror = nullptr;
+    nrf = unumrf_openForSkeletonWithCollapseAndIdentityFallback(
+        u"", -1,
+        UNUM_RANGE_COLLAPSE_AUTO,
+        UNUM_IDENTITY_FALLBACK_APPROXIMATELY,
+        "en", perror, status);
+    if (status.errIfFailureAndReset("unumrf_openForSkeletonWithCollapseAndIdentityFallback")) {
+        goto cleanup;
+    }
+
+    result = unumrf_openResult(status);
+    if (status.errIfFailureAndReset("unumrf_openResult")) { goto cleanup; }
+
+    for (auto range : ranges) {
+        unumrf_formatDoubleRange(nrf, range.start, range.end, result, status);
+        if (status.errIfFailureAndReset("unumrf_formatDoubleRange")) { goto cleanup; }
+
+        auto* formattedValue = unumrf_resultAsValue(result, status);
+        if (status.errIfFailureAndReset("unumrf_resultAsValue")) { goto cleanup; }
+
+        int32_t utf16Length;
+        const char16_t* utf16Str = ufmtval_getString(formattedValue, &utf16Length, status);
+        if (status.errIfFailureAndReset("ufmtval_getString")) { goto cleanup; }
+
+        assertEquals("Format", range.expected, utf16Str);
+
+        ucfpos_close(fpos);
+        fpos = ucfpos_open(status);
+        if (status.errIfFailureAndReset("ucfpos_open")) { goto cleanup; }
+
+        int numFields = 0;
+        while (true) {
+            bool hasMore = ufmtval_nextPosition(formattedValue, fpos, status);
+            if (status.errIfFailureAndReset("ufmtval_nextPosition")) { goto cleanup; }
+            if (!hasMore) {
+                break;
+            }
+            numFields++;
+        }
+        assertEquals("numFields", range.numFields, numFields);
+    }
+
+cleanup:
+    unumrf_close(nrf);
+    unumrf_closeResult(result);
+    ucfpos_close(fpos);
 }
 
 void  NumberRangeFormatterTest::assertFormatRange(
