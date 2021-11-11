@@ -1721,6 +1721,75 @@ public class NumberFormatterApiTest extends TestFmwk {
                 3048,
                 "3,048 cm");
 
+        assertFormatSingle("kilometer-per-liter match the correct category",
+                "unit/kilometer-per-liter usage/default",
+                "unit/kilometer-per-liter usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("kilometer-per-liter"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "100 L/100 km");
+
+        assertFormatSingle("gallon-per-mile match the correct category",
+                "unit/gallon-per-mile usage/default",
+                "unit/gallon-per-mile usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("gallon-per-mile"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "235 L/100 km");
+
+        assertFormatSingle("psi match the correct category",
+                "unit/megapascal usage/default",
+                "unit/megapascal usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("megapascal"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "145 psi");
+
+        assertFormatSingle("millibar match the correct category",
+                "unit/millibar usage/default",
+                "unit/millibar usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("millibar"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "0.015 psi");
+
+        assertFormatSingle("pound-force-per-square-inch match the correct category",
+                "unit/pound-force-per-square-inch usage/default",
+                "unit/pound-force-per-square-inch usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("pound-force-per-square-inch"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "1 psi");
+
+        assertFormatSingle("inch-ofhg match the correct category",
+                "unit/inch-ofhg usage/default",
+                "unit/inch-ofhg usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("inch-ofhg"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "0.49 psi");
+
+        assertFormatSingle("millimeter-ofhg match the correct category",
+                "unit/millimeter-ofhg usage/default",
+                "unit/millimeter-ofhg usage/default",
+                NumberFormatter.with()
+                        .unit(MeasureUnit.forIdentifier("millimeter-ofhg"))
+                        .usage("default"),
+                new ULocale("en-US"),
+                1,
+                "0.019 psi");
 
         // TODO(icu-units#38): improve unit testing coverage. E.g. add
         // vehicle-fuel triggering inversion conversion code. Test with 0 too,
@@ -2619,6 +2688,40 @@ public class NumberFormatterApiTest extends TestFmwk {
         formatter = NumberFormatter.with().locale(ULocale.ENGLISH);
         fn = formatter.format(1.1);
         assertEquals("getGender for a genderless language", "", fn.getGender());
+    }
+
+    @Test
+    public void unitNotConvertible() {
+        final double randomNumber = 1234;
+
+        try {
+            NumberFormatter.with()
+                    .unit(MeasureUnit.forIdentifier("meter-and-liter"))
+                    .locale(new ULocale("en_US"))
+                    .format(randomNumber);
+        } catch (Exception e) {
+            assertEquals("error must be thrown", "class com.ibm.icu.impl.IllegalIcuArgumentException", e.getClass().toString());
+        }
+
+        try {
+            NumberFormatter.with()
+                    .unit(MeasureUnit.forIdentifier("month-and-week"))
+                    .locale(new ULocale("en_US"))
+                    .format(randomNumber);
+        } catch (Exception e) {
+            assertEquals("error must be thrown", "class com.ibm.icu.impl.IllegalIcuArgumentException", e.getClass().toString());
+        }
+
+        try {
+            NumberFormatter.with()
+                    .unit(MeasureUnit.forIdentifier("day-and-hour"))
+                    .locale(new ULocale("en_US"))
+                    .format(2.5);
+        } catch (Exception e) {
+            // No errors.
+            assert false;
+        }
+
     }
 
     @Test

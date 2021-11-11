@@ -88,6 +88,7 @@ void NumberFormatterApiTest::runIndexedTest(int32_t index, UBool exec, const cha
         TESTCASE_AUTO(unitCurrency);
         TESTCASE_AUTO(unitInflections);
         TESTCASE_AUTO(unitGender);
+        TESTCASE_AUTO(unitNotConvertible);
         TESTCASE_AUTO(unitPercent);
         if (!quick) {
             // Slow test: run in exhaustive mode only
@@ -1783,6 +1784,76 @@ void NumberFormatterApiTest::unitUsage() {
                        3048,            //
                        u"3,048 cm");
 
+    assertFormatSingle(u"kilometer-per-liter match the correct category",                   //
+                       u"unit/kilometer-per-liter usage/default",                           //
+                       u"unit/kilometer-per-liter usage/default",                           //
+                       NumberFormatter::with()                                              //
+                           .unit(MeasureUnit::forIdentifier("kilometer-per-liter", status)) //
+                           .usage("default"),                                               //
+                       Locale("en-US"),                                                     //
+                       1,                                                                   //
+                       u"100 L/100 km");
+
+    assertFormatSingle(u"gallon-per-mile match the correct category",                   //
+                       u"unit/gallon-per-mile usage/default",                           //
+                       u"unit/gallon-per-mile usage/default",                           //
+                       NumberFormatter::with()                                          //
+                           .unit(MeasureUnit::forIdentifier("gallon-per-mile", status)) //
+                           .usage("default"),                                           //
+                       Locale("en-US"),                                                 //
+                       1,                                                               //
+                       u"235 L/100 km");
+
+    assertFormatSingle(u"psi match the correct category",                          //
+                       u"unit/megapascal usage/default",                           //
+                       u"unit/megapascal usage/default",                           //
+                       NumberFormatter::with()                                     //
+                           .unit(MeasureUnit::forIdentifier("megapascal", status)) //
+                           .usage("default"),                                      //
+                       Locale("en-US"),                                            //
+                       1,                                                          //
+                       "145 psi");
+
+    assertFormatSingle(u"millibar match the correct category",                   //
+                       u"unit/millibar usage/default",                           //
+                       u"unit/millibar usage/default",                           //
+                       NumberFormatter::with()                                   //
+                           .unit(MeasureUnit::forIdentifier("millibar", status)) //
+                           .usage("default"),                                    //
+                       Locale("en-US"),                                          //
+                       1,                                                        //
+                       "0.015 psi");
+
+    assertFormatSingle(u"pound-force-per-square-inch match the correct category",                   //
+                       u"unit/pound-force-per-square-inch usage/default",                           //
+                       u"unit/pound-force-per-square-inch usage/default",                           //
+                       NumberFormatter::with()                                                      //
+                           .unit(MeasureUnit::forIdentifier("pound-force-per-square-inch", status)) //
+                           .usage("default"),                                                       //
+                       Locale("en-US"),                                                             //
+                       1,                                                                           //
+                       "1 psi");                                                                    //
+
+    assertFormatSingle(u"inch-ofhg match the correct category",                   //
+                       u"unit/inch-ofhg usage/default",                           //
+                       u"unit/inch-ofhg usage/default",                           //
+                       NumberFormatter::with()                                    //
+                           .unit(MeasureUnit::forIdentifier("inch-ofhg", status)) //
+                           .usage("default"),                                     //
+                       Locale("en-US"),                                           //
+                       1,                                                         //
+                       "0.49 psi");
+
+    assertFormatSingle(u"millimeter-ofhg match the correct category",                   //
+                       u"unit/millimeter-ofhg usage/default",                           //
+                       u"unit/millimeter-ofhg usage/default",                           //
+                       NumberFormatter::with()                                          //
+                           .unit(MeasureUnit::forIdentifier("millimeter-ofhg", status)) //
+                           .usage("default"),                                           //
+                       Locale("en-US"),                                                 //
+                       1,                                                               //
+                       "0.019 psi");
+
     // TODO(icu-units#38): improve unit testing coverage. E.g. add vehicle-fuel
     // triggering inversion conversion code. Test with 0 too, to see
     // divide-by-zero behaviour.
@@ -2627,6 +2698,31 @@ void NumberFormatterApiTest::unitGender() {
     fn = formatter.formatDouble(1.1, status);
     status.assertSuccess();
     assertEquals("getGender for a genderless language", "", fn.getGender(status));
+}
+
+void NumberFormatterApiTest::unitNotConvertible() {
+    IcuTestErrorCode status(*this, "unitNotConvertible");
+    const double randomNumber = 1234;
+
+    NumberFormatter::with()
+        .unit(MeasureUnit::forIdentifier("meter-and-liter", status))
+        .locale("en_US")
+        .formatDouble(randomNumber, status);
+    assertEquals(u"error must be returned", status.errorName(), u"U_ARGUMENT_TYPE_MISMATCH");
+
+    status.reset();
+    NumberFormatter::with()
+        .unit(MeasureUnit::forIdentifier("month-and-week", status))
+        .locale("en_US")
+        .formatDouble(randomNumber, status);
+    assertEquals(u"error must be returned", status.errorName(), u"U_ARGUMENT_TYPE_MISMATCH");
+
+    status.reset();
+    NumberFormatter::with()
+        .unit(MeasureUnit::forIdentifier("week-and-day", status))
+        .locale("en_US")
+        .formatDouble(randomNumber, status);
+    assertTrue(u"no error", !U_FAILURE(status));
 }
 
 void NumberFormatterApiTest::unitPercent() {

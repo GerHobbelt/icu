@@ -91,7 +91,7 @@ private:
 
     void TestStringSpan();
 
-    void TestUCAUnsafeBackwards();
+    void TestPatternWithSurrogates();
     void TestIntOverflow();
     void TestUnusedCcc();
     void TestDeepPattern();
@@ -99,6 +99,7 @@ private:
 
     void assertNext(UnicodeSetIterator &iter, const UnicodeString &expected);
     void TestSkipToStrings();
+    void TestPatternCodePointComplement();
 
 private:
 

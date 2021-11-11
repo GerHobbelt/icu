@@ -13,8 +13,6 @@ import java.math.MathContext;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.ibm.icu.impl.units.UnitPreferences;
-import com.ibm.icu.impl.units.UnitsData;
 import org.junit.Test;
 
 import com.ibm.icu.dev.test.TestUtil;
@@ -22,7 +20,9 @@ import com.ibm.icu.impl.Pair;
 import com.ibm.icu.impl.units.ComplexUnitsConverter;
 import com.ibm.icu.impl.units.ConversionRates;
 import com.ibm.icu.impl.units.MeasureUnitImpl;
+import com.ibm.icu.impl.units.UnitPreferences;
 import com.ibm.icu.impl.units.UnitsConverter;
+import com.ibm.icu.impl.units.UnitsData;
 import com.ibm.icu.impl.units.UnitsRouter;
 import com.ibm.icu.util.Measure;
 import com.ibm.icu.util.MeasureUnit;
@@ -367,6 +367,36 @@ public class UnitsTest {
             // Test Reciprocal
             assertEquals("testConversionInfo for reciprocal: " + test.source + " to " + test.target,
                     test.expected.reciprocal, actual.reciprocal);
+        }
+    }
+
+    @Test
+    public void testGetUnitCategory() {
+        class TestCase {
+            final MeasureUnitImpl unit;
+            final String expectedCategory;
+
+            TestCase(String unitId, String expectedCategory) {
+                this.unit = MeasureUnitImpl.forIdentifier(unitId);
+                this.expectedCategory  = expectedCategory;
+            }
+        }
+
+        TestCase testCases[] = {
+                new TestCase("kilogram-per-cubic-meter", "mass-density"),
+                new TestCase("cubic-meter-per-kilogram", "specific-volume"),
+                new TestCase("meter-per-second", "speed"),
+                new TestCase("second-per-meter", "speed"),
+                new TestCase("mile-per-gallon", "consumption"),
+                new TestCase("liter-per-100-kilometer", "consumption"),
+                new TestCase("cubic-meter-per-meter", "consumption"),
+                new TestCase("meter-per-cubic-meter", "consumption"),
+                new TestCase("kilogram-meter-per-square-meter-square-second", "pressure"),
+        };
+
+        UnitsData data = new UnitsData();
+        for (TestCase test : testCases) {
+            assertEquals(test.expectedCategory, data.getCategory(test.unit));
         }
     }
 
