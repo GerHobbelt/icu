@@ -64,7 +64,7 @@ Depending on the platform and the type of installation, we recommend a small num
 ```
 
     ICU call sites then either qualify ICU types explicitly, for example `icu::UnicodeString`, or do `using icu::UnicodeString;` where appropriate.
-*   **Hardcode the default charset to UTF-8:** On platforms where the default charset is always UTF-8, like MacOS X and some Linux distributions, we recommend hardcoding ICU's default charset to UTF-8. This means that some implementation code becomes simpler and faster, and statically linked ICU libraries become smaller. (See the [U_CHARSET_IS_UTF8](http://icu-project.org/apiref/icu4c/platform_8h.html#a0a33e1edf3cd23d9e9c972b63c9f7943) API documentation for more details.)
+*   **Hardcode the default charset to UTF-8:** On platforms where the default charset is always UTF-8, like MacOS X and some Linux distributions, we recommend hardcoding ICU's default charset to UTF-8. This means that some implementation code becomes simpler and faster, and statically linked ICU libraries become smaller. (See the [U_CHARSET_IS_UTF8](https://unicode-org.github.io/icu-docs/apidoc/dev/icu4c/platform_8h.html#a0a33e1edf3cd23d9e9c972b63c9f7943) API documentation for more details.)
     You can `-DU_CHARSET_IS_UTF8=1` or modify `unicode/utypes.h` (in ICU 4.8 and below) or modify unicode/platform.h (in ICU 49 and higher):
 
 ```
@@ -136,9 +136,15 @@ In order to change such user-configurable settings, you can either modify the `u
 
 Building International Components for Unicode requires:
 
-*   Microsoft Windows
-*   Microsoft Visual C++ (part of [Visual Studio](https://www.visualstudio.com/)) (from either Visual Studio 2015 or Visual Studio 2017)
-*   _**Optional:**_ A version of the [Windows 10 SDK](https://developer.microsoft.com/windows/downloads) (if you want to build the UWP projects)
+*   Microsoft Windows 7 or newer. (Windows XP and Windows Vista are not  supported)
+*   Microsoft Visual C++ (part of [Visual Studio](https://www.visualstudio.com/)) (from either Visual Studio 2017 or Visual Studio 2019)
+*   _**Optional:**_ A version of the [Windows 10 SDK](https://developer.microsoft.com/windows/downloads) is needed if you want to build the UWP projects.
+
+Notes regarding Windows specific issues:
+- When using "`@compat=host`" on versions of Windows below Windows 10 version 1703, there are 6 locales with date and number formatting issues ([#13119](https://unicode-org.atlassian.net/browse/ICU-13119)).
+
+- The LCID conversion APIs don't round-trip Kurdish (ku) and Central Kurdish (ckb) due to Windows not having a ckb locale ([#20181](https://unicode-org.atlassian.net/browse/ICU-20181)).
+
 
 > :point_right: **Note**: [Cygwin](#how-to-build-and-install-on-windows-with-cygwin) is required if using a version of MSVC other than the one compatible with the supplied project files or if other compilers are used to build ICU. (e.g. GCC)
 
