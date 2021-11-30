@@ -2188,12 +2188,18 @@ UBool IntlTest::assertEqualsNear(const char* message,
                                  double expected,
                                  double actual,
                                  double delta) {
+    bool bothNaN = std::isnan(expected) && std::isnan(actual);
+    bool bothPosInf = uprv_isPositiveInfinity(expected) && uprv_isPositiveInfinity(actual);
+    bool bothNegInf = uprv_isNegativeInfinity(expected) && uprv_isNegativeInfinity(actual);
+    if (bothPosInf || bothNegInf || bothNaN) {
+        // We don't care about delta in these cases
+        return TRUE;
+    }
     if (std::isnan(delta) || std::isinf(delta)) {
         errln((UnicodeString)("FAIL: ") + message + "; nonsensical delta " + delta +
               " - delta may not be NaN or Inf");
         return FALSE;
     }
-    bool bothNaN = std::isnan(expected) && std::isnan(actual);
     double difference = std::abs(expected - actual);
     if (expected != actual && (difference > delta || std::isnan(difference)) && !bothNaN) {
         errln((UnicodeString)("FAIL: ") + message + "; got " + actual + "; expected " + expected +
