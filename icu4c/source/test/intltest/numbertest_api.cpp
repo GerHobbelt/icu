@@ -1767,6 +1767,16 @@ void NumberFormatterApiTest::unitUsage() {
                        0,                                                                       //
                        u"∞ mpg");
 
+    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-zero",             //
+                       u"unit/mile-per-gallon usage/vehicle-fuel",                      //
+                       u"unit/mile-per-gallon usage/vehicle-fuel",                      //
+                       NumberFormatter::with()                                          //
+                           .unit(MeasureUnit::forIdentifier("mile-per-gallon", status)) //
+                           .usage("vehicle-fuel"),                                      //
+                       Locale("en-US"),                                                 //
+                       0,                                                               //
+                       u"∞ l/100km");
+
     // Test calling `.usage("")` should unset the existing usage.
     // First: without usage
     assertFormatSingle(u"Rounding Mode propagates: rounding up",
