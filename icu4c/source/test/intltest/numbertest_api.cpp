@@ -1757,7 +1757,7 @@ void NumberFormatterApiTest::unitUsage() {
                        6.6,                                                                     //
                        "36 mpg");
 
-    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-zero",                     //
+    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-zero, en-US",              //
                        u"unit/liter-per-100-kilometer usage/vehicle-fuel",                      //
                        u"unit/liter-per-100-kilometer usage/vehicle-fuel",                      //
                        NumberFormatter::with()                                                  //
@@ -1767,15 +1767,25 @@ void NumberFormatterApiTest::unitUsage() {
                        0,                                                                       //
                        u"∞ mpg");
 
-    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-zero",             //
+    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-zero, en-ZA",      //
                        u"unit/mile-per-gallon usage/vehicle-fuel",                      //
                        u"unit/mile-per-gallon usage/vehicle-fuel",                      //
                        NumberFormatter::with()                                          //
                            .unit(MeasureUnit::forIdentifier("mile-per-gallon", status)) //
                            .usage("vehicle-fuel"),                                      //
-                       Locale("en-US"),                                                 //
+                       Locale("en-ZA"),                                                 //
                        0,                                                               //
-                       u"∞ l/100km");
+                       u"∞ l/100 km");
+
+    assertFormatSingle(u"Fuel consumption: inverted units, divide-by-inf",              //
+                       u"unit/mile-per-gallon usage/vehicle-fuel",                      //
+                       u"unit/mile-per-gallon usage/vehicle-fuel",                      //
+                       NumberFormatter::with()                                          //
+                           .unit(MeasureUnit::forIdentifier("mile-per-gallon", status)) //
+                           .usage("vehicle-fuel"),                                      //
+                       Locale("de-CH"),                                                 //
+                       uprv_getInfinity(),                                              //
+                       u"0 L/100 km");
 
     // Test calling `.usage("")` should unset the existing usage.
     // First: without usage
