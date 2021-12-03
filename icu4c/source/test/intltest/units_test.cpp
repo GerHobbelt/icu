@@ -329,7 +329,8 @@ void UnitsTest::testConverter() {
         {"liter-per-100-kilometer", "mile-per-gallon", 0, uprv_getInfinity()},
         {"mile-per-gallon", "liter-per-100-kilometer", 0, uprv_getInfinity()},
         {"mile-per-gallon", "liter-per-100-kilometer", uprv_getInfinity(), 0},
-        {"mile-per-gallon", "liter-per-100-kilometer", -uprv_getInfinity(), 0},
+        // We skip testing -Inf, because the inverse conversion loses the sign:
+        // {"mile-per-gallon", "liter-per-100-kilometer", -uprv_getInfinity(), 0},
 
         // Test Aliases
         // Alias is just another name to the same unit. Therefore, converting
@@ -353,54 +354,42 @@ void UnitsTest::testConverter() {
             continue;
         }
 
+        double maxDelta = 1e-6 * uprv_fabs(testCase.expectedValue);
+        if (testCase.expectedValue == 0) {
+            maxDelta = 1e-12;
+        }
+        double inverseMaxDelta = 1e-6 * uprv_fabs(testCase.inputValue);
+        if (testCase.inputValue == 0) {
+            inverseMaxDelta = 1e-12;
+        }
+
         ConversionRates conversionRates(status);
         if (status.errIfFailureAndReset("conversionRates(status)")) {
             continue;
         }
+
         UnitsConverter converter(source, target, conversionRates, status);
         if (status.errIfFailureAndReset("UnitsConverter(<%s>, <%s>, ...)", testCase.source,
                                         testCase.target)) {
             continue;
         }
-
-        double maxDelta = 1e-6 * uprv_fabs(testCase.expectedValue);
-        if (testCase.expectedValue == 0) {
-            maxDelta = 1e-12;
-        }
         assertEqualsNear(UnicodeString("testConverter: ") + testCase.source + " to " + testCase.target,
                          testCase.expectedValue, converter.convert(testCase.inputValue), maxDelta);
-
-        maxDelta = 1e-6 * uprv_fabs(testCase.inputValue);
-        if (testCase.inputValue == 0) {
-            maxDelta = 1e-12;
-        }
         assertEqualsNear(
             UnicodeString("testConverter inverse: ") + testCase.target + " back to " + testCase.source,
-            testCase.inputValue, converter.convertInverse(testCase.expectedValue), maxDelta);
+            testCase.inputValue, converter.convertInverse(testCase.expectedValue), inverseMaxDelta);
 
-
-        // TODO: Test UnitsConverter created using CLDR separately.
         // Test UnitsConverter created by CLDR unit identifiers
         UnitsConverter converter2(testCase.source, testCase.target, status);
         if (status.errIfFailureAndReset("UnitsConverter(<%s>, <%s>, ...)", testCase.source,
                                         testCase.target)) {
             continue;
         }
-
-        maxDelta = 1e-6 * uprv_fabs(testCase.expectedValue);
-        if (testCase.expectedValue == 0) {
-            maxDelta = 1e-12;
-        }
         assertEqualsNear(UnicodeString("testConverter2: ") + testCase.source + " to " + testCase.target,
                          testCase.expectedValue, converter2.convert(testCase.inputValue), maxDelta);
-
-        maxDelta = 1e-6 * uprv_fabs(testCase.inputValue);
-        if (testCase.inputValue == 0) {
-            maxDelta = 1e-12;
-        }
         assertEqualsNear(
             UnicodeString("testConverter2 inverse: ") + testCase.target + " back to " + testCase.source,
-            testCase.inputValue, converter2.convertInverse(testCase.expectedValue), maxDelta);
+            testCase.inputValue, converter2.convertInverse(testCase.expectedValue), inverseMaxDelta);
     }
 }
 

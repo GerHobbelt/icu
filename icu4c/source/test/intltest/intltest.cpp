@@ -2197,7 +2197,7 @@ UBool IntlTest::assertEqualsNear(const char* message,
     }
     if (std::isnan(delta) || std::isinf(delta)) {
         errln((UnicodeString)("FAIL: ") + message + "; nonsensical delta " + delta +
-              " - delta may not be NaN or Inf");
+              " - delta may not be NaN or Inf. (Got " + actual + "; expected " + expected + ".)");
         return FALSE;
     }
     double difference = std::abs(expected - actual);
