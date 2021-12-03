@@ -2201,7 +2201,7 @@ UBool IntlTest::assertEqualsNear(const char* message,
         return FALSE;
     }
     double difference = std::abs(expected - actual);
-    if (expected != actual && (difference > delta || std::isnan(difference)) && !bothNaN) {
+    if (expected != actual && (difference > delta || std::isnan(difference))) {
         errln((UnicodeString)("FAIL: ") + message + "; got " + actual + "; expected " + expected +
               "; acceptable delta " + delta);
         return FALSE;
