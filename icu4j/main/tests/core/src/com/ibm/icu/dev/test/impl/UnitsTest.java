@@ -474,6 +474,10 @@ public class UnitsTest {
                 new TestData("liter-per-100-kilometer", "mile-per-gallon", 6.6, 35.6386),
                 // // TODO(ICU-21862): we should probably return something other than "0":
                 // new TestData("liter-per-100-kilometer", "mile-per-gallon", 0, 0),
+                // new TestData("mile-per-gallon", "liter-per-100-kilometer", 0, 0),
+                // // TODO(ICU-21862): deal with infinity input in Java?
+                // new TestData("mile-per-gallon", "liter-per-100-kilometer", INFINITY, 0),
+                // new TestData("mile-per-gallon", "liter-per-100-kilometer", -INFINITY, 0),
                 // Test Aliases
                 // Alias is just another name to the same unit. Therefore, converting
                 // between them should be the same.

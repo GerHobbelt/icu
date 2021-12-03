@@ -328,6 +328,8 @@ void UnitsTest::testConverter() {
         {"liter-per-100-kilometer", "mile-per-gallon", 6.6, 35.6386},
         {"liter-per-100-kilometer", "mile-per-gallon", 0, uprv_getInfinity()},
         {"mile-per-gallon", "liter-per-100-kilometer", 0, uprv_getInfinity()},
+        {"mile-per-gallon", "liter-per-100-kilometer", uprv_getInfinity(), 0},
+        {"mile-per-gallon", "liter-per-100-kilometer", -uprv_getInfinity(), 0},
 
         // Test Aliases
         // Alias is just another name to the same unit. Therefore, converting
