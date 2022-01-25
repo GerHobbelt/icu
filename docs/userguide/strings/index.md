@@ -1,7 +1,7 @@
 ---
 layout: default
 title: Chars and Strings
-nav_order: 3
+nav_order: 600
 has_children: true
 ---
 <!--
@@ -16,7 +16,7 @@ License & terms of use: http://www.unicode.org/copyright.html
 This section explains how to handle Unicode strings with ICU in C and C++.
 
 Sample code is available in the ICU source code library at
-[icu/source/samples/ustring/ustring.cpp](https://github.com/unicode-org/icu/blob/master/icu4c/source/samples/ustring/ustring.cpp)
+[icu/source/samples/ustring/ustring.cpp](https://github.com/unicode-org/icu/blob/main/icu4c/source/samples/ustring/ustring.cpp)
 .
 
 ## Text Access Overview
@@ -382,7 +382,7 @@ a new naming scheme.
 
 The documentation of the old macros has been removed. If you need it, see a User
 Guide version from ICU 4.2 or earlier (see the [download
-page](http://site.icu-project.org/download)).
+page](https://icu.unicode.org/download)).
 
 C Unicode String Literals
 
