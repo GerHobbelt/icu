@@ -3,7 +3,7 @@ from conans import ConanFile
 
 class ICUConan(ConanFile):
     name = "icu"
-    version = "69.2"
+    version = "70.1"
     url = "https://github.com/Esri/icu/tree/runtimecore"
     license = "https://github.com/Esri/icu/blob/runtimecore/icu4c/LICENSE"
     description = "International Components for Unicode."
