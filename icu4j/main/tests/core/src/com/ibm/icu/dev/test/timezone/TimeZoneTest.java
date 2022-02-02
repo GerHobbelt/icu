@@ -550,10 +550,10 @@ public class TimeZoneTest extends TestFmwk
 
 
         String tzver = TimeZone.getTZDataVersion();
-        if (tzver.length() != 5 /* 4 digits + 1 letter */) {
-            errln("FAIL: getTZDataVersion returned " + tzver);
-        } else {
+        if (tzver != null && (tzver.length() == 5 || tzver.length() == 6) /* 4 digits + 1 or 2 letters */ ) {
             logln("PASS: tzdata version: " + tzver);
+        } else {
+            errln("FAIL: getTZDataVersion returned " + tzver);
         }
     }
 
@@ -1518,6 +1518,8 @@ public class TimeZoneTest extends TestFmwk
                 {"Africa/Sao_Tome", "Africa/Abidjan"},
                 {"America/Antigua", "America/Port_of_Spain"},
                 {"America/Anguilla", "America/Port_of_Spain"},
+                {"America/Cayman", "America/Panama"},
+                {"America/Coral_Harbour", "America/Panama"},
                 {"America/Curacao", "America/Aruba"},
                 {"America/Dominica", "America/Port_of_Spain"},
                 {"America/Grenada", "America/Port_of_Spain"},
@@ -1526,7 +1528,6 @@ public class TimeZoneTest extends TestFmwk
                 {"America/Lower_Princes", "America/Aruba"},
                 {"America/Marigot", "America/Port_of_Spain"},
                 {"America/Montserrat", "America/Port_of_Spain"},
-                {"America/Panama", "America/Cayman"},
                 {"America/Santa_Isabel", "America/Tijuana"},
                 {"America/Shiprock", "America/Denver"},
                 {"America/St_Barthelemy", "America/Port_of_Spain"},
@@ -1536,7 +1537,7 @@ public class TimeZoneTest extends TestFmwk
                 {"America/St_Vincent", "America/Port_of_Spain"},
                 {"America/Toronto", "America/Montreal"},
                 {"America/Tortola", "America/Port_of_Spain"},
-                {"America/Virgin", "America/Port_of_Spain"},
+                {"America/Virgin", "America/Puerto_Rico"},
                 {"Antarctica/South_Pole", "Antarctica/McMurdo"},
                 {"Arctic/Longyearbyen", "Europe/Oslo"},
                 {"Asia/Kuwait", "Asia/Aden"},
@@ -1627,7 +1628,7 @@ public class TimeZoneTest extends TestFmwk
             if (!bFoundCanonical) {
                 // test exclusion because of differences between Olson tzdata and CLDR
                 boolean isExcluded = false;
-                for (int k = 0; k < excluded1.length; k++) {
+                for (int k = 0; k < excluded2.length; k++) {
                     if (ids[i].equals(excluded2[k])) {
                         isExcluded = true;
                         break;
@@ -1969,7 +1970,7 @@ public class TimeZoneTest extends TestFmwk
             }
 
             // setRawOffset
-            if (!(thawedZones[i] instanceof RuleBasedTimeZone)) {    // RuleBasedTimeZone does not supprot setRawOffset
+            if (!(thawedZones[i] instanceof RuleBasedTimeZone)) {    // RuleBasedTimeZone does not support setRawOffset
                 try {
                     int newOffset = -3600000;
                     thawedZones[i].setRawOffset(newOffset);
@@ -2074,7 +2075,7 @@ public class TimeZoneTest extends TestFmwk
             }
 
             // setRawOffset
-            if (!(frozenZones[i] instanceof RuleBasedTimeZone)) {    // RuleBasedTimeZone does not supprot setRawOffset
+            if (!(frozenZones[i] instanceof RuleBasedTimeZone)) {    // RuleBasedTimeZone does not support setRawOffset
                 try {
                     int newOffset = -3600000;
                     frozenZones[i].setRawOffset(newOffset);
