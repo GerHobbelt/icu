@@ -1,0 +1,38 @@
+#!/bin/bash --
+
+which ppc-amigaos-gcc 1>/dev/null 2>&1 || { echo "ppc-amigaos-* binaries not found. Check your path" ; exit 1 ; }
+
+if [[ "Linux" != $(uname) ]]
+then
+    echo "Expected the BUILD machine to be Linux"
+    exit 1
+fi
+
+CROSS_BUILD_FULL_PATH=
+CORES="$(nproc)"
+
+mkdir buildLinux
+mkdir buildAmiga
+
+pushd buildLinux
+../runConfigureICU Linux || { echo "Error during configure" ; exit 1 ; }
+CROSS_BUILD_FULL_PATH="$(pwd)"
+make -j "$CORES" || { echo "Error during building" ; exit 1 ; }
+popd
+
+pushd buildAmiga
+../configure \
+    CC="ppc-amigaos-gcc -mcrt=clib2" \
+    CXX="ppc-amigaos-g++ -mcrt=clib2" \
+    CPPFLAGS="-mcrt=clib2 -athread=native" \
+    --disable-tests --disable-samples --host=ppc-amigaos --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
+    --with-data-packaging=files \
+    --host=ppc-amigaos \
+    --with-cross-build="$CROSS_BUILD_FULL_PATH" || \
+    	{ echo "Error during configure for cross" ; exit 1 ; }
+THREADSCXXFLAGS=-athread=native make -j $CORES || { echo "Error during building for cross" ; exit 1 ; }
+popd
+
+echo "Finished. Built:"
+find buildAmiga -type f -name "lib*"
+exit 0
