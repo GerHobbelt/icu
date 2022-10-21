@@ -22,6 +22,11 @@ make -j "$CORES" || { echo "Error during building" ; exit 1 ; }
 popd
 
 pushd buildAmiga
+# default to linux
+cp ../config/mh-linux ../config/mh-unknown
+# __timezone hack
+sed -i 's,#elif defined(__GLIBC__),#elif defined(__GLIBC__) \&\& !defined(__amigaos4__),g' ../common/putilimp.h
+#
 mkdir -p $INSTALL_PREFIX
 # Just to make sure!
 if [[ -z $INSTALL_PREFIX ]]
