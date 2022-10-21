@@ -16,6 +16,18 @@ mkdir buildLinux
 mkdir buildAmiga
 
 pushd buildLinux
+# Hack: force support for byte swapping amiga bytes
+#
+sed -i "1i static int amigaInput=0;" ../tools/toolutil/pkg_genc.cpp
+LINE_NUM=$(grep -n 'currently only same-endianness ELF formats are supported' ../tools/toolutil/pkg_genc.cpp | cut -f1 -d':')
+(( LINE_NUM++ ))
+sed -i "${LINE_NUM}d" ../tools/toolutil/pkg_genc.cpp # remove the raising of the error
+sed -i "${LINE_NUM}i amigaInput=1;" ../tools/toolutil/pkg_genc.cpp
+LINE_NUM=$(grep -En '^write32\(.*{' ../tools/toolutil/pkg_genc.cpp | cut -f1 -d':')
+(( LINE_NUM++ ))
+sed -i "${LINE_NUM}i     if(amigaInput){uint8_t tmp;    tmp = ((uint8_t*)&bitField)[0];    ((uint8_t*)&bitField)[0] = ((uint8_t*)&bitField)[3];    ((uint8_t*)&bitField)[3] = tmp;        tmp = ((uint8_t*)&bitField)[1];    ((uint8_t*)&bitField)[1] = ((uint8_t*)&bitField)[2];    ((uint8_t*)&bitField)[2] = tmp;}" ../tools/toolutil/pkg_genc.cpp
+# ENDER hack
+
 ../runConfigureICU Linux || { echo "Error during configure" ; exit 1 ; }
 CROSS_BUILD_FULL_PATH="$(pwd)"
 make -j "$CORES" || { echo "Error during building" ; exit 1 ; }
@@ -39,10 +51,10 @@ fi
 # Set "prefix" to the current directory
 ../configure \
     CC="ppc-amigaos-gcc -mcrt=clib2" \
-    CXX="ppc-amigaos-g++ -mcrt=clib2" \
+    CXX="ppc-amigaos-g++ -athread=native -mcrt=clib2" \
     CPPFLAGS="-mcrt=clib2 -athread=native" \
-    --disable-tests --disable-samples --host=ppc-amigaos --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
-    --with-data-packaging=files \
+    --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
+    --disable-debug \
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
     --prefix=$INSTALL_PREFIX || \
