@@ -40,9 +40,9 @@ fi
 ../configure \
     CC="ppc-amigaos-gcc" \
     CXX="ppc-amigaos-g++" \
-    CPPFLAGS="-mcrt=newlib" \
-    CXXFLAGS="-mcrt=newlib" \
-    CFLAGS="-mcrt=newlib" \
+    CPPFLAGS="-mcrt=clib2" \
+    CXXFLAGS="-mcrt=clib2" \
+    CFLAGS="-mcrt=clib2" \
     --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
     --disable-debug \
     --host=ppc-amigaos \
