@@ -26,7 +26,6 @@ fi
 
 function create_amiga_SDK_package
 {
-    set -x
     SDK_DIRS=(
 	"local/${C_LIB}/bin"
 	"local/${C_LIB}/lib"
@@ -40,7 +39,6 @@ function create_amiga_SDK_package
 	mkdir -p "${sdk_dir}"
 	find "${INSTALL_PREFIX}" -type d -iname "$(basename ${sdk_dir})" -exec cp -r {}/. "${sdk_dir}" \;
     done
-    set +x
 }
 
 # Assume that we do not need to build Linux again if buildLinux already exists!
@@ -93,6 +91,18 @@ fi
 
 SUCC="successful"
 
+if ! grep '###RJD' data/Makefile
+then
+    if [[ ! "$(sed -n '176p' data/Makefile)" =~ '$(PKGDATA_INVOKE)' ]]
+    then
+	echo "Unexpected line found in line 176 of data/Makefile" 1>&2
+	exit 1
+    fi
+    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "###RJD: Would have invoked: \\"$(PKGDATA_INVOKE) $(PKGDATA) -e $(ICUDATA_ENTRY_POINT) -T $(OUTTMPDIR) -p $(ICUDATA_NAME) -m $(PKGDATA_MODE) $(PKGDATA_VERSIONING) $(PKGDATA_LIBNAME) $(PKGDATA_LIST)\\". This will have to be done manually on the Amiga and then the resuling libicudata.a copied into $$(pwd)/../../" ; exit 1 ; else cp ../../libicudata.a ../lib ; fi'
+
+    sed -i "176d" data/Makefile
+    sed -i "176i \	${insert}" data/Makefile
+fi
 make -j "${CORES}"
 if (( ${?} ))
 then
