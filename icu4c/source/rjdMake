@@ -1,67 +1,117 @@
 #!/bin/bash --
 
-which ppc-amigaos-gcc 1>/dev/null 2>&1 || { echo "ppc-amigaos-* binaries not found. Check your path" ; exit 1 ; }
+CROSS_BUILD_FULL_PATH="$(pwd)/buildLinux"
+CORES="$(nproc)"
+C_LIB=clib2
+# Too lazy to use getopts!
+if (( ${#} > 0 ))
+then
+    if [[ "${1}" == "clib=newlib" ]]
+    then
+	C_LIB=newlib
+    elif [[ "${1}" != "clib=clib2" ]]
+    then
+	echo "Could not understand argumet ${1}. Only clib=<newlib|clib2[default]> is understood" 1>&2
+	exit 1
+    fi
+fi
+INSTALL_PREFIX="$(pwd)/buildAmiga/installAmiga_${C_LIB}"
 
-if [[ "Linux" != $(uname) ]]
+which ppc-amigaos-gcc 1>/dev/null 2>&1 || { echo "ppc-amigaos-* binaries not found. Check your path" ; exit 1 ; }
+if [[ "Linux" != "$(uname)" ]]
 then
     echo "Expected the BUILD machine to be Linux"
     exit 1
 fi
 
-CROSS_BUILD_FULL_PATH=
-CORES="$(nproc)"
-INSTALL_PREFIX="$(pwd)/buildAmiga/installAmiga"
+function create_amiga_SDK_package
+{
+    set -x
+    SDK_DIRS=(
+	"local/${C_LIB}/bin"
+	"local/${C_LIB}/lib"
+	"local/${C_LIB}/share/libicu/man"
+	"local/${C_LIB}/sbin"
+	"local/common/include"
+    )
 
-mkdir buildLinux
+    for sdk_dir in "${SDK_DIRS[@]}"
+    do
+	mkdir -p "${sdk_dir}"
+	find "${INSTALL_PREFIX}" -type d -iname "$(basename ${sdk_dir})" -exec cp -r {}/. "${sdk_dir}" \;
+    done
+    set +x
+}
+
+# Assume that we do not need to build Linux again if buildLinux already exists!
+if mkdir buildLinux
+then
+    pushd buildLinux
+    git restore ../common/putilimp.h # just to make sure - since we hack it for Amiga
+    ../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 1 ; }
+    make -j "${CORES}" || { echo "Error during BUILD-MACHINE building" ; exit 1 ; }
+    popd
+else
+    echo "buildLinux already exists. Assuming that it does not need building."
+fi
+
 mkdir buildAmiga
-
-pushd buildLinux
-../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 1 ; }
-CROSS_BUILD_FULL_PATH="$(pwd)"
-make -j "$CORES" || { echo "Error during BUILD-MACHINE building" ; exit 1 ; }
-popd
 
 pushd buildAmiga
 # default to linux
 cp ../config/mh-linux ../config/mh-unknown
-# __timezone hack
-sed -i 's,#elif defined(__GLIBC__),#elif defined(__GLIBC__) \&\& !defined(__amigaos4__),g' ../common/putilimp.h
-#
-mkdir -p $INSTALL_PREFIX
-# Just to make sure!
-if [[ -z $INSTALL_PREFIX ]]
+
+if [[ "${C_LIB}" == "clib2" ]]
 then
-    echo "INSTALL_PREFIX must be set"
-    exit 1
+# __timezone hack
+    sed -i 's,#elif defined(__GLIBC__)$,#elif defined(__GLIBC__) \&\& !defined(__amigaos4__),g' ../common/putilimp.h
 else
-    rm -rf $INSTALL_PREFIX/*
+    git restore ../common/putilimp.h
 fi
-# Set "prefix" to the current directory
+
+mkdir -p "${INSTALL_PREFIX}"
+
 ../configure \
     CC="ppc-amigaos-gcc" \
     CXX="ppc-amigaos-g++" \
-    CPPFLAGS="-mcrt=clib2" \
-    CXXFLAGS="-mcrt=clib2" \
-    CFLAGS="-mcrt=clib2" \
-    LDFLAGS="-mcrt=clib2 -athread=native" \
+    CPPFLAGS="-mcrt=${C_LIB}" \
+    CXXFLAGS="-mcrt=${C_LIB}" \
+    CFLAGS="-mcrt=${C_LIB}" \
+    LDFLAGS="-mcrt=${C_LIB} -athread=native" \
     --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
     --disable-debug \
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
-    --prefix=$INSTALL_PREFIX || \
-    	{ echo "Error during CROSS-MACHINE configure" ; exit 1 ; }
+    --prefix="${INSTALL_PREFIX}" || \
+        { echo "Error during CROSS-MACHINE configure" ; exit 1 ; }
+
+if [[ ! -f "rjdLast_${C_LIB}" ]]
+then
+    # clean everything, we are now building for a different C library
+    make clean 2>&1
+fi
+
 SUCC="successful"
-THREADSCXXFLAGS=-athread=native make -j $CORES
+
+make -j "${CORES}"
 if (( ${?} ))
 then
-    SUCC="not fully successful, but as much as possible was installed to $INSTALL_PREFIX"
+    SUCC="not fully successful but as much as possible was installed"
 fi
+
 make install
+
+# We just this empty file to signal which C library was built last
+rm -f rjdLast_*
+touch "rjdLast_${C_LIB}"
 popd
 
-echo "###########################################################################"
-echo "###########################################################################"
-echo "Finished. See inside \"$INSTALL_PREFIX\". CROSS-MACHINE building was $SUCC."
-echo "###########################################################################"
-echo "###########################################################################"
+create_amiga_SDK_package
+
+echo "#########"
+echo "#########"
+echo "Finished. CROSS-MACHINE building was ${SUCC}. For the SDK package see inside $(pwd)/local"
+echo "#########"
+echo "#########"
+
 exit 0
