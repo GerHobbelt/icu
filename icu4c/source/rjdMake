@@ -76,6 +76,7 @@ mkdir -p "${INSTALL_PREFIX}"
     CXXFLAGS="-mcrt=${C_LIB}" \
     CFLAGS="-mcrt=${C_LIB}" \
     LDFLAGS="-mcrt=${C_LIB} -athread=native" \
+    PKG_CONFIG_LIBDIR="/sdk/local/${C_CLIB}/lib/pkgconfig" \
     --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
     --disable-debug \
     --host=ppc-amigaos \
@@ -103,11 +104,7 @@ then
     sed -i "176d" data/Makefile
     sed -i "176i \	${insert}" data/Makefile
 fi
-make -j "${CORES}"
-if (( ${?} ))
-then
-    SUCC="not fully successful but as much as possible was installed"
-fi
+make -j "${CORES}" || { echo "Error during HOST-MACHINE building" ; exit 1 ; }
 
 make install
 
@@ -118,9 +115,11 @@ popd
 
 create_amiga_SDK_package
 
+lha a libicu.lha local/
+
 echo "#########"
 echo "#########"
-echo "Finished. CROSS-MACHINE building was ${SUCC}. For the SDK package see inside $(pwd)/local"
+echo "Finished. CROSS-MACHINE building was ${SUCC}. For the SDK package see libicu.lha"
 echo "#########"
 echo "#########"
 
