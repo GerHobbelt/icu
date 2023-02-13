@@ -5,15 +5,21 @@
 // Copyright (c) 2001-2010 International Business Machines
 // Corporation and others. All Rights Reserved.
 //
+
+//#define WIN32_LEAN_AND_MEAN
 #define APSTUDIO_READONLY_SYMBOLS
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <winver.h>
+
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "winresrc.h"
 
 /////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

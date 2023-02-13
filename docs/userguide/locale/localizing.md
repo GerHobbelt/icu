@@ -410,18 +410,22 @@ adding the two example strings as above.
 ```
 //Microsoft Developer Studio generated resource script.
 //
-#include "resource.h"
+
+//#define WIN32_LEAN_AND_MEAN
 #define APSTUDIO_READONLY_SYMBOLS
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <winver.h>
+
+#include "resource.h"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#define APSTUDIO_HIDDEN_SYMBOLS
-#include "windows.h"
-#undef APSTUDIO_HIDDEN_SYMBOLS
 #include "resource.h"
 /////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
+
 /////////////////////////////////////////////////////////////////////////////
 // German (Germany) resources
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_DEU)

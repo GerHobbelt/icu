@@ -2,9 +2,16 @@
 //
 // Copyright (C) 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
+
+//#define WIN32_LEAN_AND_MEAN
+#define APSTUDIO_READONLY_SYMBOLS
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <winver.h>
+
+
 #include "resource.h"
 
-#define APSTUDIO_READONLY_SYMBOLS
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.
@@ -23,10 +30,17 @@
 *
 *******************************************************************************
 */
-#include <winresrc.h>
+
+
+//#define WIN32_LEAN_AND_MEAN
+#define APSTUDIO_READONLY_SYMBOLS
+#define APSTUDIO_HIDDEN_SYMBOLS
+#include <windows.h>
+#include <winver.h>
+
 
 /////////////////////////////////////////////////////////////////////////////
-#undef APSTUDIO_READONLY_SYMBOLS
+
 
 /////////////////////////////////////////////////////////////////////////////
 // English (U.S.) resources
@@ -94,7 +108,6 @@ BEGIN
     "*\r\n"
     "*******************************************************************************\r\n"
     "*/\r\n"
-    "#include <winresrc.h>\r\n"
     "\0"
 END
 
