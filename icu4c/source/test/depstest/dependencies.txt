@@ -211,7 +211,7 @@ group: breakiterator
     brkiter.o brkeng.o ubrk.o
     rbbi.o rbbinode.o rbbiscan.o rbbisetb.o rbbistbl.o rbbitblb.o
     rbbidata.o rbbirb.o rbbi_cache.o
-    dictionarydata.o dictbe.o lstmbe.o
+    dictionarydata.o dictbe.o lstmbe.o mlbe.o
     # BreakIterator::makeInstance() factory implementation makes for circular dependency
     # between BreakIterator base and FilteredBreakIteratorBuilder.
     filteredbrk.o
@@ -1007,6 +1007,9 @@ group: numberformatter
     number_scientific.o
     currpinf.o
     numrange_fluent.o numrange_impl.o
+    # NOTE: This could go into its own dependency block, but it would require
+    # refactoring more of the dependencies (e.g. removing class methods).
+    number_simple.o
   deps
     decnumber double_conversion formattable units unitsformatter
     listformatter number_representation number_output
