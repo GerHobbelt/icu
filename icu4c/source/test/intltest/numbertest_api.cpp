@@ -3012,6 +3012,28 @@ void NumberFormatterApiTest::roundingFraction() {
             Locale::getEnglish(),
             1,
             "1");
+
+    assertFormatSingle(
+            u"Hide If Whole with Rounding Mode A (ICU-21881)",
+            u".00/w rounding-mode-floor",
+            u".00/w rounding-mode-floor",
+            NumberFormatter::with().precision(Precision::fixedFraction(2)
+                .trailingZeroDisplay(UNUM_TRAILING_ZERO_HIDE_IF_WHOLE))
+                .roundingMode(UNUM_ROUND_FLOOR),
+            Locale::getEnglish(),
+            3.009,
+            "3");
+
+    assertFormatSingle(
+            u"Hide If Whole with Rounding Mode B (ICU-21881)",
+            u".00/w rounding-mode-half-up",
+            u".00/w rounding-mode-half-up",
+            NumberFormatter::with().precision(Precision::fixedFraction(2)
+                .trailingZeroDisplay(UNUM_TRAILING_ZERO_HIDE_IF_WHOLE))
+                .roundingMode(UNUM_ROUND_HALFUP),
+            Locale::getEnglish(),
+            3.001,
+            "3");
 }
 
 void NumberFormatterApiTest::roundingFigures() {
@@ -3442,6 +3464,42 @@ void NumberFormatterApiTest::roundingOther() {
             u"0.0",
             u"0.0",
             u"0.0");
+
+    assertFormatSingle(
+            u"Large integer increment",
+            u"precision-increment/24000000000000000000000",
+            u"precision-increment/24000000000000000000000",
+            NumberFormatter::with().precision(Precision::incrementExact(24, 21)),
+            Locale::getEnglish(),
+            3.1e22,
+            u"24,000,000,000,000,000,000,000");
+
+    assertFormatSingle(
+            u"Quarter rounding",
+            u"precision-increment/250",
+            u"precision-increment/250",
+            NumberFormatter::with().precision(Precision::incrementExact(250, 0)),
+            Locale::getEnglish(),
+            700,
+            u"750");
+
+    assertFormatSingle(
+            u"ECMA-402 limit",
+            u"precision-increment/.00000000000000000020",
+            u"precision-increment/.00000000000000000020",
+            NumberFormatter::with().precision(Precision::incrementExact(20, -20)),
+            Locale::getEnglish(),
+            333e-20,
+            u"0.00000000000000000340");
+
+    assertFormatSingle(
+            u"ECMA-402 limit with increment = 1",
+            u"precision-increment/.00000000000000000001",
+            u"precision-increment/.00000000000000000001",
+            NumberFormatter::with().precision(Precision::incrementExact(1, -20)),
+            Locale::getEnglish(),
+            4321e-21,
+            u"0.00000000000000000432");
 
     assertFormatDescending(
             u"Currency Standard",
@@ -5989,7 +6047,7 @@ NumberFormatterApiTest::assertFormatSingle(
         // Only compare normalized skeletons: the tests need not provide the normalized forms.
         // Use the normalized form to construct the testing formatter to ensure no loss of info.
         UnicodeString normalized = NumberFormatter::forSkeleton(skeleton, status).toSkeleton(status);
-        assertEquals(message + ": Skeleton:", normalized, f.toSkeleton(status));
+        assertEquals(message + ": Skeleton", normalized, f.toSkeleton(status));
         LocalizedNumberFormatter l3 = NumberFormatter::forSkeleton(normalized, status).locale(locale);
         UnicodeString actual3 = l3.formatDouble(input, status).toString(status);
         assertEquals(message + ": Skeleton Path: '" + normalized + "': " + input, expected, actual3);

@@ -2991,6 +2991,28 @@ public class NumberFormatterApiTest extends TestFmwk {
                 ULocale.ENGLISH,
                 1,
                 "1");
+
+        assertFormatSingle(
+                "Hide If Whole with Rounding Mode A (ICU-21881)",
+                ".00/w rounding-mode-floor",
+                ".00/w rounding-mode-floor",
+                NumberFormatter.with().precision(Precision.fixedFraction(2)
+                    .trailingZeroDisplay(TrailingZeroDisplay.HIDE_IF_WHOLE))
+                    .roundingMode(RoundingMode.FLOOR),
+                ULocale.ENGLISH,
+                3.009,
+                "3");
+
+        assertFormatSingle(
+                "Hide If Whole with Rounding Mode B (ICU-21881)",
+                ".00/w rounding-mode-half-up",
+                ".00/w rounding-mode-half-up",
+                NumberFormatter.with().precision(Precision.fixedFraction(2)
+                    .trailingZeroDisplay(TrailingZeroDisplay.HIDE_IF_WHOLE))
+                    .roundingMode(RoundingMode.HALF_UP),
+                ULocale.ENGLISH,
+                3.001,
+                "3");
     }
 
     @Test
@@ -3438,6 +3460,42 @@ public class NumberFormatterApiTest extends TestFmwk {
                 "0.0",
                 "0.0",
                 "0.0");
+
+        assertFormatSingle(
+                "Large integer increment",
+                "precision-increment/24000000000000000000000",
+                "precision-increment/24000000000000000000000",
+                NumberFormatter.with().precision(Precision.increment(new BigDecimal("24e21"))),
+                ULocale.ENGLISH,
+                3.1e22,
+                "24,000,000,000,000,000,000,000");
+
+        assertFormatSingle(
+                "Quarter rounding",
+                "precision-increment/250",
+                "precision-increment/250",
+                NumberFormatter.with().precision(Precision.increment(new BigDecimal("250"))),
+                ULocale.ENGLISH,
+                700,
+                "750");
+
+        assertFormatSingle(
+                "ECMA-402 limit",
+                "precision-increment/.00000000000000000020",
+                "precision-increment/.00000000000000000020",
+                NumberFormatter.with().precision(Precision.increment(new BigDecimal("20e-20"))),
+                ULocale.ENGLISH,
+                333e-20,
+                "0.00000000000000000340");
+
+        assertFormatSingle(
+                "ECMA-402 limit with increment = 1",
+                "precision-increment/.00000000000000000001",
+                "precision-increment/.00000000000000000001",
+                NumberFormatter.with().precision(Precision.increment(new BigDecimal("1e-20"))),
+                ULocale.ENGLISH,
+                4321e-21,
+                "0.00000000000000000432");
 
         assertFormatDescending(
                 "Currency Standard",

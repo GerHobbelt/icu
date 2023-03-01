@@ -101,8 +101,11 @@ void DecimalQuantityTest::testDecimalQuantityBehaviorStandalone() {
     assertToStringAndHealth(fq, u"<DecimalQuantity 2:-3 long 987654321E-6>");
     fq.roundToInfinity();
     assertToStringAndHealth(fq, u"<DecimalQuantity 2:-3 long 987654321E-6>");
-    fq.roundToIncrement(0.005, RoundingMode::UNUM_ROUND_HALFEVEN, status);
+    fq.roundToIncrement(4, -3, RoundingMode::UNUM_ROUND_HALFEVEN, status);
     assertSuccess("Rounding to increment", status);
+    assertToStringAndHealth(fq, u"<DecimalQuantity 2:-3 long 987656E-3>");
+    fq.roundToNickel(-3, RoundingMode::UNUM_ROUND_HALFEVEN, status);
+    assertSuccess("Rounding to nickel", status);
     assertToStringAndHealth(fq, u"<DecimalQuantity 2:-3 long 987655E-3>");
     fq.roundToMagnitude(-2, RoundingMode::UNUM_ROUND_HALFEVEN, status);
     assertSuccess("Rounding to magnitude", status);
@@ -317,7 +320,7 @@ void DecimalQuantityTest::testUseApproximateDoubleWhenAble() {
                  {1.235, 3, RoundingMode::UNUM_ROUND_CEILING, true}};
 
     UErrorCode status = U_ZERO_ERROR;
-    for (TestCase cas : cases) {
+    for (const TestCase& cas : cases) {
         DecimalQuantity fq;
         fq.setToDouble(cas.d);
         assertTrue("Should be using approximate double", !fq.isExplicitExactDouble());
@@ -623,7 +626,7 @@ void DecimalQuantityTest::testScientificAndCompactSuppressedExponent() {
         // test the actual computed values of the plural operands
 
         double expectedNOperand = cas.expectedDouble;
-        double expectedIOperand = cas.expectedLong;
+        double expectedIOperand = static_cast<double>(cas.expectedLong);
         double expectedEOperand = cas.expectedSuppressedScientificExponent;
         double expectedCOperand = cas.expectedSuppressedCompactExponent;
         double actualNOperand = dq.getPluralOperand(PLURAL_OPERAND_N);
