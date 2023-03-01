@@ -63,6 +63,10 @@ jobs:
   java8-icu4j-test-maven:
     name: Run unit tests with Maven using JDK 8
     runs-on: ubuntu-latest
+    # Make this unit test target job depend on a later phase target job to prevent race condition when
+    # trying to persist the Maven cache to the Github cache, knowing that artifacts needed for
+    # the later phase `verify` are a superset of the artifacts needed for the earlier phase `test`.
+    needs: java8-icu4j-verify-maven
     steps:
       - name: Checkout and setup
         uses: actions/checkout@v2
@@ -186,6 +190,38 @@ jobs:
           [ -d icu4j/out/junit-results ] && cd icu4j && cat `find out/junit-results -name "*.txt" -exec grep -l FAILED {} \;`;
         if: ${{ failure() }}
 
+  # ICU4J build and unit test under adaboost
+  adaboost-icu4j-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and setup
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout lfs objects
+        run: git lfs pull
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Config Adaboost and Rebuild data jar
+        run: |
+          cd icu4c/source;
+          ICU_DATA_BUILDTOOL_OPTS=--include_uni_core_data ICU_DATA_FILTER_FILE=../../.github/adaboost.json CPPFLAGS=-DUCONFIG_USE_ML_PHRASE_BREAKING=1 ./runConfigureICU --enable-debug --disable-release Linux -disable-layoutex;
+          make clean;
+          make -j2 ICU4J_ROOT=../../../icu4j icu4j-data-install;
+          cd ../..
+      - name: ICU4J
+        run: |
+          cd icu4j;
+          ant init;
+          ant -Dcom.ibm.icu.impl.breakiter.useMLPhraseBreaking=true check;
+          ant localespiCheck
+      - name: List failures (if any)
+        run: |
+          [ -d icu4j/out/junit-results ] && cd icu4j && cat `find out/junit-results -name "*.txt" -exec grep -l FAILED {} \;`;
+        if: ${{ failure() }}
+
   # gcc debug build.
   # Includes dependency checker.
   # Note - the dependency checker needs to be run on both a debug and an optimized build.
@@ -220,7 +256,7 @@ jobs:
   # (FORCE guards make this tool pass but won't compile to working code.
   # See the testtagsguards.sh script for details.)
   clang-release-build-and-test:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -450,7 +486,7 @@ jobs:
 
   # Build Unicode update tools
   unicode-update-tools:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: bazelbuild/setup-bazelisk@v1
@@ -458,7 +494,7 @@ jobs:
       uses: actions/cache@v2
       with:
         path: "~/.cache/bazel"
-        key: bazel
+        key: ${{ runner.os }}-bazel
 
     - name: Generate the data
       run: |
