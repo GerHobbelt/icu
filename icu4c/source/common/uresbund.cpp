@@ -202,7 +202,8 @@ typedef enum UResOpenType UResOpenType;
  */
 static bool getParentLocaleID(char *name, const char *origName, UResOpenType openType) {
     // early out if the locale ID has a variant code or ends with _
-    if (name[uprv_strlen(name) - 1] == '_' || hasVariant(name)) {
+    size_t nameLen = uprv_strlen(name);
+    if (!nameLen || name[nameLen - 1] == '_' || hasVariant(name)) {
         return chopLocale(name);
     }
     
@@ -2448,7 +2449,7 @@ U_CAPI UResourceBundle* U_EXPORT2 ures_getByKey(const UResourceBundle *resB, con
         res = res_getTableItemByKey(&resB->getResData(), resB->fRes, &t, &key);
         if(res == RES_BOGUS) {
             key = inKey;
-            if(resB->fHasFallback == true) {
+            if(resB->fHasFallback) {
                 dataEntry = getFallbackData(resB, &key, &res, status);
                 if(U_SUCCESS(*status)) {
                     /* check if resB->fResPath gives the right name here */
@@ -2503,7 +2504,7 @@ U_CAPI const UChar* U_EXPORT2 ures_getStringByKey(const UResourceBundle *resB, c
 
         if(res == RES_BOGUS) {
             key = inKey;
-            if(resB->fHasFallback == true) {
+            if(resB->fHasFallback) {
                 dataEntry = getFallbackData(resB, &key, &res, status);
                 if(U_SUCCESS(*status)) {
                     switch (RES_GET_TYPE(res)) {

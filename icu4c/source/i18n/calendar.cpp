@@ -45,6 +45,7 @@
 #include "hebrwcal.h"
 #include "persncal.h"
 #include "indiancal.h"
+#include "iso8601cal.h"
 #include "chnsecal.h"
 #include "coptccal.h"
 #include "dangical.h"
@@ -354,18 +355,19 @@ static Calendar *createStandardCalendar(ECalType calType, const Locale &loc, UEr
             cal.adoptInsteadAndCheckErrorCode(new PersianCalendar(loc, status), status);
             break;
         case CALTYPE_ISLAMIC_TBLA:
-            cal.adoptInsteadAndCheckErrorCode(new IslamicCalendar(loc, status, IslamicCalendar::TBLA), status);
+            cal.adoptInsteadAndCheckErrorCode(new IslamicTBLACalendar(loc, status), status);
             break;
         case CALTYPE_ISLAMIC_CIVIL:
-            cal.adoptInsteadAndCheckErrorCode(new IslamicCalendar(loc, status, IslamicCalendar::CIVIL), status);
+            cal.adoptInsteadAndCheckErrorCode(new IslamicCivilCalendar(loc, status), status);
             break;
         case CALTYPE_ISLAMIC_RGSA:
-            // default any region specific not handled individually to islamic
+            cal.adoptInsteadAndCheckErrorCode(new IslamicRGSACalendar(loc, status), status);
+            break;
         case CALTYPE_ISLAMIC:
-            cal.adoptInsteadAndCheckErrorCode(new IslamicCalendar(loc, status, IslamicCalendar::ASTRONOMICAL), status);
+            cal.adoptInsteadAndCheckErrorCode(new IslamicCalendar(loc, status), status);
             break;
         case CALTYPE_ISLAMIC_UMALQURA:
-            cal.adoptInsteadAndCheckErrorCode(new IslamicCalendar(loc, status, IslamicCalendar::UMALQURA), status);
+            cal.adoptInsteadAndCheckErrorCode(new IslamicUmalquraCalendar(loc, status), status);
             break;
         case CALTYPE_HEBREW:
             cal.adoptInsteadAndCheckErrorCode(new HebrewCalendar(loc, status), status);
@@ -380,17 +382,13 @@ static Calendar *createStandardCalendar(ECalType calType, const Locale &loc, UEr
             cal.adoptInsteadAndCheckErrorCode(new CopticCalendar(loc, status), status);
             break;
         case CALTYPE_ETHIOPIC:
-            cal.adoptInsteadAndCheckErrorCode(new EthiopicCalendar(loc, status, EthiopicCalendar::AMETE_MIHRET_ERA), status);
+            cal.adoptInsteadAndCheckErrorCode(new EthiopicCalendar(loc, status), status);
             break;
         case CALTYPE_ETHIOPIC_AMETE_ALEM:
-            cal.adoptInsteadAndCheckErrorCode(new EthiopicCalendar(loc, status, EthiopicCalendar::AMETE_ALEM_ERA), status);
+            cal.adoptInsteadAndCheckErrorCode(new EthiopicAmeteAlemCalendar(loc, status), status);
             break;
         case CALTYPE_ISO8601:
-            cal.adoptInsteadAndCheckErrorCode(new GregorianCalendar(loc, status), status);
-            if (cal.isValid()) {
-                cal->setFirstDayOfWeek(UCAL_MONDAY);
-                cal->setMinimalDaysInFirstWeek(4);
-            }
+            cal.adoptInsteadAndCheckErrorCode(new ISO8601Calendar(loc, status), status);
             break;
         case CALTYPE_DANGI:
             cal.adoptInsteadAndCheckErrorCode(new DangiCalendar(loc, status), status);
@@ -1267,130 +1265,14 @@ Calendar::set(int32_t year, int32_t month, int32_t date, int32_t hour, int32_t m
 }
 
 // -------------------------------------
-// For now the full getRelatedYear implementation is here;
-// per #10752 move the non-default implementation to subclasses
-// (default implementation will do no year adjustment)
-
-static int32_t gregoYearFromIslamicStart(int32_t year) {
-    // ad hoc conversion, improve under #10752
-    // rough est for now, ok for grego 1846-2138,
-    // otherwise occasionally wrong (for 3% of years)
-    int cycle, offset, shift = 0;
-    if (year >= 1397) {
-        cycle = (year - 1397) / 67;
-        offset = (year - 1397) % 67;
-        shift = 2*cycle + ((offset >= 33)? 1: 0);
-    } else {
-        cycle = (year - 1396) / 67 - 1;
-        offset = -(year - 1396) % 67;
-        shift = 2*cycle + ((offset <= 33)? 1: 0);
-    }
-    return year + 579 - shift;
-}
-
 int32_t Calendar::getRelatedYear(UErrorCode &status) const
 {
-    if (U_FAILURE(status)) {
-        return 0;
-    }
-    int32_t year = get(UCAL_EXTENDED_YEAR, status);
-    if (U_FAILURE(status)) {
-        return 0;
-    }
-    // modify for calendar type
-    ECalType type = getCalendarType(getType());
-    switch (type) {
-        case CALTYPE_PERSIAN:
-            year += 622; break;
-        case CALTYPE_HEBREW:
-            year -= 3760; break;
-        case CALTYPE_CHINESE:
-            year -= 2637; break;
-        case CALTYPE_INDIAN:
-            year += 79; break;
-        case CALTYPE_COPTIC:
-            year += 284; break;
-        case CALTYPE_ETHIOPIC:
-            year += 8; break;
-        case CALTYPE_ETHIOPIC_AMETE_ALEM:
-            year -=5492; break;
-        case CALTYPE_DANGI:
-            year -= 2333; break;
-        case CALTYPE_ISLAMIC_CIVIL:
-        case CALTYPE_ISLAMIC:
-        case CALTYPE_ISLAMIC_UMALQURA:
-        case CALTYPE_ISLAMIC_TBLA:
-        case CALTYPE_ISLAMIC_RGSA:
-            year = gregoYearFromIslamicStart(year); break;
-        default:
-            // CALTYPE_GREGORIAN
-            // CALTYPE_JAPANESE
-            // CALTYPE_BUDDHIST
-            // CALTYPE_ROC
-            // CALTYPE_ISO8601
-            // do nothing, EXTENDED_YEAR same as Gregorian
-            break;
-    }
-    return year;
+    return get(UCAL_EXTENDED_YEAR, status);
 }
 
 // -------------------------------------
-// For now the full setRelatedYear implementation is here;
-// per #10752 move the non-default implementation to subclasses
-// (default implementation will do no year adjustment)
-
-static int32_t firstIslamicStartYearFromGrego(int32_t year) {
-    // ad hoc conversion, improve under #10752
-    // rough est for now, ok for grego 1846-2138,
-    // otherwise occasionally wrong (for 3% of years)
-    int cycle, offset, shift = 0;
-    if (year >= 1977) {
-        cycle = (year - 1977) / 65;
-        offset = (year - 1977) % 65;
-        shift = 2*cycle + ((offset >= 32)? 1: 0);
-    } else {
-        cycle = (year - 1976) / 65 - 1;
-        offset = -(year - 1976) % 65;
-        shift = 2*cycle + ((offset <= 32)? 1: 0);
-    }
-    return year - 579 + shift;
-}
 void Calendar::setRelatedYear(int32_t year)
 {
-    // modify for calendar type
-    ECalType type = getCalendarType(getType());
-    switch (type) {
-        case CALTYPE_PERSIAN:
-            year -= 622; break;
-        case CALTYPE_HEBREW:
-            year += 3760; break;
-        case CALTYPE_CHINESE:
-            year += 2637; break;
-        case CALTYPE_INDIAN:
-            year -= 79; break;
-        case CALTYPE_COPTIC:
-            year -= 284; break;
-        case CALTYPE_ETHIOPIC:
-            year -= 8; break;
-        case CALTYPE_ETHIOPIC_AMETE_ALEM:
-            year +=5492; break;
-        case CALTYPE_DANGI:
-            year += 2333; break;
-        case CALTYPE_ISLAMIC_CIVIL:
-        case CALTYPE_ISLAMIC:
-        case CALTYPE_ISLAMIC_UMALQURA:
-        case CALTYPE_ISLAMIC_TBLA:
-        case CALTYPE_ISLAMIC_RGSA:
-            year = firstIslamicStartYearFromGrego(year); break;
-        default:
-            // CALTYPE_GREGORIAN
-            // CALTYPE_JAPANESE
-            // CALTYPE_BUDDHIST
-            // CALTYPE_ROC
-            // CALTYPE_ISO8601
-            // do nothing, EXTENDED_YEAR same as Gregorian
-            break;
-    }
     // set extended year
     set(UCAL_EXTENDED_YEAR, year);
 }
@@ -3626,7 +3508,7 @@ int32_t Calendar::handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t w
     switch(bestField) {
     case UCAL_WEEK_OF_YEAR:
         if(woy == 1) {
-            if(jan1InPrevYear == true) {
+            if(jan1InPrevYear) {
                 // the first week of January is in the previous year
                 // therefore WOY1 is always solidly within yearWoy
                 return yearWoy;
