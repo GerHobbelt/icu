@@ -176,6 +176,9 @@ now, this task is not required for ICU4J.
 
 ## Verify that ICU4C tests pass without collation rule strings
 
+Note: Since ICU 73, this test has been included in the Github Actions Continuous Integration jobs.
+These instructions explain how to run the test manually.
+
 ***ICU4C 53 and later***
 
 Background: [ICU-10636](https://unicode-org.atlassian.net/browse/ICU-10636)
@@ -249,9 +252,10 @@ examples.
 
 *Only available since ICU 54.*
 
-### With ICU 73 and later:
+### With ICU 70 and later:
 
-This test is now performed automatically, based on the following instructions for ICU 64+.
+This test is performed automatically via a post-merge GHA check,
+based on the following instructions for ICU 64+.
 
 ### With ICU 64 and later:
 
@@ -396,6 +400,8 @@ option. When it's not available, you would do the following:
 ---
 
 ## Run the environment tests
+This test is performed automatically by a GitHub Action once per week. We can also run it manually by visiting 
+[GHA EnvTest Action page](https://github.com/unicode-org/icu/actions/workflows/icu_envtest.yml) then click on the "Run workflow v" drop down on the right side of the screen
 
 Run
 [environmentTest.sh](https://github.com/unicode-org/icu/blob/main/tools/release/c/environmentTest.sh)
