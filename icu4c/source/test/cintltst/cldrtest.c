@@ -90,7 +90,7 @@ TestKeyInRootRecursive(UResourceBundle *root, const char *rootName,
         (void)currentBundleKey;    /* Suppress set but not used warning. */
         subBundle = ures_getNextResource(currentBundle, NULL, &errorCode);
         if (U_FAILURE(errorCode)) {
-            log_err("Can't open a resource for lnocale %s. Error: %s\n", locale, u_errorName(errorCode));
+            log_err("Can't open a resource for locale %s. Error: %s\n", locale, u_errorName(errorCode));
             continue;
         }
         subBundleKey = ures_getKey(subBundle);
@@ -177,7 +177,7 @@ TestKeyInRootRecursive(UResourceBundle *root, const char *rootName,
                 }
 
                 if ((subBundleKey == NULL
-                    || (subBundleKey != NULL &&  strcmp(subBundleKey, "LocaleScript") != 0 && !isCurrencyPreEuro(subBundleKey)))
+                    || (subBundleKey != NULL && strcmp(subBundleKey, "LocaleScript") != 0 && !isCurrencyPreEuro(subBundleKey)))
                     && ures_getSize(subRootBundle) != ures_getSize(subBundle))
                 {
                     log_err("Different size array with key \"%s\" in \"%s\" from root for locale \"%s\"\n"
@@ -338,13 +338,15 @@ TestKeyInRootRecursive(UResourceBundle *root, const char *rootName,
                         subBundleKey,
                         ures_getKey(currentBundle),
                         locale);
-            } else if (string[0] == (UChar)0x20) {
+            /* foreignSpaceReplacement can be just a space */
+            } else if (string[0] == (UChar)0x20 && (strcmp(subBundleKey,"foreignSpaceReplacement"))) {
                 log_err("key \"%s\" in \"%s\" starts with a space in locale \"%s\"\n",
                         subBundleKey,
                         ures_getKey(currentBundle),
                         locale);
-            /* localeDisplayPattern/separator can end with a space */
-            } else if (string[len - 1] == (UChar)0x20 && (strcmp(subBundleKey,"separator"))) {
+            /* localeDisplayPattern/separator can end with a space, foreignSpaceReplacement can be just a space */
+            } else if (string[len - 1] == (UChar)0x20 && (strcmp(subBundleKey,"separator"))
+                    && (strcmp(subBundleKey,"foreignSpaceReplacement"))) {
                 log_err("key \"%s\" in \"%s\" ends with a space in locale \"%s\"\n",
                         subBundleKey,
                         ures_getKey(currentBundle),
@@ -418,7 +420,9 @@ TestKeyInRootRecursive(UResourceBundle *root, const char *rootName,
 #endif
         }
         else if (ures_getType(subBundle) == URES_TABLE) {
-            if (strcmp(subBundleKey, "availableFormats")!=0) {
+            if (strcmp(subBundleKey, "availableFormats")!=0 &&
+                strcmp(subBundleKey, "nameOrderLocales")!=0 &&
+                strcmp(subBundleKey, "namePattern")!=0 ) {
                 /* Here is one of the recursive parts */
                 TestKeyInRootRecursive(subRootBundle, rootName, subBundle, locale);
             }
