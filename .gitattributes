@@ -84,3 +84,6 @@ configure text !eol
 # Use JSONC for syntax highlighting on GitHub.com
 *.json linguist-language=jsonc
 
+# https://git-scm.com/book/en/v2/Customizing-Git-Git-Attributes#_merge_strategies
+*.jar   merge=ours
+
