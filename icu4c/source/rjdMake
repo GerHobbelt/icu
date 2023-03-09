@@ -47,7 +47,7 @@ then
     pushd buildLinux
     git restore ../common/putilimp.h # just to make sure - since we hack it for Amiga
     ../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 1 ; }
-    make -j "${CORES}" || { echo "Error during BUILD-MACHINE building" ; exit 1 ; }
+    make VERBOSE=1 -j "${CORES}" 1>buildLinux.log 2>&1 || { echo "Error during building for BUILD-MACHINE" ; exit 1 ; }
     popd
 else
     echo "buildLinux already exists. Assuming that it does not need building."
@@ -75,8 +75,8 @@ mkdir -p "${INSTALL_PREFIX}"
     CC="ppc-amigaos-gcc" \
     CXX="ppc-amigaos-g++" \
     CPPFLAGS="-mcrt=${C_LIB}" \
-    CXXFLAGS="-mcrt=${C_LIB} -std=gnu++11" \
-    CFLAGS="-mcrt=${C_LIB}" \
+    CXXFLAGS="-mcrt=${C_LIB} -std=gnu++11 -fPIC" \
+    CFLAGS="-mcrt=${C_LIB} -fPIC" \
     LDFLAGS="-mcrt=${C_LIB} -athread=native" \
     PKG_CONFIG_LIBDIR="/sdk/local/${C_CLIB}/lib/pkgconfig" \
     --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
@@ -84,7 +84,7 @@ mkdir -p "${INSTALL_PREFIX}"
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
     --prefix="${INSTALL_PREFIX}" || \
-        { echo "Error during CROSS-MACHINE configure" ; exit 1 ; }
+        { echo "Error during configure" ; exit 1 ; }
 
 if [[ ! -f "rjdLast_${C_LIB}" ]]
 then
@@ -106,7 +106,7 @@ then
     sed -i "176d" data/Makefile
     sed -i "176i \	${insert}" data/Makefile
 fi
-make -j "${CORES}" || { echo "Error during HOST-MACHINE building" ; exit 1 ; }
+make VERBOSE=1 -j "${CORES}" 1>buildAmiga.log 2>&1 || { echo "Error during building for HOST-MACHINE" ; exit 1 ; }
 
 make install
 
