@@ -1215,35 +1215,41 @@ public class CalendarRegressionTest extends com.ibm.icu.dev.test.TestFmwk {
      */
     @Test
     public void Test4162587() {
-        TimeZone tz = TimeZone.getTimeZone("PST");
-        TimeZone.setDefault(tz);
-        GregorianCalendar cal = new GregorianCalendar(tz);
-        Date d;
+        TimeZone saveZone = TimeZone.getDefault();
 
-        for (int i=0; i<5; ++i) {
-            if (i>0) logln("---");
+        try {
+            TimeZone tz = TimeZone.getTimeZone("PST");
+            TimeZone.setDefault(tz);
+            GregorianCalendar cal = new GregorianCalendar(tz);
+            Date d;
 
-            cal.clear();
-            cal.set(1998, Calendar.APRIL, 5, i, 0);
-            d = cal.getTime();
-            String s0 = d.toString();
-            logln("0 " + i + ": " + s0);
+            for (int i=0; i<5; ++i) {
+                if (i>0) logln("---");
 
-            cal.clear();
-            cal.set(1998, Calendar.APRIL, 4, i+24, 0);
-            d = cal.getTime();
-            String sPlus = d.toString();
-            logln("+ " + i + ": " + sPlus);
+                cal.clear();
+                cal.set(1998, Calendar.APRIL, 5, i, 0);
+                d = cal.getTime();
+                String s0 = d.toString();
+                logln("0 " + i + ": " + s0);
 
-            cal.clear();
-            cal.set(1998, Calendar.APRIL, 6, i-24, 0);
-            d = cal.getTime();
-            String sMinus = d.toString();
-            logln("- " + i + ": " + sMinus);
+                cal.clear();
+                cal.set(1998, Calendar.APRIL, 4, i+24, 0);
+                d = cal.getTime();
+                String sPlus = d.toString();
+                logln("+ " + i + ": " + sPlus);
 
-            if (!s0.equals(sPlus) || !s0.equals(sMinus)) {
-                errln("Fail: All three lines must match");
+                cal.clear();
+                cal.set(1998, Calendar.APRIL, 6, i-24, 0);
+                d = cal.getTime();
+                String sMinus = d.toString();
+                logln("- " + i + ": " + sMinus);
+
+                if (!s0.equals(sPlus) || !s0.equals(sMinus)) {
+                    errln("Fail: All three lines must match");
+                }
             }
+        } finally {
+            TimeZone.setDefault(saveZone);
         }
     }
 
@@ -2617,6 +2623,58 @@ public class CalendarRegressionTest extends com.ibm.icu.dev.test.TestFmwk {
             assertEquals(
                 "Calendar from Calendar.getInstance(TimeZone zone=\"uslui\", ULocale loc=\"" + TESTS[i][0] + "\")",
                          TESTS[i][2], cal.getType());
+        }
+    }
+
+    void VerifyNoAssertWithSetGregorianChange(String timezone) {
+        TimeZone zone = TimeZone.getTimeZone(timezone);
+        GregorianCalendar cal = new GregorianCalendar(zone, Locale.ENGLISH);
+        cal.setTime(new Date());
+        // The beginning of ECMAScript time, namely -(2**53)
+        long startOfTime = -9007199254740992L;
+
+        cal.setGregorianChange(new Date(startOfTime));
+        cal.get(Calendar.ZONE_OFFSET);
+        cal.get(Calendar.DST_OFFSET);
+    }
+
+    @Test
+    public void TestAsiaManilaAfterSetGregorianChange22043() {
+        VerifyNoAssertWithSetGregorianChange("Asia/Manila");
+        for (String id : TimeZone.getAvailableIDs()) {
+            VerifyNoAssertWithSetGregorianChange(id);
+        }
+    }
+
+    @Test
+    public void TestRespectUExtensionFw() { // ICU-22226
+        String[] localeIds = {
+                "en-US",
+                "en-US-u-fw-xyz",
+                "en-US-u-fw-sun",
+                "en-US-u-fw-mon",
+                "en-US-u-fw-thu",
+                "en-US-u-fw-sat"
+        };
+        int[] expectedValues = {
+                Calendar.SUNDAY,
+                Calendar.SUNDAY,
+                Calendar.SUNDAY,
+                Calendar.MONDAY,
+                Calendar.THURSDAY,
+                Calendar.SATURDAY
+        };
+
+        assertEquals(
+                "The localeIds count matches the expectedValues count",
+                localeIds.length,
+                expectedValues.length);
+
+        for (int i = 0; i < localeIds.length; i++) {
+            assertEquals(
+                    "Calendar.getFirstDayOfWeek() does not seem to respect fw extension u in locale id",
+                    expectedValues[i],
+                    Calendar.getInstance(Locale.forLanguageTag(localeIds[i])).getFirstDayOfWeek());
         }
     }
 }

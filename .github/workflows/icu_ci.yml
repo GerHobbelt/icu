@@ -55,6 +55,66 @@ jobs:
           [ -d icu4j/out/junit-results ] && cd icu4j && cat `find out/junit-results -name "*.txt" -exec grep -l FAILED {} \;`;
         if: ${{ failure() }}
 
+  # Java8 ICU4J build and unit tests using Maven
+  # https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-java-with-maven
+
+  # Run `test` to execute unit tests and ensure it is possible for tests to run even without packaging submodule
+  # dependencies as jar files
+  icu4j-test-maven:
+    name: Run unit tests with Maven for Java version
+    runs-on: ubuntu-latest
+    # Make this unit test target job depend on a later phase target job to prevent race condition when
+    # trying to persist the Maven cache to the Github cache, knowing that artifacts needed for
+    # the later phase `verify` are a superset of the artifacts needed for the earlier phase `test`.
+    needs: icu4j-verify-maven
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [ '8', '11' ]
+    steps:
+      - name: Checkout and setup
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout lfs objects
+        run: git lfs pull
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+          cache: maven
+      - name: Run Maven test
+        run: |
+          cd icu4j/maven-build;
+          mvn --batch-mode test
+
+  # Run `verify` to ensure that `package` (creating .jar files) and `integration-test` (special setup for localespi tests) work
+  icu4j-verify-maven:
+    name: Run integration tests with Maven for Java version
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java-version: [ '8', '11' ]
+    steps:
+      - name: Checkout and setup
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout lfs objects
+        run: git lfs pull
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ matrix.java-version }}
+          cache: maven
+      # The Maven `verify` phase causes the following to happen first, and in order:
+      # build/compile (`compile`), unit tests (`test`), Jar building (`package`),
+      # integration tests, if any (`integration-test`)
+      - name: Run Maven verify
+        run: |
+          cd icu4j/maven-build;
+          mvn --batch-mode verify
 
   # ICU4J build and unit test under Java11
   java11-icu4j-build-and-test:
@@ -132,6 +192,38 @@ jobs:
           cd icu4j;
           ant init;
           ant check;
+          ant localespiCheck
+      - name: List failures (if any)
+        run: |
+          [ -d icu4j/out/junit-results ] && cd icu4j && cat `find out/junit-results -name "*.txt" -exec grep -l FAILED {} \;`;
+        if: ${{ failure() }}
+
+  # ICU4J build and unit test under adaboost
+  adaboost-icu4j-build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout and setup
+        uses: actions/checkout@v2
+        with:
+          lfs: true
+      - name: Checkout lfs objects
+        run: git lfs pull
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '11'
+      - name: Config Adaboost and Rebuild data jar
+        run: |
+          cd icu4c/source;
+          ICU_DATA_BUILDTOOL_OPTS=--include_uni_core_data ICU_DATA_FILTER_FILE=../../.github/adaboost.json CPPFLAGS=-DUCONFIG_USE_ML_PHRASE_BREAKING=1 ./runConfigureICU --enable-debug --disable-release Linux -disable-layoutex;
+          make clean;
+          make -j2 ICU4J_ROOT=../../../icu4j icu4j-data-install;
+          cd ../..
+      - name: ICU4J
+        run: |
+          cd icu4j;
+          ant init;
+          ant -Dcom.ibm.icu.impl.breakiter.useMLPhraseBreaking=true check;
           ant localespiCheck
       - name: List failures (if any)
         run: |
@@ -228,6 +320,41 @@ jobs:
         env:
           CPPFLAGS: -fsanitize=address
           LDFLAGS: -fsanitize=address
+  # Clang Linux with undefined-behavior sanitizer.
+  clang-ubsan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: ICU4C with clang and ubsan +alignment
+        run: |
+          cd icu4c/source;
+          ./runConfigureICU --enable-debug --disable-release Linux --disable-renaming;
+          make -j2;
+          make -j2 check
+        env:
+          CPPFLAGS: -fsanitize=undefined -fsanitize=alignment -fno-sanitize-recover=undefined,alignment
+          CFLAGS: -fsanitize=undefined -fsanitize=alignment -fno-sanitize-recover=undefined,alignment
+          LDFLAGS: -fsanitize=undefined -fsanitize=alignment -fno-sanitize-recover=undefined,alignment
+  # Control Flow Integrity.
+  clang-cfi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: ICU4C with clang using CFI
+        run: |
+          cd icu4c/source;
+          ./runConfigureICU Linux --disable-renaming;
+          make -j2;
+          make -j2 check
+        env:
+          CC: clang
+          CXX: clang++
+          # add -fsanitize=cfi-vcall -fsanitize=cfi-icall  later
+          CXXFLAGS: -flto -fvisibility=hidden -fsanitize=cfi-derived-cast -fno-sanitize-trap=cfi -fno-inline-functions -fno-inline -fno-omit-frame-pointer -O1
+          # add -fsanitize=cfi-vcall -fsanitize=cfi-icall  later
+          LDFLAGS: -flto -fvisibility=hidden -fuse-ld=gold -fsanitize=cfi-derived-cast -fsanitize=cfi-unrelated-cast -fno-sanitize-trap=cfi -fsanitize-cfi-icall-generalize-pointers
 
   # Clang Linux with thread sanitizer.
   clang-tsan:
@@ -334,6 +461,17 @@ jobs:
           make clean;
           make -j2 check
 
+  # Test adaboost
+  adaboost-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - run: |
+          cd icu4c/source;
+          ICU_DATA_FILTER_FILE=../../.github/adaboost.json CPPFLAGS=-DUCONFIG_USE_ML_PHRASE_BREAKING=1 ./runConfigureICU --enable-debug --disable-release Linux -disable-layoutex;
+          make clean;
+          make -j2 check
+
   # Build and run testmap
   testmap:
     runs-on: ubuntu-latest
@@ -376,18 +514,100 @@ jobs:
       - run: mvn -f tools/release/java/pom.xml package dependency:analyze
 
   # Run unit tests with UCONFIG_NO_XXX variations.
-  uconfig_variation-check-unit-tests:
+  uconfig-unit-tests:
     runs-on: ubuntu-latest
+    strategy:
+      # "fail-fast: false" lets other jobs keep running even if the test breaks in some other uconfig.
+      fail-fast: false
+      matrix:
+        uconfig_cppflags:
+         # Ignore the following two.
+         # - "-DUCONFIG_NO_FILE_IO=1"
+         # - "-DUCONFIG_NO_CONVERSION=1"
+         - "-DUCONFIG_NO_LEGACY_CONVERSION=1"
+         - "-DUCONFIG_NO_NORMALIZATION=1"
+         - "-DUCONFIG_NO_BREAK_ITERATION=1"
+         - "-DUCONFIG_NO_IDNA=1"
+         - "-DUCONFIG_NO_COLLATION=1"
+         - "-DUCONFIG_NO_FORMATTING=1"
+         - "-DUCONFIG_NO_TRANSLITERATION=1"
+         - "-DUCONFIG_NO_REGULAR_EXPRESSIONS=1"
+         - "-DUCONFIG_NO_SERVICN=1"
+         - "-DUCONFIG_NO_FILTERED_BREAK_ITERATION=1"
+         # Turn on all the options in one test.
+         - "-DUCONFIG_NO_LEGACY_CONVERSION=1 -DUCONFIG_NO_NORMALIZATION=1 -DUCONFIG_NO_BREAK_ITERATION=1 -DUCONFIG_NO_IDNA=1 -DUCONFIG_NO_COLLATION=1 -DUCONFIG_NO_FORMATTING=1 -DUCONFIG_NO_TRANSLITERATION=1 -DUCONFIG_NO_REGULAR_EXPRESSIONS=1 -DUCONFIG_NO_SERVICN=1 -DUCONFIG_NO_FILTERED_BREAK_ITERATION=1"
     steps:
-      - uses: actions/checkout@v2
-      - run: python3 tools/scripts/uconfig_vars_test.py -u
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Verify no additional new UCONFIG_NO_xxx added
+        run: |
+          # Test that we have exactly 12 "#ifndef UCONFIG_NO_" in uconfig.h. If the number changes, we need to also
+          # adjust the uconfig_cppflags above to include the new one and update the "12" below.
+          expected_count="12";
+          count=`egrep "#ifndef UCONFIG_NO_" icu4c/source/common/unicode/uconfig.h| wc -l`;
+          if [ $expected_count != $count ]; then
+              echo "More than %s UCONFIG_NO_* defined in uconfig.h, please adjust uconfig_cppflags above to include any newly added flag" % $expected_count;
+              echo "Currently UCONFIG_NO_* defined in uconfig.h:";
+              egrep "#ifndef UCONFIG_NO_" icu4c/source/common/unicode/uconfig.h;
+              exit -1
+          fi
+      - name: Build and Test
+        env:
+          CPPFLAGS: ${{ matrix.uconfig_cppflags }}
+        run: |
+          cd icu4c/source/;
+          ./runConfigureICU Linux;
+          make -j2 tests;
 
   # Run header tests with UCONFIG_NO_XXX variations.
-  uconfig_variation-check-all-header-tests:
+  uconfig-header-tests:
     runs-on: ubuntu-latest
+    strategy:
+      # "fail-fast: false" lets other jobs keep running even if the test breaks in some other uconfig.
+      fail-fast: false
+      matrix:
+        uconfig_cppflags:
+         # Ignore the following two.
+         # - "-DUCONFIG_NO_FILE_IO=1"
+         # - "-DUCONFIG_NO_CONVERSION=1"
+         - "-DUCONFIG_NO_LEGACY_CONVERSION=1"
+         - "-DUCONFIG_NO_NORMALIZATION=1"
+         - "-DUCONFIG_NO_BREAK_ITERATION=1"
+         - "-DUCONFIG_NO_IDNA=1"
+         - "-DUCONFIG_NO_COLLATION=1"
+         - "-DUCONFIG_NO_FORMATTING=1"
+         - "-DUCONFIG_NO_TRANSLITERATION=1"
+         - "-DUCONFIG_NO_REGULAR_EXPRESSIONS=1"
+         - "-DUCONFIG_NO_SERVICN=1"
+         - "-DUCONFIG_NO_FILTERED_BREAK_ITERATION=1"
+         # Turn on all the options in one test.
+         - "-DUCONFIG_NO_LEGACY_CONVERSION=1 -DUCONFIG_NO_NORMALIZATION=1 -DUCONFIG_NO_BREAK_ITERATION=1 -DUCONFIG_NO_IDNA=1 -DUCONFIG_NO_COLLATION=1 -DUCONFIG_NO_FORMATTING=1 -DUCONFIG_NO_TRANSLITERATION=1 -DUCONFIG_NO_REGULAR_EXPRESSIONS=1 -DUCONFIG_NO_SERVICN=1 -DUCONFIG_NO_FILTERED_BREAK_ITERATION=1"
     steps:
-      - uses: actions/checkout@v2
-      - run: python3 tools/scripts/uconfig_vars_test.py -p
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Verify no additional new UCONFIG_NO_xxx added
+        run: |
+          # Test that we have exactly 12 "#ifndef UCONFIG_NO_" in uconfig.h. If the number changes, we need to also
+          # adjust the uconfig_cppflags above to include the new one and update the "12" below.
+          count=`egrep "#ifndef UCONFIG_NO_" icu4c/source/common/unicode/uconfig.h| wc -l`;
+          if [ "12" != $count ]; then
+              echo "More than %s UCONFIG_NO_* defined in uconfig.h, please adjust uconfig_cppflags above to include any newly added flag" % $count;
+              echo "Currently UCONFIG_NO_* defined in uconfig.h:";
+              egrep "#ifndef UCONFIG_NO_" icu4c/source/common/unicode/uconfig.h;
+              exit -1
+          fi
+      - name: Build and Install
+        run: |
+          cd icu4c/source/;
+          mkdir /tmp/icu_cnfg;
+          ./runConfigureICU Linux --prefix=/tmp/icu_cnfg;
+          make -j2 install;
+      - name: Test
+        env:
+          UCONFIG_NO: ${{ matrix.uconfig_cppflags }}
+        run: |
+          cd icu4c/source/;
+          PATH=/tmp/icu_cnfg/bin:$PATH make -C test/hdrtst check;
 
   # Build Unicode update tools
   unicode-update-tools:
@@ -395,11 +615,15 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: bazelbuild/setup-bazelisk@v1
+    - name: Get CI Linux runner VM version
+      id: linux-version
+      run: |
+        echo "LINUX_VERSION=$(grep -F VERSION_ID /etc/os-release | cut -d'"' -f2)" >> $GITHUB_OUTPUT
     - name: Mount bazel cache
       uses: actions/cache@v2
       with:
         path: "~/.cache/bazel"
-        key: bazel
+        key: bazel-${{ runner.os }}-${{ steps.linux-version.outputs.LINUX_VERSION }}
 
     - name: Generate the data
       run: |
@@ -447,4 +671,64 @@ jobs:
           # To run all tests serially
           echo "Run all samples"
           pwd
-          PATH=$PATH:/tmp/icu_samples/bin LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/icu_samples/lib make check-samples-recursive                  
+          PATH=$PATH:/tmp/icu_samples/bin LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/tmp/icu_samples/lib make check-samples-recursive
+
+  # https://unicode-org.github.io/icu/processes/release/tasks/integration.html#verify-that-icu4c-tests-pass-without-collation-rule-strings
+  icu4c-without-collation-rule-strings:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install hjson dependency
+        run: |
+          sudo apt-get install python3-pip
+          pip3 install hjson
+      - name: Create data filter file to remove collation rule strings
+        run: |
+          cat > icu4c/coll-norules.hjson <<EOL
+          {
+            resourceFilters: [
+              {
+                categories: [
+                  coll_tree
+                ]
+                rules: [
+                  -/UCARules
+                  -/collations/*/Sequence
+                ]
+              }
+            ]
+          }
+          EOL
+      - name: Configure ICU4C with the data filter file
+        env:
+          ICU_DATA_FILTER_FILE: ../coll-norules.hjson
+        run: |
+          cd icu4c/source
+          ./runConfigureICU Linux
+      - name: Run tests with data-errors-as-warnings
+        env:
+          INTLTEST_OPTS: -w
+          CINTLTST_OPTS: -w
+        run: |
+          cd icu4c/source
+          make -j2 check
+  
+  # https://unicode-org.github.io/icu/processes/release/tasks/healthy-code.html#test-uconfig_no_conversion
+  icu4c-uconfig-no-version:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set UCONFIG_NO_CONVERSION and configure ICU4C
+        env:
+          UCONFIG_NO_CONVERSION: 1
+        run: |
+          cd icu4c/source
+          ./runConfigureICU Linux
+      - name: Run make for stubdata, common, i18n
+        run: |
+          cd icu4c/source
+          pushd stubdata && make -j 2 && popd
+          # Ensure lib directory for output object file exists
+          mkdir -p lib
+          pushd common && make -j 2 && popd
+          pushd i18n && make -j 2 && popd

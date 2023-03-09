@@ -2175,7 +2175,7 @@ supplementalData:table(nofallback){
             "islamic-tbla",
         }
     }
-    cldrVersion{"42"}
+    cldrVersion{"43"}
     codeMappings{
         {
             "AA",
@@ -4485,6 +4485,7 @@ supplementalData:table(nofallback){
                 "GWE",
                 "GWP",
                 "HRD",
+                "HRK",
                 "IEP",
                 "ILP",
                 "ILR",
@@ -4526,7 +4527,7 @@ supplementalData:table(nofallback){
                 "SDP",
                 "SIT",
                 "SKK",
-                "SLE",
+                "SLL",
                 "SRG",
                 "STD",
                 "SUR",
@@ -4628,7 +4629,6 @@ supplementalData:table(nofallback){
                 "GYD",
                 "HKD",
                 "HNL",
-                "HRK",
                 "HTG",
                 "HUF",
                 "IDR",
@@ -4695,7 +4695,7 @@ supplementalData:table(nofallback){
                 "SEK",
                 "SGD",
                 "SHP",
-                "SLL",
+                "SLE",
                 "SOS",
                 "SRD",
                 "SSP",
@@ -7704,8 +7704,7 @@ supplementalData:table(nofallback){
                 "CA",
                 "CC~D",
                 "CF~I",
-                "CK~P",
-                "CR",
+                "CK~R",
                 "CU~Z",
                 "DE",
                 "DG",
@@ -11782,6 +11781,7 @@ supplementalData:table(nofallback){
                 "pressure-kilopascal",
                 "pressure-megapascal",
                 "pressure-ofhg",
+                "speed-beaufort",
                 "speed-kilometer-per-hour",
                 "speed-knot",
                 "speed-meter-per-second",
@@ -11892,6 +11892,8 @@ supplementalData:table(nofallback){
                 "lemosin",
                 "lengadoc",
                 "lipaw",
+                "ltg1929",
+                "ltg2007",
                 "luna1918",
                 "metelko",
                 "monoton",
@@ -12118,6 +12120,12 @@ supplementalData:table(nofallback){
         aoz{
             primary{
                 scripts{"Latn"}
+            }
+        }
+        apc{
+            primary{
+                scripts{"Arab"}
+                territories{"SY"}
             }
         }
         ar{
@@ -14981,6 +14989,7 @@ supplementalData:table(nofallback){
         lmo{
             primary{
                 scripts{"Latn"}
+                territories{"IT"}
             }
         }
         ln{
@@ -15913,13 +15922,13 @@ supplementalData:table(nofallback){
         pap{
             primary{
                 scripts{"Latn"}
-                territories{
-                    "AW",
-                    "CW",
-                }
+                territories{"CW"}
             }
             secondary{
-                territories{"BQ"}
+                territories{
+                    "AW",
+                    "BQ",
+                }
             }
         }
         pau{
@@ -20320,6 +20329,7 @@ supplementalData:table(nofallback){
         no{
             "nb",
             "nn",
+            "no_NO",
         }
         pt_PT{
             "pt_AO",
@@ -29650,6 +29660,9 @@ supplementalData:table(nofallback){
             am{
                 populationShareF:int{47590000}
             }
+            apc{
+                populationShareF:int{49165000}
+            }
             ar{
                 officialStatus{"official"}
                 populationShareF:int{49200000}
@@ -30204,6 +30217,9 @@ supplementalData:table(nofallback){
             }
         }
         JO{
+            apc{
+                populationShareF:int{49514000}
+            }
             ar{
                 officialStatus{"official"}
                 populationShareF:int{50100000}
@@ -30704,7 +30720,7 @@ supplementalData:table(nofallback){
                 populationShareF:int{48490000}
                 writingShareF:int{48500000}
             }
-            rif_Latn{
+            rif_Tfng{
                 populationShareF:int{48490000}
                 writingShareF:int{48500000}
             }
@@ -31433,7 +31449,7 @@ supplementalData:table(nofallback){
                 officialStatus{"official"}
                 populationShareF:int{50100000}
             }
-            rif_Latn{
+            rif{
                 populationShareF:int{48120000}
             }
             territoryF:intvector{
@@ -31948,6 +31964,9 @@ supplementalData:table(nofallback){
             }
         }
         PS{
+            apc{
+                populationShareF:int{49830000}
+            }
             ar{
                 officialStatus{"official"}
                 populationShareF:int{50100000}
@@ -32735,6 +32754,9 @@ supplementalData:table(nofallback){
             }
         }
         SY{
+            apc{
+                populationShareF:int{49750000}
+            }
             ar{
                 officialStatus{"official"}
                 populationShareF:int{49800000}
@@ -34159,6 +34181,13 @@ supplementalData:table(nofallback){
             preferred{"H"}
         }
         CV{
+            allowed{
+                "H",
+                "hB",
+            }
+            preferred{"H"}
+        }
+        CW{
             allowed{
                 "H",
                 "hB",

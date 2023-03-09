@@ -2313,7 +2313,7 @@ public class ULocaleTest extends TestFmwk {
                     "pa_PK"
                 }, {
                     "pap",
-                    "pap_Latn_AW",
+                    "pap_Latn_CW",
                     "pap"
                 }, {
                     "pau",
@@ -4010,7 +4010,7 @@ public class ULocaleTest extends TestFmwk {
                 }, {
                     "aae_Latn_IT",
                     "aae_Latn_IT",
-                    "aae_Latn_IT"
+                    "aae"
                 }, {
                     "aae_Thai_CO",
                     "aae_Thai_CO",
@@ -4018,7 +4018,7 @@ public class ULocaleTest extends TestFmwk {
                 }, {
                     "und_CW",
                     "pap_Latn_CW",
-                    "pap_CW"
+                    "pap"
                 }, {
                     "zh_Hant",
                     "zh_Hant_TW",
