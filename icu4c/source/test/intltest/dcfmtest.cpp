@@ -213,12 +213,12 @@ void DecimalFormatTest::DataDrivenTests() {
     //  Open and read the test data file.
     //
     srcPath=getPath(tdd, "dcfmtest.txt");
-    if(srcPath==nullptr) {
+    if(srcPath==NULL) {
         return; /* something went wrong, error already output */
     }
 
     int32_t    len;
-    char16_t *testData = ReadAndConvertFile(srcPath, len, "utf-8", status);
+    UChar *testData = ReadAndConvertFile(srcPath, len, "utf-8", status);
     if (U_FAILURE(status)) {
         return; /* something went wrong, error already output */
     }
@@ -451,12 +451,12 @@ void DecimalFormatTest::execFormatTest(int32_t lineNum,
             typeStr = "Formattable";
             Formattable fmtbl;
             fmtbl.setDecimalNumber(spInput, status);
-            fmtr.format(fmtbl, result, nullptr, status);
+            fmtr.format(fmtbl, result, NULL, status);
         }
         break;
     case kStringPiece:
         typeStr = "StringPiece";
-        fmtr.format(spInput, result, nullptr, status);
+        fmtr.format(spInput, result, NULL, status);
         break;
     }
 

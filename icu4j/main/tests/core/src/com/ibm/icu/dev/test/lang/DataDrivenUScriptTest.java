@@ -232,13 +232,7 @@ public class DataDrivenUScriptTest extends TestFmwk {
                     { "Cans", UScript.CANADIAN_ABORIGINAL },
                     { "arabic", UScript.ARABIC },
                     { "Yi", UScript.YI },
-                    { "Zyyy", UScript.COMMON },
-                    /* test other cases that are ambiguous (script alias vs language tag) */
-                    { "han", UScript.HAN },
-                    { "mro", UScript.MRO },
-                    { "nko", UScript.NKO },
-                    { "old-hungarian", UScript.OLD_HUNGARIAN },
-                    { "new-tai-lue", UScript.NEW_TAI_LUE },
+                    { "Zyyy", UScript.COMMON }
                 });
         }
 

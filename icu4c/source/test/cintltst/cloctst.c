@@ -604,7 +604,7 @@ static void TestSimpleResourceInfo() {
             log_err("  ISO-3 Country code mismatch:  %s versus  %s\n",  austrdup(expected),
                 austrdup(dataTable[CTRY3][i]));
         }
-        snprintf(temp2, sizeof(temp2), "%x", (int)uloc_getLCID(testLocale));
+        sprintf(temp2, "%x", (int)uloc_getLCID(testLocale));
         if (strcmp(temp2, rawData2[LCID][i]) != 0) {
             log_err("LCID mismatch: %s versus %s\n", temp2 , rawData2[LCID][i]);
         }
@@ -4181,7 +4181,7 @@ const char* const full_data[][3] = {
     "pa_PK"
   }, {
     "pap",
-    "pap_Latn_CW",
+    "pap_Latn_AW",
     "pap"
   }, {
     "pau",
@@ -7217,10 +7217,6 @@ static void TestCDefaultLocale() {
     char *env_var = getenv("LANG");
     if (env_var == NULL) {
       log_verbose("Skipping TestCDefaultLocale test, as the LANG variable is not set.");
-      return;
-    }
-    if (getenv("LC_ALL") != NULL) {
-      log_verbose("Skipping TestCDefaultLocale test, as the LC_ALL variable is set.");
       return;
     }
     if ((strcmp(env_var, "C") == 0 || strcmp(env_var, "C.UTF-8") == 0) && strcmp(defaultLocale, "en_US_POSIX") != 0) {

@@ -76,9 +76,6 @@
     <ClCompile Include="lstmbe.cpp">
       <Filter>break iteration</Filter>
     </ClCompile>
-    <ClCompile Include="mlbe.cpp">
-      <Filter>break iteration</Filter>
-    </ClCompile>
     <ClCompile Include="rbbi.cpp">
       <Filter>break iteration</Filter>
     </ClCompile>
@@ -661,9 +658,6 @@
       <Filter>break iteration</Filter>
     </ClInclude>
     <ClInclude Include="lstmbe.h">
-      <Filter>break iteration</Filter>
-    </ClInclude>
-    <ClInclude Include="mlbe.h">
       <Filter>break iteration</Filter>
     </ClInclude>
     <ClInclude Include="rbbidata.h">

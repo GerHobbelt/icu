@@ -33,8 +33,7 @@ public class TransliteratorInstantiateAllTest extends TestFmwk {
         ArrayList<String> allTranslitIDs = new ArrayList<String>();
 
         for (Enumeration e = Transliterator.getAvailableIDs(); e.hasMoreElements(); ) {
-            String id = (String) e.nextElement();
-            allTranslitIDs.add(id);
+            allTranslitIDs.add((String) e.nextElement());
         }
 
         return allTranslitIDs;

@@ -88,7 +88,6 @@
     <ClCompile Include="brkiter.cpp" />
     <ClCompile Include="dictbe.cpp" />
     <ClCompile Include="lstmbe.cpp" />
-    <ClCompile Include="mlbe.cpp" />
     <ClCompile Include="pluralmap.cpp" />
     <ClCompile Include="rbbi.cpp" />
     <ClCompile Include="rbbidata.cpp" />
@@ -283,7 +282,6 @@
     <ClInclude Include="brkeng.h" />
     <ClInclude Include="dictbe.h" />
     <ClInclude Include="lstmbe.h" />
-    <ClInclude Include="mlbe.h" />
     <ClInclude Include="rbbidata.h" />
     <ClInclude Include="rbbinode.h" />
     <ClInclude Include="rbbirb.h" />

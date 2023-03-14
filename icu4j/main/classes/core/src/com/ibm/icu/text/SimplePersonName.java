@@ -18,35 +18,30 @@ import java.util.TreeSet;
  * A caller can store both raw field values (such as "given") and modified field values (such as "given-informal")
  * in a SimplePersonName.  But beyond storing and returning modified field values provided to it by the caller,
  * SimplePersonName relies on the PersonNameFormatter's default handling of field modifiers.
- * @draft ICU 73
+ * @internal ICU 72 technology preview
+ * @deprecated This API is for technology preview only.
  */
+@Deprecated
 public class SimplePersonName implements PersonName {
     /**
      * A utility class for constructing a SimplePersonName.  Use SimplePersonName.builder()
      * to get a new Builder instance.
-     * @draft ICU 73
+     * @internal ICU 72 technology preview
+     * @deprecated This API is for technology preview only.
      */
+    @Deprecated
     public static class Builder {
         /**
          * Set the locale for the new name object.
          * @param locale The locale for the new name object.  Can be null, which indicates the
          *               name's locale is unknown.
          * @return This builder.
-         * @draft ICU 73
+         * @internal ICU 72 technology preview
+         * @deprecated This API is for technology preview only.
          */
+        @Deprecated
         public Builder setLocale(Locale locale) {
             this.locale = locale;
-            return this;
-        }
-
-        /**
-         * Set the preferred order for the new name object.
-         * @param preferredOrder The preferred order for the new name object.
-         * @return This builder.
-         * @draft ICU 73
-         */
-        public Builder setPreferredOrder(PreferredOrder preferredOrder) {
-            this.preferredOrder = preferredOrder;
             return this;
         }
 
@@ -57,8 +52,10 @@ public class SimplePersonName implements PersonName {
          *                  to this field value.  May be null, which is the same as the empty set.
          * @param value The value for this field.
          * @return This builder.
-         * @draft ICU 73
+         * @internal ICU 72 technology preview
+         * @deprecated This API is for technology preview only.
          */
+        @Deprecated
         public Builder addField(NameField field,
                                 Collection<FieldModifier> modifiers,
                                 String value) {
@@ -86,45 +83,40 @@ public class SimplePersonName implements PersonName {
         /**
          * Returns a SimplePersonName with the field values and name locale that were passed to this builder.
          * @return A SimplePersonName with the field values and name locale that were passed to this builder.
-         * @draft ICU 73
+         * @internal ICU 72 technology preview
+         * @deprecated This API is for technology preview only.
          */
+        @Deprecated
         public SimplePersonName build() {
             // special-case code for the "surname" field -- if it isn't specified, but "surname-prefix" and
             // "surname-core" both are, let "surname" be the other two fields joined with a space
             if (fieldValues.get("surname") == null) {
                 String surnamePrefix = fieldValues.get("surname-prefix");
                 String surnameCore = fieldValues.get("surname-core");
-
-                StringBuilder sb = new StringBuilder();
                 if (surnamePrefix != null && surnameCore != null) {
                     fieldValues.put("surname", surnamePrefix + " " + surnameCore);
-                } else if (surnamePrefix != null) {
-                    fieldValues.put("surname", surnamePrefix);
-                } else if (surnameCore != null) {
-                    fieldValues.put("surname", surnameCore);
                 }
-                // if both "surname-prefix" and "surname-core" are empty, don't fill in "surname" either
             }
 
-            return new SimplePersonName(locale, preferredOrder, fieldValues);
+            return new SimplePersonName(locale, fieldValues);
         }
 
         private Builder() {
             locale = null;
-            preferredOrder = PreferredOrder.DEFAULT;
             fieldValues = new HashMap<>();
         }
 
         private Locale locale;
-        private PreferredOrder preferredOrder;
         private Map<String, String> fieldValues;
     }
 
     /**
      * Returns a Builder object that can be used to construct a new SimplePersonName object.
      * @return A Builder object that can be used to construct a new SimplePersonName object.
-     * @draft ICU 73
+     * @internal ICU 72 technology preview
+     * @deprecated This API is for technology preview only.
      */
+    @Deprecated
     public static Builder builder() {
         return new Builder();
     }
@@ -132,31 +124,22 @@ public class SimplePersonName implements PersonName {
     /**
      * Internal constructor used by the Builder object.
      */
-    private SimplePersonName(Locale nameLocale, PreferredOrder preferredOrder, Map<String, String> fieldValues) {
+    private SimplePersonName(Locale nameLocale, Map<String, String> fieldValues) {
         this.nameLocale = nameLocale;
-        this.preferredOrder = preferredOrder;
         this.fieldValues = new HashMap<>(fieldValues);
     }
 
     /**
      * Returns the locale of the name-- that is, the language or country of origin for the person being named.
      * @return The name's locale, or null if it's unknown.
-     * @draft ICU 73
+     * @internal ICU 72 technology preview
+     * @deprecated This API is for technology preview only.
      */
     @Override
+    @Deprecated
     public Locale getNameLocale() {
         return nameLocale;
     }
-
-    /**
-     * Returns the preferred field order for the name.  This will be DEFAULT, unless the caller sets it to something
-     * else using the builder.
-     * @return The name's preferred field order.
-     * @draft ICU 73
-     * @return
-     */
-    @Override
-    public PreferredOrder getPreferredOrder() { return preferredOrder; }
 
     /**
      * Returns one field of the name, possibly in a modified form.  This class can store modified versions of fields,
@@ -169,9 +152,11 @@ public class SimplePersonName implements PersonName {
      *                  was provided at construction time.
      * @return The value of the requested field, optionally modified by some or all of the requested modifiers, or
      * null if the requested field isn't present in the name.
-     * @draft ICU 73
+     * @internal ICU 72 technology preview
+     * @deprecated This API is for technology preview only.
      */
     @Override
+    @Deprecated
     public String getFieldValue(NameField nameField, Set<FieldModifier> modifiers) {
         // first look for the fully modified name in the internal table
         String fieldName = nameField.toString();
@@ -209,23 +194,6 @@ public class SimplePersonName implements PersonName {
         return result;
     }
 
-    /**
-     * @internal Debugging only!
-     * @return
-     */
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (String key : fieldValues.keySet()) {
-            if (sb.length() > 0) {
-                sb.append(",");
-            }
-            sb.append(key + "=" + fieldValues.get(key));
-        }
-        sb.append(",locale=" + nameLocale);
-        return sb.toString();
-    }
-
     private static String makeModifiedFieldName(NameField fieldName,
                                                 Collection<FieldModifier> modifiers) {
         StringBuilder result = new StringBuilder();
@@ -253,6 +221,5 @@ public class SimplePersonName implements PersonName {
     }
 
     private final Locale nameLocale;
-    private final PreferredOrder preferredOrder;
     private final Map<String, String> fieldValues;
 }

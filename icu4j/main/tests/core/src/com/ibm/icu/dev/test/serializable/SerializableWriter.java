@@ -71,16 +71,11 @@ public class SerializableWriter
 
         // Override default TimeZone, so serialized data always use
         // the consistent zone if not specified.
-        TimeZone savedZone = TimeZone.getDefault();
-        try {
-            TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
+        TimeZone.setDefault(TimeZone.getTimeZone("America/Los_Angeles"));
 
-            SerializableWriter writer = new SerializableWriter(outDir);
+        SerializableWriter writer = new SerializableWriter(outDir);
 
-            writer.serialize();
-        } finally {
-            TimeZone.setDefault(savedZone);
-        }
+        writer.serialize();
     }
 
     public void serialize() throws IOException {

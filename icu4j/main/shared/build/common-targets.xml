@@ -256,7 +256,7 @@
         <pathelement location="${icu4j.tools.jar}"/>
     </path>
 
-    <target name="_all.core-tests" depends="_all.core, _all.test-framework">
+    <target name="_all.core-tests" depends="_all.core, _all.test-framework, _all.tools">
         <ant dir="${icu4j.core-tests.dir}" inheritAll="false"/>
     </target>
 
@@ -274,7 +274,6 @@
     <!-- charset-tests -->
     <path id="javac.classpathref.charset-tests">
         <pathelement location="${icu4j.core.jar}"/>
-        <pathelement location="${icu4j.core-tests.jar}"/>
         <pathelement location="${icu4j.charset.jar}"/>
         <pathelement location="${icu4j.test-framework.jar}"/>
     </path>
@@ -309,7 +308,6 @@
     <!-- translit-tests -->
     <path id="javac.classpathref.translit-tests">
         <pathelement location="${icu4j.core.jar}"/>
-        <pathelement location="${icu4j.core-tests.jar}"/>
         <pathelement location="${icu4j.translit.jar}"/>
         <pathelement location="${icu4j.test-framework.jar}"/>
     </path>
@@ -376,7 +374,6 @@
     <!-- perf -->
     <path id="javac.classpathref.perf-tests">
         <pathelement location="${icu4j.core.jar}"/>
-        <pathelement location="${icu4j.core-tests.jar}"/>
         <pathelement location="${icu4j.charset.jar}"/>
         <pathelement location="${icu4j.collate.jar}"/>
         <pathelement location="${icu4j.tools.jar}"/>

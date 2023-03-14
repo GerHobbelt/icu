@@ -1057,8 +1057,8 @@ static void TestCalendarDateParse() {
 
  FAIL:
     udat_close(simpleDateFormat);
-    ucal_close(tempCal);
-    ucal_close(calendar);
+    udat_close(tempCal);
+    udat_close(calendar);
 }
 
 

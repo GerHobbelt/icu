@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 import com.ibm.icu.dev.test.TestFmwk;
-import com.ibm.icu.impl.ICUConfig;
+import com.ibm.icu.dev.test.TestUtil;
 import com.ibm.icu.impl.Utility;
 import com.ibm.icu.lang.UCharacter;
 import com.ibm.icu.text.BreakIterator;
@@ -55,7 +55,7 @@ static class TestParams {
 public void TestExtended() {
     // The expectations in this test heavily depends on the Thai dictionary.
     // Therefore, we skip this test under the LSTM configuration.
-    org.junit.Assume.assumeTrue(!RBBITstUtils.skipDictionaryTest());
+    org.junit.Assume.assumeTrue(!TestUtil.skipDictionaryTest());
     TestParams     tp = new TestParams();
 
 
@@ -124,7 +124,6 @@ public void TestExtended() {
     int             rulesFirstLine = 0;              // Line number of the start of current <rules> block
 
     int    len = testString.length();
-    boolean skipTest = false;
 
     for (charIdx = 0; charIdx < len; ) {
         int c = testString.codePointAt(charIdx);
@@ -158,7 +157,6 @@ public void TestExtended() {
                 break;
             }
            if (testString.startsWith("<word>", charIdx-1)) {
-                skipTest = false;
                 tp.bi = BreakIterator.getWordInstance(tp.currentLocale);
                 charIdx += 5;
                 break;
@@ -169,46 +167,22 @@ public void TestExtended() {
                 break;
             }
             if (testString.startsWith("<line>", charIdx-1)) {
-                skipTest = false;
                 tp.bi = BreakIterator.getLineInstance(tp.currentLocale);
-                if (Boolean.parseBoolean(
-                        ICUConfig.get("com.ibm.icu.impl.breakiter.useMLPhraseBreaking", "false"))) {
-                    if (tp.currentLocale.getName().equals("ja@lw=phrase")) {
-                        // skip <line> test cases of JP's phrase breaking when ML is enabled.
-                        skipTest = true;
-                    }
-                }
                 charIdx += 5;
                 break;
             }
-            if (testString.startsWith("<lineML>", charIdx-1)) {
-                skipTest = false;
-                tp.bi = BreakIterator.getLineInstance(tp.currentLocale);
-                if (!Boolean.parseBoolean(
-                        ICUConfig.get("com.ibm.icu.impl.breakiter.useMLPhraseBreaking", "false"))) {
-                    if (tp.currentLocale.getName().equals("ja@lw=phrase")) {
-                        // skip <lineML> test cases of JP's phrase breaking when ML is disabled.
-                        skipTest = true;
-                    }
-                }
-                charIdx += 7;
-                break;
-            }
             if (testString.startsWith("<sent>", charIdx-1)) {
-                skipTest = false;
                 tp.bi = BreakIterator.getSentenceInstance(tp.currentLocale);
                 charIdx += 5;
                 break;
             }
             if (testString.startsWith("<title>", charIdx-1)) {
-                skipTest = false;
                 tp.bi = BreakIterator.getTitleInstance(tp.currentLocale);
                 charIdx += 6;
                 break;
             }
             if (testString.startsWith("<rules>", charIdx-1) ||
                     testString.startsWith("<badrules>", charIdx-1)) {
-                skipTest = false;
                 charIdx = testString.indexOf('>', charIdx) + 1;
                 parseState = PARSE_RULES;
                 rules.setLength(0);
@@ -298,9 +272,7 @@ public void TestExtended() {
                 charIdx += 6;
 
                 // RUN THE TEST!
-                if (!skipTest) {
-                    executeTest(tp);
-                }
+                executeTest(tp);
                 break;
             }
 

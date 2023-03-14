@@ -176,9 +176,6 @@ now, this task is not required for ICU4J.
 
 ## Verify that ICU4C tests pass without collation rule strings
 
-Note: Since ICU 73, this test has been included in the Github Actions Continuous Integration jobs.
-These instructions explain how to run the test manually.
-
 ***ICU4C 53 and later***
 
 Background: [ICU-10636](https://unicode-org.atlassian.net/browse/ICU-10636)
@@ -252,12 +249,7 @@ examples.
 
 *Only available since ICU 54.*
 
-### With ICU 70 and later:
-
-This test is performed automatically via a post-merge GHA check,
-based on the following instructions for ICU 64+.
-
-### With ICU 64 and later:
+#### With ICU 64 and later:
 
 *   Reconfigure ICU4C with
     <code><b>ICU_DATA_BUILDTOOL_OPTS=--include_uni_core_data</b>
@@ -276,7 +268,7 @@ based on the following instructions for ICU 64+.
     *   If you get very many test failures, double-check that you enabled
         unicore data in the ICU4C build (see first step).
 
-### With ICU 55 through ICU 63:
+#### With ICU 55 through ICU 63:
 
 *   Rebuild ICU4C with <code>make <b>INCLUDE_UNI_CORE_DATA=1</b> check</code> or
     similar, and provide a path only for the .dat file.
@@ -291,7 +283,7 @@ based on the following instructions for ICU 64+.
     *   The configuration option sets the `ICUConfig.properties` data path
     *   Verify that all tests pass.
 
-### ICU 54 method:
+#### ICU 54 method:
 
 In `icu4j-core/src/com/ibm/icu/ICUConfig.properties` set
 `com.ibm.icu.impl.ICUBinary.dataPath` to a list of paths with all of the ICU4C
@@ -400,8 +392,6 @@ option. When it's not available, you would do the following:
 ---
 
 ## Run the environment tests
-This test is performed automatically by a GitHub Action once per week. We can also run it manually by visiting 
-[GHA EnvTest Action page](https://github.com/unicode-org/icu/actions/workflows/icu_envtest.yml) then click on the "Run workflow v" drop down on the right side of the screen
 
 Run
 [environmentTest.sh](https://github.com/unicode-org/icu/blob/main/tools/release/c/environmentTest.sh)

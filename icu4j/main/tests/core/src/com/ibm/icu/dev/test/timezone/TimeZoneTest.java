@@ -1377,24 +1377,19 @@ public class TimeZoneTest extends TestFmwk
     @Test
     public void TestZoneMeta() {
         java.util.TimeZone save = java.util.TimeZone.getDefault();
-        com.ibm.icu.util.TimeZone icuTzSave = com.ibm.icu.util.TimeZone.getDefault();
-        try {
-            java.util.TimeZone newZone = java.util.TimeZone.getTimeZone("GMT-08:00");
-            com.ibm.icu.util.TimeZone.setDefault(null);
-            java.util.TimeZone.setDefault(newZone);
-            SimpleTimeZone zone = new SimpleTimeZone(0, "GMT");
-            com.ibm.icu.util.TimeZone defaultZone = com.ibm.icu.util.TimeZone.getDefault();
-            if(defaultZone==null){
-                errln("TimeZone.getDefault() failed for GMT-08:00");
-            }
-            if(zone==null){
-                errln("SimpleTimeZone(0, GMT-08:00) failed for GMT-08:00");
-            }
-        } finally {
-            // reset timezones
-            java.util.TimeZone.setDefault(save);
-            com.ibm.icu.util.TimeZone.setDefault(icuTzSave);
+        java.util.TimeZone newZone = java.util.TimeZone.getTimeZone("GMT-08:00");
+        com.ibm.icu.util.TimeZone.setDefault(null);
+        java.util.TimeZone.setDefault(newZone);
+        SimpleTimeZone zone = new SimpleTimeZone(0, "GMT");
+        com.ibm.icu.util.TimeZone defaultZone = com.ibm.icu.util.TimeZone.getDefault();
+        if(defaultZone==null){
+            errln("TimeZone.getDefault() failed for GMT-08:00");
         }
+        if(zone==null){
+            errln("SimpleTimeZone(0, GMT-08:00) failed for GMT-08:00");
+        }
+        //reset
+        java.util.TimeZone.setDefault(save);
     }
 
     // Copied from the protected constant in TimeZone.
@@ -1548,10 +1543,7 @@ public class TimeZoneTest extends TestFmwk
                 {"America/Montreal", "America/Toronto"},
                 {"America/Montserrat", "America/Puerto_Rico"},
                 {"America/Nassau", "America/Toronto"},
-                {"America/Nipigon", "America/Toronto"},
-                {"America/Pangnirtung", "America/Iqaluit"},
                 {"America/Port_of_Spain", "America/Puerto_Rico"},
-                {"America/Rainy_River", "America/Winnipeg"},
                 {"America/Santa_Isabel", "America/Tijuana"},
                 {"America/Shiprock", "America/Denver"},
                 {"America/St_Barthelemy", "America/Puerto_Rico"},
@@ -1559,7 +1551,6 @@ public class TimeZoneTest extends TestFmwk
                 {"America/St_Lucia", "America/Puerto_Rico"},
                 {"America/St_Thomas", "America/Puerto_Rico"},
                 {"America/St_Vincent", "America/Puerto_Rico"},
-                {"America/Thunder_Bay", "America/Toronto"},
                 {"America/Tortola", "America/Puerto_Rico"},
                 {"America/Virgin", "America/Puerto_Rico"},
                 {"Antarctica/DumontDUrville", "Pacific/Port_Moresby"},
@@ -1725,7 +1716,6 @@ public class TimeZoneTest extends TestFmwk
     @Test
     public void TestSetDefault() {
         java.util.TimeZone save = java.util.TimeZone.getDefault();
-        TimeZone icuSave = TimeZone.getDefault();
 
         /*
          * America/Caracs (Venezuela) changed the base offset from -4:00 to
@@ -1778,7 +1768,6 @@ public class TimeZoneTest extends TestFmwk
         }
 
         // Restore the original JDK time zone
-        TimeZone.setDefault(icuSave);
         java.util.TimeZone.setDefault(save);
     }
 

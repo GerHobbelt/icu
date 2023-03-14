@@ -105,17 +105,17 @@ public class Mf2IcuTest extends TestFmwk {
         Date date = new GregorianCalendar(2021, Calendar.NOVEMBER, 23, 16, 42, 55).getTime();
 
         doTheRealDateTimeSkeletonTesting(date, "{{$when :datetime skeleton=MMMMd}}",
-                Locale.forLanguageTag("en"), "November 23");
+                Locale.ENGLISH, "November 23");
         doTheRealDateTimeSkeletonTesting(date, "{{$when :datetime skeleton=yMMMMdjm}}",
-                Locale.forLanguageTag("en"), "November 23, 2021 at 4:42\u202FPM");
+                Locale.ENGLISH, "November 23, 2021 at 4:42\u202FPM");
         doTheRealDateTimeSkeletonTesting(date, "{{$when :datetime skeleton=(   yMMMMd   )}}",
-                Locale.forLanguageTag("en"), "November 23, 2021");
+                Locale.ENGLISH, "November 23, 2021");
         doTheRealDateTimeSkeletonTesting(date, "{{$when :datetime skeleton=yMMMMd}}",
-                Locale.forLanguageTag("fr"), "23 novembre 2021");
+                Locale.FRENCH, "23 novembre 2021");
         doTheRealDateTimeSkeletonTesting(date, "{Expiration: {$when :datetime skeleton=yMMM}!}",
-                Locale.forLanguageTag("en"), "Expiration: Nov 2021!");
+                Locale.ENGLISH, "Expiration: Nov 2021!");
         doTheRealDateTimeSkeletonTesting(date, "{{$when :datetime pattern=('::'yMMMMd)}}",
-                Locale.forLanguageTag("en"), "::2021November23"); // pattern
+                Locale.ENGLISH, "::2021November23"); // pattern
     }
 
     @Test

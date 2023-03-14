@@ -8,9 +8,9 @@
  */
 package com.ibm.icu.dev.util;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
+import com.ibm.icu.text.DecimalFormat;
+import com.ibm.icu.text.NumberFormat;
+import com.ibm.icu.util.ULocale;
 
 public final class Timer {
     public static final long SECONDS = 100000000;
@@ -78,8 +78,8 @@ public final class Timer {
         return nf.format(getDuration()/iterations) + "\tns\t" + pf.format((double)getDuration()/other - 1D) + "";
     }
 
-    private DecimalFormat nf = (DecimalFormat) NumberFormat.getNumberInstance(Locale.ENGLISH);
-    private DecimalFormat pf = (DecimalFormat) NumberFormat.getPercentInstance(Locale.ENGLISH);
+    private DecimalFormat nf = (DecimalFormat) NumberFormat.getNumberInstance(ULocale.ENGLISH);
+    private DecimalFormat pf = (DecimalFormat) NumberFormat.getPercentInstance(ULocale.ENGLISH);
     
     {
         pf.setMaximumFractionDigits(1);

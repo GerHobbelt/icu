@@ -75,7 +75,6 @@ public class DateFormatTest extends TestFmwk {
      */
     @Test
     public void TestPatterns() {
-
         final String[][] EXPECTED = {
                 {DateFormat.YEAR, "y","en","y"},
 
@@ -2768,10 +2767,10 @@ public class DateFormatTest extends TestFmwk {
                 logln("time zone ex3 ok");
             }
             catch (Exception e) {
-                // hmmm... this shouldn't happen.
-                throw new IllegalStateException(e.getMessage());
-            } finally {
+                // hmmm... this shouldn't happen.  don't want to exit this
+                // fn with timezone improperly set, so just in case
                 TimeZone.setDefault(oldtz);
+                throw new IllegalStateException(e.getMessage());
             }
         }
 

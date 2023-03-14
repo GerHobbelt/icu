@@ -61,10 +61,10 @@
         <property name="specialsDir" value="${basedir}/../../../icu4c/source/data/xml"/>
 
         <!-- Default value for ICU version (icuver.txt). Update this for each release. -->
-        <property name="icuVersion" value="73.0.1.0"/>
+        <property name="icuVersion" value="72.1.0.0"/>
 
         <!-- Default value for ICU data version (icuver.txt). Update this for each release. -->
-        <property name="icuDataVersion" value="73.0.1.0"/>
+        <property name="icuDataVersion" value="72.1.0.0"/>
 
         <!-- An override for the CLDR version string (icuver.txt and others). This will be
              extracted from the CLDR library used for building the data if not set here. -->
@@ -356,7 +356,7 @@
             <directory dir="brkitr" inheritLanguageSubtag="zh_Hant">
                 <localeIds>
                     root,
-                    de, el, en, en_US_POSIX, en_US, es, fi, fr, it, ja, ko, pt, ru, sv, zh_Hant, zh
+                    de, el, en, en_US_POSIX, en_US, es, fi, fr, it, ja, pt, ru, sv, zh_Hant, zh
                 </localeIds>
             </directory>
 
@@ -427,7 +427,6 @@
              -->
         <outputDirectories root="${outDir}" forceDelete="${forceDelete}">
             <dir name="brkitr">
-                <retain path="adaboost"/>
                 <retain path="dictionaries"/>
                 <retain path="lstm"/>
                 <retain path="rules"/>

@@ -236,7 +236,6 @@ timezoneTypes:table(nofallback){
             "America:Cayman"{"kygec"}
             "America:Chicago"{"uschi"}
             "America:Chihuahua"{"mxchi"}
-            "America:Ciudad_Juarez"{"mxcjs"}
             "America:Coral_Harbour"{"cayzs"}
             "America:Cordoba"{"arcor"}
             "America:Costa_Rica"{"crsjo"}
