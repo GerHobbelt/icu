@@ -117,7 +117,7 @@ popd
 
 create_amiga_SDK_package
 
-lha a libicu.lha local/
+lha a libicu_72.1.lha local/
 
 echo "#########"
 echo "#########"
