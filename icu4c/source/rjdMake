@@ -1,7 +1,10 @@
 #!/bin/bash --
 
 CROSS_BUILD_FULL_PATH="$(pwd)/buildLinux"
-CORES="$(nproc)"
+if [[ -z $CORES ]]
+then
+    CORES="$(nproc)"
+fi
 C_LIB=clib2
 # Too lazy to use getopts!
 if (( ${#} > 0 ))
@@ -45,9 +48,12 @@ function create_amiga_SDK_package
 if mkdir buildLinux
 then
     pushd buildLinux
-    git restore ../common/putilimp.h # just to make sure - since we hack it for Amiga
+    git restore ../common/putilimp.h # just to make sure - since we hack it for Amiga (for clib2, and, if it was never changed, no harm anyway)
     ../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 1 ; }
-    make VERBOSE=1 -j "${CORES}" 1>buildLinux.log 2>&1 || { echo "Error during building for BUILD-MACHINE" ; exit 1 ; }
+    echo "####" >> buildLinux.log
+    echo "#### $(date)" >> buildLinux.log
+    echo "####" >> buildLinux.log
+    make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildLinux.log || { echo "Error during building for BUILD-MACHINE (see buildLinux/buildLinux.log)" ; exit 1 ; }
     popd
 else
     echo "buildLinux already exists. Assuming that it does not need building."
@@ -79,8 +85,8 @@ mkdir -p "${INSTALL_PREFIX}"
     CFLAGS="-mcrt=${C_LIB} -fPIC" \
     LDFLAGS="-mcrt=${C_LIB} -athread=native" \
     PKG_CONFIG_LIBDIR="/sdk/local/${C_CLIB}/lib/pkgconfig" \
-    --disable-tests --disable-samples --disable-shared --enable-static --disable-dyload --enable-release --disable-extras \
-    --disable-debug \
+    --enable-tests --enable-samples --disable-shared --enable-static --disable-dyload --enable-release --enable-extras \
+    --enable-debug \
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
     --prefix="${INSTALL_PREFIX}" || \
@@ -92,21 +98,22 @@ then
     make clean 2>&1
 fi
 
-SUCC="successful"
-
 if ! grep '###RJD' data/Makefile
 then
     if [[ ! "$(sed -n '176p' data/Makefile)" =~ '$(PKGDATA_INVOKE)' ]]
     then
-	echo "Unexpected line found in line 176 of data/Makefile" 1>&2
+	echo "Unexpected line found in line 176 of data/Makefile. It seems this version of ICU is different from when this script was written. See 'rjdMake' for this error text to understand the edits and/or contact 3246251196ryan@gmail.com." 1>&2
 	exit 1
     fi
-    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "###RJD: Would have invoked: \\"$(PKGDATA_INVOKE) $(PKGDATA) -e $(ICUDATA_ENTRY_POINT) -T $(OUTTMPDIR) -p $(ICUDATA_NAME) -m $(PKGDATA_MODE) $(PKGDATA_VERSIONING) $(PKGDATA_LIBNAME) $(PKGDATA_LIST)\\". This will have to be done manually on the Amiga and then the resuling libicudata.a copied into $$(pwd)/../../" ; exit 1 ; else cp ../../libicudata.a ../lib ; fi'
+    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "###RJD: Would have invoked: \\"$(PKGDATA_INVOKE) $(PKGDATA) -e $(ICUDATA_ENTRY_POINT) -T $(OUTTMPDIR) -p $(ICUDATA_NAME) -m $(PKGDATA_MODE) $(PKGDATA_VERSIONING) $(PKGDATA_LIBNAME) $(PKGDATA_LIST)\\". This will have to be done manually on the Amiga and then the resuling libicudata.a copied into $$(pwd)/../../ (ask 3246251196ryan@gmail.com to eventually create a script to do be able to just zip something up, copy it to your amiga, decompress, run script on Amiga and get the library and copy it back to this machine to proceed)" ; exit 1 ; else cp ../../libicudata.a ../lib ; fi'
 
     sed -i "176d" data/Makefile
     sed -i "176i \	${insert}" data/Makefile
 fi
-make VERBOSE=1 -j "${CORES}" 1>buildAmiga.log 2>&1 || { echo "Error during building for HOST-MACHINE" ; exit 1 ; }
+echo "####" >> buildAmiga.log
+echo "#### $(date)" >> buildAmiga.log
+echo "####" >> buildAmiga.log
+make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildAmiga.log || { echo "Error during building for HOST-MACHINE (see buildAmiga/buildAmiga.log)" ; exit 1 ; }
 
 make install
 
@@ -121,7 +128,7 @@ lha a libicu_72.1.lha local/
 
 echo "#########"
 echo "#########"
-echo "Finished. CROSS-MACHINE building was ${SUCC}. For the SDK package see libicu.lha"
+echo "Finished. For the SDK package see libicu_72.1.lha"
 echo "#########"
 echo "#########"
 
