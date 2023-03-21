@@ -1,5 +1,7 @@
 #!/bin/bash --
 
+set -o pipefail
+
 CROSS_BUILD_FULL_PATH="$(pwd)/buildLinux"
 if [[ -z $CORES ]]
 then
@@ -77,6 +79,7 @@ mkdir -p "${INSTALL_PREFIX}"
 
 # We use std-gnu++11 because we need the non-strict extensions for
 # NEWLIB. We just use this for clib2 too !
+#
 ../configure \
     CC="ppc-amigaos-gcc" \
     CXX="ppc-amigaos-g++" \
@@ -85,8 +88,15 @@ mkdir -p "${INSTALL_PREFIX}"
     CFLAGS="-mcrt=${C_LIB} -fPIC" \
     LDFLAGS="-mcrt=${C_LIB} -athread=native" \
     PKG_CONFIG_LIBDIR="/sdk/local/${C_CLIB}/lib/pkgconfig" \
-    --enable-tests --enable-samples --disable-shared --enable-static --disable-dyload --enable-release --enable-extras \
-    --enable-debug \
+    --disable-shared   \
+    --enable-static    \
+    --disable-dyload   \
+    --enable-release   \
+    --disable-debug    \
+    --enable-tests     \
+    --enable-samples   \
+    --enable-extras    \
+    --enable-layoutex  \
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
     --prefix="${INSTALL_PREFIX}" || \
