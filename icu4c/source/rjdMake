@@ -1,33 +1,32 @@
 #!/bin/bash --
 
 set -o pipefail
+C_LIB=
 
-CROSS_BUILD_FULL_PATH="$(pwd)/buildLinux"
-if [[ -z $CORES ]]
-then
-    CORES="$(nproc)"
-fi
-C_LIB=clib2
-# Too lazy to use getopts!
-if (( ${#} > 0 ))
-then
-    if [[ "${1}" == "clib=newlib" ]]
+function _ERROR()
+{
+    echo "ERROR: $1" 2>&1
+    exit $2
+}
+function _WARNING()
+{
+    echo "WARN : $1" 2>&1
+}
+function _INFO()
+{
+    echo "INFO : $1"
+}   
+function determine_last_c_library
+{
+    C_LIB="$(ls buildAmiga/rjdLast_* 1>/dev/null 2>&1)"
+    if (( !$? ))
     then
-	C_LIB=newlib
-    elif [[ "${1}" != "clib=clib2" ]]
-    then
-	echo "Could not understand argumet ${1}. Only clib=<newlib|clib2[default]> is understood" 1>&2
-	exit 1
+	C_LIB="$(ls buildAmiga/rjdLast_* | sed 's,^.*rjdLast_\(.*\),\1,')"
+	_INFO "Partial build found. Using last c library version of: $C_LIB"
+    else
+	_ERROR "Was asked to determine last used c library version, but it looks like a partial build has not been performed!" 8
     fi
-fi
-INSTALL_PREFIX="$(pwd)/buildAmiga/installAmiga_${C_LIB}"
-
-which ppc-amigaos-gcc 1>/dev/null 2>&1 || { echo "ppc-amigaos-* binaries not found. Check your path" ; exit 1 ; }
-if [[ "Linux" != "$(uname)" ]]
-then
-    echo "Expected the BUILD machine to be Linux"
-    exit 1
-fi
+}
 
 function create_amiga_SDK_package
 {
@@ -46,24 +45,106 @@ function create_amiga_SDK_package
     done
 }
 
+function lha_files_for_amiga
+{
+    mkdir lha_files_for_amiga_${C_LIB}
+    pushd lha_files_for_amiga_${C_LIB}
+
+    mkdir _OUT _TMP
+    mkdir include
+    { 	cp ../buildAmiga/lib                           -r       . &&
+	cp ../buildAmiga/bin                           -r       . &&
+	cp ../buildAmiga/data/out/build/icudt72b       -r       . &&
+	cp ../buildAmiga/data/out/tmp/icudata.lst               . &&
+	cp ../buildAmiga/data/icupkg.inc                        . &&
+	cp ../buildAmiga/common                        -r       . &&
+	cp ../common                                   -r include &&
+	cp ../buildAmiga/data/icupkg.inc                        .  ;
+    } || _ERROR "Could not find expected partial build files to create amiga files" 110
+    sed -i 's,ppc-amigaos-,,g' icupkg.inc
+    sed -i 's,-I../../common,-Iinclude/common,' icupkg.inc
+    sed -i 's,-I../common,-Icommon,' icupkg.inc
+    echo "bin/pkgdata -O icupkg.inc -c -s icudt72b -d _OUT -e icudt72  -T _TMP -p icudt72b -m static -r 72.1 -L icudata icudata.lst" > \
+	 amigaRunMe
+    chmod +x amigaRunMe
+    popd
+
+    lha a lha_files_for_amiga_${C_LIB}.lha lha_files_for_amiga_${C_LIB}
+    
+    _INFO "Copy LHA lha_files_for_amiga_${C_LIB}.lha to your Amiga and extract and perform \"execute amigaRunMe\" and then copy the created \"_OUT/libicudata.a\" to \"$(pwd)\" and re-invoke the \"rjdMake\" script; building will resume from this point using the correctly generated \"libicudata.a\"."
+    exit 0
+}
+
+function print_usage()
+{
+echo \
+"Usage: $1 [[clib=(newlib|clib2)]|amigafiles]
+      : clib       - Which c library to use for building
+      : amigafiles - Generate an LHA containing necessary files to continue building on a Big Endian AmigaOne
+
+        Press CTRL-C do abort now. Will resume in 5 seconds
+"
+}
+print_usage
+
+sleep 5
+
+CROSS_BUILD_FULL_PATH="$(pwd)/buildLinux"
+
+if [[ -z $CORES ]]
+then
+    CORES="$(nproc)"
+fi
+# Too lazy to use getopts!
+if (( ${#} > 0 ))
+then
+    if [[ "${1}" == "clib=newlib" ]]
+    then
+	C_LIB=newlib
+    elif [[ "${1}" == "clib=clib2" ]]
+    then
+        C_LIB=clib2
+    elif [[ "${1}" == "amigafiles" ]]
+    then
+	determine_last_c_library
+	lha_files_for_amiga
+    else
+	_ERROR "Could not understand argument ${1}" 10
+	exit 10
+    fi
+else
+    determine_last_c_library
+fi
+
+INSTALL_PREFIX="$(pwd)/buildAmiga/installAmiga_${C_LIB}"
+
+which ppc-amigaos-gcc 1>/dev/null 2>&1 || { _ERROR "ppc-amigaos-* binaries not found. Check your path" 20 ; }
+if [[ "Linux" != "$(uname)" ]]
+then
+    _ERROR "Expected the BUILD machine to be Linux" 30
+fi
+
 # Assume that we do not need to build Linux again if buildLinux already exists!
 if mkdir buildLinux
 then
     pushd buildLinux
     git restore ../common/putilimp.h # just to make sure - since we hack it for Amiga (for clib2, and, if it was never changed, no harm anyway)
-    ../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 1 ; }
+    ../runConfigureICU Linux/gcc || { echo "Error during BUILD-MACHINE configure" ; exit 50 ; }
     echo "####" >> buildLinux.log
     echo "#### $(date)" >> buildLinux.log
     echo "####" >> buildLinux.log
-    make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildLinux.log || { echo "Error during building for BUILD-MACHINE (see buildLinux/buildLinux.log)" ; exit 1 ; }
+    make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildLinux.log || { _ERROR "Error during building for BUILD-MACHINE (see buildLinux/buildLinux.log)" 60 ; }
     popd
 else
-    echo "buildLinux already exists. Assuming that it does not need building."
+    _INFO "buildLinux already exists. Assuming that it does not need building."
 fi
 
 mkdir buildAmiga
 
 pushd buildAmiga
+
+touch "rjdLast_${C_LIB}"
+
 # default to linux
 cp ../config/mh-linux ../config/mh-unknown
 
@@ -100,7 +181,7 @@ mkdir -p "${INSTALL_PREFIX}"
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
     --prefix="${INSTALL_PREFIX}" || \
-        { echo "Error during configure" ; exit 1 ; }
+        { _ERROR "Error during configure" 70 ; }
 
 if [[ ! -f "rjdLast_${C_LIB}" ]]
 then
@@ -112,10 +193,9 @@ if ! grep '###RJD' data/Makefile
 then
     if [[ ! "$(sed -n '176p' data/Makefile)" =~ '$(PKGDATA_INVOKE)' ]]
     then
-	echo "Unexpected line found in line 176 of data/Makefile. It seems this version of ICU is different from when this script was written. See 'rjdMake' for this error text to understand the edits and/or contact 3246251196ryan@gmail.com." 1>&2
-	exit 1
+	_ERROR "Unexpected line found in line 176 of data/Makefile. It seems this version of ICU is different from when this script was written. See 'rjdMake' for this error text to understand the edits and/or contact 3246251196ryan@gmail.com." 80
     fi
-    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "###RJD: Would have invoked: \\"$(PKGDATA_INVOKE) $(PKGDATA) -e $(ICUDATA_ENTRY_POINT) -T $(OUTTMPDIR) -p $(ICUDATA_NAME) -m $(PKGDATA_MODE) $(PKGDATA_VERSIONING) $(PKGDATA_LIBNAME) $(PKGDATA_LIST)\\". This will have to be done manually on the Amiga and then the resuling libicudata.a copied into $$(pwd)/../../ (ask 3246251196ryan@gmail.com to eventually create a script to do be able to just zip something up, copy it to your amiga, decompress, run script on Amiga and get the library and copy it back to this machine to proceed)" ; exit 1 ; else cp ../../libicudata.a ../lib ; fi'
+    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "### RJD ###" ; echo "### RJD: Pausing at this point because the build cannot continue without it continuing on the Amiga. You now need to perform a step on the amiga. Now, run \\"./rjdMake amigafiles\\"" ; echo "### RJD ###" ; exit 90 ; else cp ../../libicudata.a ../lib ; fi'
 
     sed -i "176d" data/Makefile
     sed -i "176i \	${insert}" data/Makefile
@@ -123,13 +203,10 @@ fi
 echo "####" >> buildAmiga.log
 echo "#### $(date)" >> buildAmiga.log
 echo "####" >> buildAmiga.log
-make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildAmiga.log || { echo "Error during building for HOST-MACHINE (see buildAmiga/buildAmiga.log)" ; exit 1 ; }
+make VERBOSE=1 -j "${CORES}" 2>&1 | tee -a buildAmiga.log || { _ERROR "Error during building for HOST-MACHINE (see buildAmiga/buildAmiga.log)" 100  ; }
 
 make install
 
-# We just this empty file to signal which C library was built last
-rm -f rjdLast_*
-touch "rjdLast_${C_LIB}"
 popd
 
 create_amiga_SDK_package
