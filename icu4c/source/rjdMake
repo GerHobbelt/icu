@@ -64,14 +64,14 @@ function lha_files_for_amiga
     sed -i 's,ppc-amigaos-,,g' icupkg.inc
     sed -i 's,-I../../common,-Iinclude/common,' icupkg.inc
     sed -i 's,-I../common,-Icommon,' icupkg.inc
-    echo "bin/pkgdata -O icupkg.inc -c -s icudt72b -d _OUT -e icudt72  -T _TMP -p icudt72b -m static -r 72.1 -L icudata icudata.lst" > \
+    echo "bin/pkgdata -O icupkg.inc -c -s icudt72b -d _OUT -e icudt72  -T _TMP -p icudt72b -m static -r 72.1 -L icudata_${C_LIB} icudata.lst" > \
 	 amigaRunMe
     chmod +x amigaRunMe
     popd
 
     lha a lha_files_for_amiga_${C_LIB}.lha lha_files_for_amiga_${C_LIB}
     
-    _INFO "Copy LHA lha_files_for_amiga_${C_LIB}.lha to your Amiga and extract and perform \"execute amigaRunMe\" and then copy the created \"_OUT/libicudata.a\" to \"$(pwd)\" and re-invoke the \"rjdMake\" script; building will resume from this point using the correctly generated \"libicudata.a\"."
+    _INFO "Copy LHA lha_files_for_amiga_${C_LIB}.lha to your Amiga and extract and perform \"execute amigaRunMe\". Once completed on the AmigaOne, copy the generated \"_OUT/libicudata_${C_LIB}.a\" to \"$(pwd)\" and re-invoke the \"rjdMake\" script; building will resume from this point using the correctly generated \"libicudata_${C_LIB}.a\"."
     exit 0
 }
 
@@ -139,10 +139,21 @@ else
     _INFO "buildLinux already exists. Assuming that it does not need building."
 fi
 
-mkdir buildAmiga
+if [[ -d buildAmiga ]]
+then
+    curr_C_LIB="${C_LIB}"
+    determine_last_c_library
+    if [[ "${curr_C_LIB}" != "${C_LIB}" ]]
+    then
+	# This time, the user wants to build for a different c library. let's clean out buildAmiga
+	C_LIB="${curr_C_LIB}"
+	rm -rf buildAmiga/*
+    fi
+else
+    mkdir buildAmiga
+fi
 
 pushd buildAmiga
-
 touch "rjdLast_${C_LIB}"
 
 # default to linux
@@ -161,6 +172,8 @@ mkdir -p "${INSTALL_PREFIX}"
 # We use std-gnu++11 because we need the non-strict extensions for
 # NEWLIB. We just use this for clib2 too !
 #
+# extras lib is disabled for now - since that also requires the Amiga to complete building
+# for now I do not think this is necessary - it could be done, with some extra work.
 ../configure \
     CC="ppc-amigaos-gcc" \
     CXX="ppc-amigaos-g++" \
@@ -176,7 +189,7 @@ mkdir -p "${INSTALL_PREFIX}"
     --disable-debug    \
     --enable-tests     \
     --enable-samples   \
-    --enable-extras    \
+    --disable-extras    \
     --enable-layoutex  \
     --host=ppc-amigaos \
     --with-cross-build="$CROSS_BUILD_FULL_PATH" \
@@ -195,7 +208,7 @@ then
     then
 	_ERROR "Unexpected line found in line 176 of data/Makefile. It seems this version of ICU is different from when this script was written. See 'rjdMake' for this error text to understand the edits and/or contact 3246251196ryan@gmail.com." 80
     fi
-    insert='@if [[ ! -f ../../libicudata.a ]] ; then echo "### RJD ###" ; echo "### RJD: Pausing at this point because the build cannot continue without it continuing on the Amiga. You now need to perform a step on the amiga. Now, run \\"./rjdMake amigafiles\\"" ; echo "### RJD ###" ; exit 90 ; else cp ../../libicudata.a ../lib ; fi'
+    insert="@if [[ ! -f ../../libicudata_${C_LIB}.a ]] ; then echo \"### RJD ###\" ; echo \"### RJD: Pausing at this point because the build cannot continue without it continuing on the Amiga. You now need to perform a step on the amiga. Now, run \\\\\"./rjdMake amigafiles\\\\\"\" ; echo \"### RJD ###\" ; exit 90 ; else cp ../../libicudata_${C_LIB}.a ../lib/libicudata.a ; fi"
 
     sed -i "176d" data/Makefile
     sed -i "176i \	${insert}" data/Makefile
