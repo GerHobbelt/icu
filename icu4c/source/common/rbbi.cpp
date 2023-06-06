@@ -1125,6 +1125,7 @@ static icu::UStack *gLanguageBreakFactories = nullptr;
 static const icu::UnicodeString *gEmptyString = nullptr;
 static icu::UInitOnce gLanguageBreakFactoriesInitOnce {};
 static icu::UInitOnce gRBBIInitOnce {};
+static icu::ICULanguageBreakFactory *gICULanguageBreakFactory = nullptr;
 
 /**
  * Release all static memory held by breakiterator.
@@ -1158,8 +1159,8 @@ static void U_CALLCONV initLanguageFactories() {
     U_ASSERT(gLanguageBreakFactories == nullptr);
     gLanguageBreakFactories = new UStack(_deleteFactory, nullptr, status);
     if (gLanguageBreakFactories != nullptr && U_SUCCESS(status)) {
-        ICULanguageBreakFactory *builtIn = new ICULanguageBreakFactory(status);
-        gLanguageBreakFactories->push(builtIn, status);
+        gICULanguageBreakFactory = new ICULanguageBreakFactory(status);
+        gLanguageBreakFactories->push(gICULanguageBreakFactory, status);
 #ifdef U_LOCAL_SERVICE_HOOK
         LanguageBreakFactory *extra = (LanguageBreakFactory *)uprv_svc_hook("languageBreakFactory", &status);
         if (extra != nullptr) {
@@ -1172,7 +1173,7 @@ static void U_CALLCONV initLanguageFactories() {
 
 
 static const LanguageBreakEngine*
-getLanguageBreakEngineFromFactory(UChar32 c)
+getLanguageBreakEngineFromFactory(UChar32 c, const char* locale)
 {
     umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
     if (gLanguageBreakFactories == nullptr) {
@@ -1183,7 +1184,7 @@ getLanguageBreakEngineFromFactory(UChar32 c)
     const LanguageBreakEngine *lbe = nullptr;
     while (--i >= 0) {
         LanguageBreakFactory *factory = (LanguageBreakFactory *)(gLanguageBreakFactories->elementAt(i));
-        lbe = factory->getEngineFor(c);
+        lbe = factory->getEngineFor(c, locale);
         if (lbe != nullptr) {
             break;
         }
@@ -1199,7 +1200,7 @@ getLanguageBreakEngineFromFactory(UChar32 c)
 //
 //-------------------------------------------------------------------------------
 const LanguageBreakEngine *
-RuleBasedBreakIterator::getLanguageBreakEngine(UChar32 c) {
+RuleBasedBreakIterator::getLanguageBreakEngine(UChar32 c, const char* locale) {
     const LanguageBreakEngine *lbe = nullptr;
     UErrorCode status = U_ZERO_ERROR;
 
@@ -1215,14 +1216,14 @@ RuleBasedBreakIterator::getLanguageBreakEngine(UChar32 c) {
     int32_t i = fLanguageBreakEngines->size();
     while (--i >= 0) {
         lbe = (const LanguageBreakEngine *)(fLanguageBreakEngines->elementAt(i));
-        if (lbe->handles(c)) {
+        if (lbe->handles(c, locale)) {
             return lbe;
         }
     }
 
     // No existing dictionary took the character. See if a factory wants to
     // give us a new LanguageBreakEngine for this character.
-    lbe = getLanguageBreakEngineFromFactory(c);
+    lbe = getLanguageBreakEngineFromFactory(c, locale);
 
     // If we got one, use it and push it on our stack.
     if (lbe != nullptr) {
@@ -1258,6 +1259,35 @@ RuleBasedBreakIterator::getLanguageBreakEngine(UChar32 c) {
 
     return fUnhandledBreakEngine;
 }
+
+#ifndef U_HIDE_DRAFT_API
+URegistryKey U_EXPORT2 RuleBasedBreakIterator::registerExternalBreakEngine(
+                  ExternalBreakEngine* toAdopt, UErrorCode& status) {
+    if (U_FAILURE(status)) return nullptr;;
+    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
+    if (gICULanguageBreakFactory == nullptr) {
+        status = U_MEMORY_ALLOCATION_ERROR;
+        return nullptr;
+    }
+    URegistryKey key = gICULanguageBreakFactory->addExternalEngine(toAdopt, status);
+    if (U_FAILURE(status)) {
+        delete toAdopt;
+    }
+    return key;
+}
+
+UBool U_EXPORT2 RuleBasedBreakIterator::unregisterExternalBreakEngine(
+                  URegistryKey key, UErrorCode& status) {
+    if (U_FAILURE(status)) return false;
+    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
+    if (gICULanguageBreakFactory == nullptr) {
+        status = U_MEMORY_ALLOCATION_ERROR;
+        return false;
+    }
+    return gICULanguageBreakFactory->removeExternalEngine(key, status);
+}
+#endif  /* U_HIDE_DRAFT_API */
+
 
 void RuleBasedBreakIterator::dumpCache() {
     fBreakCache->dumpCache();
