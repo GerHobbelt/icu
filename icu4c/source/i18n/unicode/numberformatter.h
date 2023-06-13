@@ -2496,11 +2496,18 @@ class U_I18N_API UnlocalizedNumberFormatter
     explicit UnlocalizedNumberFormatter(
             NumberFormatterSettings<UnlocalizedNumberFormatter>&& src) noexcept;
 
+    explicit UnlocalizedNumberFormatter(const impl::MacroProps &macros);
+
+    explicit UnlocalizedNumberFormatter(impl::MacroProps &&macros);
+
     // To give the fluent setters access to this class's constructor:
     friend class NumberFormatterSettings<UnlocalizedNumberFormatter>;
 
     // To give NumberFormatter::with() access to this class's constructor:
     friend class NumberFormatter;
+
+    // To give LNF::withoutLocale() access to this class's constructor:
+    friend class LocalizedNumberFormatter;
 };
 
 /**
@@ -2602,6 +2609,25 @@ class U_I18N_API LocalizedNumberFormatter
      * @stable ICU 62
      */
     Format* toFormat(UErrorCode& status) const;
+
+#ifndef U_HIDE_DRAFT_API
+    /**
+     * Disassociate the locale from this formatter.
+     *
+     * @return The fluent chain.
+     * @draft ICU 74
+     */
+    UnlocalizedNumberFormatter withoutLocale() const &;
+
+    /**
+     * Overload of withoutLocale() for use on an rvalue reference.
+     *
+     * @return The fluent chain.
+     * @see #withoutLocale
+     * @draft ICU 74
+     */
+    UnlocalizedNumberFormatter withoutLocale() &&;
+#endif // U_HIDE_DRAFT_API
 
     /**
      * Default constructor: puts the formatter into a valid but undefined state.
