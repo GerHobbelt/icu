@@ -1630,7 +1630,7 @@ private:
         const SharedNumberFormat *snf;
         int32_t hash;
         NSOverride *next;
-        void free();
+        void release();    // free()
         NSOverride() : snf(nullptr), hash(0), next(nullptr) {
         }
         ~NSOverride();

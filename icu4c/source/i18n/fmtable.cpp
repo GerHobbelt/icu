@@ -56,7 +56,20 @@ using number::impl::DecimalQuantity;
 // Return true if *a == *b.
 static inline UBool objectEquals(const UObject* a, const UObject* b) {
     // LATER: return *a == *b;
-    return *((const Measure*) a) == *((const Measure*) b);
+
+	// MSVC fix for error:
+	// error C2666: 'icu_73::Measure::operator ==': overloaded functions have similar conversions
+	// : message : could be 'bool icu_73::Measure::operator ==(const icu_73::UObject &) const'(
+	// : message : or
+	//               'UBool icu_73::operator ==(const icu_73::StringPiece &,const icu_73::StringPiece &)'(
+	// : message : or
+	//               'bool icu_73::Measure::operator ==(const icu_73::UObject &) const'[synthesized expression 'y == x'](
+	// : message : or
+	//               'UBool icu_73::operator ==(const icu_73::StringPiece &,const icu_73::StringPiece &)'[synthesized expression 'y == x'](
+	// : message : while trying to match the argument list '(const icu_73::Measure, const icu_73::Measure)'
+
+    auto l = *((const Measure *)a);
+    return l.operator==(*((const Measure *)b));
 }
 
 // Return a clone of *a.

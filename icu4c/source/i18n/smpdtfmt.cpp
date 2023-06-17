@@ -251,7 +251,7 @@ SimpleDateFormat::NSOverride::~NSOverride() {
 }
 
 
-void SimpleDateFormat::NSOverride::free() {
+void SimpleDateFormat::NSOverride::release() {   // free()
     NSOverride *cur = this;
     while (cur) {
         NSOverride *next_temp = cur->next;
@@ -1402,7 +1402,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
                        createSharedNumberFormat(ovrLoc, status), cur->snf);
                if (U_FAILURE(status)) {
                    if (overrideList) {
-                       overrideList->free();
+                       overrideList->release();
                    }
                    return;
                }
@@ -1411,7 +1411,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
            } else {
                status = U_MEMORY_ALLOCATION_ERROR;
                if (overrideList) {
-                   overrideList->free();
+                   overrideList->release();
                }
                return;
            }
@@ -1445,7 +1445,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
            if (patternCharIndex == UDAT_FIELD_COUNT) {
                status = U_INVALID_FORMAT_ERROR;
                if (overrideList) {
-                   overrideList->free();
+                   overrideList->release();
                }
                return;
            }
@@ -1455,7 +1455,7 @@ SimpleDateFormat::processOverrideString(const Locale &locale, const UnicodeStrin
         start = delimiterPosition + 1;
     }
     if (overrideList) {
-        overrideList->free();
+        overrideList->release();
     }
 }
 

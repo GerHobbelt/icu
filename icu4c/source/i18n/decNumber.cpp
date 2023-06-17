@@ -306,6 +306,8 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 #define SPECIALARGS ((lhs->bits | rhs->bits) & DECSPECIAL)
 
 /* For use in ICU */
+#undef malloc
+#undef free
 #define malloc(a) uprv_malloc(a)
 #define free(a) uprv_free(a)
 
@@ -314,6 +316,8 @@ static decNumber * decRoundOperand(const decNumber *, decContext *, uInt *);
 /* Handle malloc/free accounting.  If enabled, our accountable routines  */
 /* are used; otherwise the code just goes straight to the system malloc  */
 /* and free routines.  */
+#undef malloc
+#undef free
 #define malloc(a) decMalloc(a)
 #define free(a) decFree(a)
 #define DECFENCE 0x5a              /* corruption detector  */

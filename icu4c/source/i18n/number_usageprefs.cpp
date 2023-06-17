@@ -134,7 +134,7 @@ void mixedMeasuresToMicros(const MaybeStackVector<Measure> &measures, DecimalQua
             break;
 
         default:
-            U_ASSERT(0 == "Found a Measure Number which is neither a double nor an int");
+            U_ASSERT(!"Found a Measure Number which is neither a double nor an int");
             UPRV_UNREACHABLE_EXIT;
             break;
         }
