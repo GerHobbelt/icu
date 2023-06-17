@@ -22,11 +22,14 @@ LSR::LSR(char prefix, const char *lang, const char *scr, const char *r, int32_t 
         CharString langScript;
         langScript.append(prefix, errorCode).append(lang, errorCode).append('\0', errorCode);
         int32_t scriptOffset = langScript.length();
-        langScript.append(prefix, errorCode).append(scr, errorCode);
+        langScript.append(prefix, errorCode).append(scr, errorCode).append('\0', errorCode);
+        int32_t regionOffset = langScript.length();
+        langScript.append(r, errorCode);
         owned = langScript.cloneData(errorCode);
         if (U_SUCCESS(errorCode)) {
             language = owned;
             script = owned + scriptOffset;
+            region = owned + regionOffset;
         }
     }
 }
