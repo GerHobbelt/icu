@@ -25,6 +25,10 @@
 
 #include "unicode/platform.h"
 
+// MSVC CrtDbg fix:
+#undef new
+#undef delete 
+
 /**
  * \file
  * \brief C++ API: Common ICU base class UObject.
