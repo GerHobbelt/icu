@@ -26,6 +26,17 @@
 #include "unicode/utypes.h"
 #include "unicode/uobject.h"
 
+#include <stdbool.h>
+
+#ifndef FALSE
+#define FALSE false
+#endif
+
+#ifndef TRUE
+#define TRUE true
+#endif
+
+
 U_NAMESPACE_BEGIN
 
 class ByteTrieBuilder;
