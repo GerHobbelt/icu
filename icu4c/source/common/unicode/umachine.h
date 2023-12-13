@@ -379,7 +379,11 @@ typedef int8_t UBool;
 #if defined(U_COMBINED_IMPLEMENTATION) || defined(U_COMMON_IMPLEMENTATION) || \
         defined(U_I18N_IMPLEMENTATION) || defined(U_IO_IMPLEMENTATION)
     // Inside the ICU library code, never configurable.
-    typedef char16_t UChar;
+#if defined(__cplusplus)
+typedef char16_t UChar;  // C++
+#else
+typedef uint16_t UChar;  // C
+#endif
 #elif defined(UCHAR_TYPE)
     typedef UCHAR_TYPE UChar;
 #elif U_CPLUSPLUS_VERSION != 0
