@@ -367,7 +367,7 @@ typedef int8_t UBool;
  * @stable ICU 4.4
  */
 
-#if 1
+#if !defined(_MSC_VER)
     // #if 1 is normal. UChar defaults to char16_t in C++.
     // For configuration testing of UChar=uint16_t temporarily change this to #if 0.
     // The intltest Makefile #defines UCHAR_TYPE=char16_t,
