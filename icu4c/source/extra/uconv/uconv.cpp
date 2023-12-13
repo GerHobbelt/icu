@@ -325,7 +325,10 @@ static int printConverters(const char *pname, const char *lookfor,
                             const char *standardName;
                             UBool isFirst = true;
                             UErrorCode enumError = U_ZERO_ERROR;
-                            while ((standardName = uenum_next(nameEnum, nullptr, &enumError))) {
+							for (standardName = uenum_next(nameEnum, nullptr, &enumError); 
+							 	 standardName; 
+								 standardName = uenum_next(nameEnum, nullptr, &enumError)
+							) {
                                 /* See if this alias is supported by this standard. */
                                 if (!strcmp(standardName, alias)) {
                                     if (!t) {
