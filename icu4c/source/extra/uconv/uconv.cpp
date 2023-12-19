@@ -41,6 +41,11 @@
 
 #include "unicode/uwmsg.h"
 
+
+#if defined(BUILD_MONOLITHIC)
+#define main         icu_uconv_main
+#endif
+
 U_NAMESPACE_USE
 
 #if U_PLATFORM_USES_ONLY_WIN32_API && !defined(__STRICT_ANSI__)
@@ -568,7 +573,7 @@ public:
                       const char *infilestr,
                       FILE * outfile, int verbose);
 private:
-    friend int main(int argc, char **argv);
+    friend int main(int argc, const char **argv);
 
     char *buf, *outbuf;
     int32_t *fromoffsets;
@@ -1099,7 +1104,7 @@ static void usage(const char *pname, int ecode) {
 }
 
 extern int
-main(int argc, char **argv)
+main(int argc, const char **argv)
 {
     FILE *outfile;
     int ret = 0;
@@ -1117,8 +1122,8 @@ main(int argc, char **argv)
     UConverterToUCallback toucallback = UCNV_TO_U_CALLBACK_STOP;
     const void *touctxt = 0;
 
-    char **iter, **remainArgv, **remainArgvLimit;
-    char **end = argv + argc;
+	const char **iter, **remainArgv, **remainArgvLimit;
+    const char **end = argv + argc;
 
     const char *pname;
 

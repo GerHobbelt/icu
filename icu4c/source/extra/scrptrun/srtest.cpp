@@ -27,7 +27,12 @@ char16_t testChars[] = {
 
 int32_t testLength = UPRV_LENGTHOF(testChars);
 
-int main()
+
+#if defined(BUILD_MONOLITHIC)
+#define main         icu_scrptrun_srtest_main
+#endif
+
+int main(void)
 {
     icu::ScriptRun scriptRun(testChars, 0, testLength);
 

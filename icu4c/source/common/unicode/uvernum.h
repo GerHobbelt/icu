@@ -102,7 +102,7 @@
  * @internal
  */
 #ifndef U_DISABLE_VERSION_SUFFIX
-#define U_DISABLE_VERSION_SUFFIX 0
+#define U_DISABLE_VERSION_SUFFIX 1
 #endif
 
 #ifndef U_ICU_ENTRY_POINT_RENAME

@@ -104,7 +104,9 @@ typedef uint8_t UVersionInfo[U_MAX_VERSION_LENGTH];
 #   else
 #       define U_ICU_NAMESPACE U_ICU_ENTRY_POINT_RENAME(icu)
         namespace U_ICU_NAMESPACE { }
-        namespace icu = U_ICU_NAMESPACE;
+#   if !U_DISABLE_VERSION_SUFFIX
+		namespace icu = U_ICU_NAMESPACE;
+#   endif
 #   endif
 
 #   define U_NAMESPACE_BEGIN namespace U_ICU_NAMESPACE {
