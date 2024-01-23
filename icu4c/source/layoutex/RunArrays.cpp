@@ -7,6 +7,7 @@
  **********************************************************************
  */
 
+#include "unicode/utypes.h"
 #include "layout/LEFontInstance.h"
 
 #include "unicode/locid.h"

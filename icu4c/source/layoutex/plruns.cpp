@@ -6,6 +6,7 @@
  *
  */
 
+#include "unicode/utypes.h"
 #include "layout/loengine.h"
 #include "layout/plruns.h"
 

@@ -11,6 +11,7 @@
 
 #define __LXUTILITIES_H
 
+#include "unicode/utypes.h"
 #include "layout/LETypes.h"
 
 U_NAMESPACE_BEGIN

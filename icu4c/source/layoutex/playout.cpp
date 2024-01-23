@@ -10,6 +10,7 @@
  * paragraphLayout doesn't make much sense without
  * BreakIterator...
  */
+#include "unicode/utypes.h"
 #include "layout/loengine.h"
 #include "layout/plruns.h"
 #include "layout/playout.h"
