@@ -1154,31 +1154,35 @@ static void U_CALLCONV rbbiInit() {
     ucln_common_registerCleanup(UCLN_COMMON_RBBI, rbbi_cleanup);
 }
 
-static void U_CALLCONV initLanguageFactories() {
-    UErrorCode status = U_ZERO_ERROR;
+static void U_CALLCONV initLanguageFactories(UErrorCode& status) {
     U_ASSERT(gLanguageBreakFactories == nullptr);
     gLanguageBreakFactories = new UStack(_deleteFactory, nullptr, status);
     if (gLanguageBreakFactories != nullptr && U_SUCCESS(status)) {
-        gICULanguageBreakFactory = new ICULanguageBreakFactory(status);
-        gLanguageBreakFactories->push(gICULanguageBreakFactory, status);
+        LocalPointer<ICULanguageBreakFactory> factory(new ICULanguageBreakFactory(status), status);
+        if (U_SUCCESS(status)) {
+            gICULanguageBreakFactory = factory.orphan();
+            gLanguageBreakFactories->push(gICULanguageBreakFactory, status);
 #ifdef U_LOCAL_SERVICE_HOOK
-        LanguageBreakFactory *extra = (LanguageBreakFactory *)uprv_svc_hook("languageBreakFactory", &status);
-        if (extra != nullptr) {
-            gLanguageBreakFactories->push(extra, status);
-        }
+            LanguageBreakFactory *extra = (LanguageBreakFactory *)uprv_svc_hook("languageBreakFactory", &status);
+            if (extra != nullptr) {
+                gLanguageBreakFactories->push(extra, status);
+            }
 #endif
+        }
     }
     ucln_common_registerCleanup(UCLN_COMMON_RBBI, rbbi_cleanup);
 }
 
+void ensureLanguageFactories(UErrorCode& status) {
+    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories, status);
+}
 
 static const LanguageBreakEngine*
 getLanguageBreakEngineFromFactory(UChar32 c, const char* locale)
 {
-    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
-    if (gLanguageBreakFactories == nullptr) {
-        return nullptr;
-    }
+    UErrorCode status = U_ZERO_ERROR;
+    ensureLanguageFactories(status);
+    if (U_FAILURE(status)) return nullptr;
 
     int32_t i = gLanguageBreakFactories->size();
     const LanguageBreakEngine *lbe = nullptr;
@@ -1261,30 +1265,13 @@ RuleBasedBreakIterator::getLanguageBreakEngine(UChar32 c, const char* locale) {
 }
 
 #ifndef U_HIDE_DRAFT_API
-URegistryKey U_EXPORT2 RuleBasedBreakIterator::registerExternalBreakEngine(
+void U_EXPORT2 RuleBasedBreakIterator::registerExternalBreakEngine(
                   ExternalBreakEngine* toAdopt, UErrorCode& status) {
-    if (U_FAILURE(status)) return nullptr;;
-    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
-    if (gICULanguageBreakFactory == nullptr) {
-        status = U_MEMORY_ALLOCATION_ERROR;
-        return nullptr;
-    }
-    URegistryKey key = gICULanguageBreakFactory->addExternalEngine(toAdopt, status);
-    if (U_FAILURE(status)) {
-        delete toAdopt;
-    }
-    return key;
-}
-
-UBool U_EXPORT2 RuleBasedBreakIterator::unregisterExternalBreakEngine(
-                  URegistryKey key, UErrorCode& status) {
-    if (U_FAILURE(status)) return false;
-    umtx_initOnce(gLanguageBreakFactoriesInitOnce, &initLanguageFactories);
-    if (gICULanguageBreakFactory == nullptr) {
-        status = U_MEMORY_ALLOCATION_ERROR;
-        return false;
-    }
-    return gICULanguageBreakFactory->removeExternalEngine(key, status);
+    LocalPointer<ExternalBreakEngine> engine(toAdopt, status);
+    if (U_FAILURE(status)) return;
+    ensureLanguageFactories(status);
+    if (U_FAILURE(status)) return;
+    gICULanguageBreakFactory->addExternalEngine(engine.orphan(), status);
 }
 #endif  /* U_HIDE_DRAFT_API */
 

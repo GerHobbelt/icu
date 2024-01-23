@@ -53,15 +53,16 @@ class  UStack;
  * word breaking, Thai, Khmer, Burmese, Lao and other Southeast Asian scripts.
  * The host environment implement one or more subclass of ExternalBreakEngine and
  * register them in the initialization time by calling
- * RuleBasedBreakIterator::registerExternalBreakEngine() and clean up by calling
- * RuleBasedBreakIterator::unregisterExternalBreakEngine()
- * @draft ICU 74
+ * RuleBasedBreakIterator::registerExternalBreakEngine(). ICU adopt and own the engine and will
+ * delete the registered external engine in proper time during the clean up
+ * event.
+ * @internal ICU 74 technology preview
  */
 class ExternalBreakEngine : public UObject {
   public:
     /**
      * destructor
-     * @draft ICU 74
+     * @internal ICU 74 technology preview
      */
     virtual ~ExternalBreakEngine() {}
 
@@ -69,34 +70,35 @@ class ExternalBreakEngine : public UObject {
      * <p>Indicate whether this engine handles a particular character when
      * the RuleBasedBreakIterator is used for a particular locale. This method is used
      * by the RuleBasedBreakIterator to find a break engine.</p>
-     * @param c A character which begins a run that the engine might handle
+     * @param c A character which begins a run that the engine might handle.
      * @param locale    The locale.
-     * @return true if this engine handles the particular character for that locale..
-     * @draft ICU 74
+     * @return true if this engine handles the particular character for that locale.
+     * @internal ICU 74 technology preview
      */
-    virtual UBool isFor(UChar c, const char* locale) const = 0;
+    virtual bool isFor(UChar32 c, const char* locale) const = 0;
 
     /**
      * <p>Indicate whether this engine handles a particular character.This method is
      * used by the RuleBasedBreakIterator after it already find a break engine to see which
      * characters after the first one can be handled by this break engine.</p>
-     * @param c A character which begins a run that the engine might handle
-     * @return true if this engine handles the particular character..
-     * @draft ICU 74
+     * @param c A character that the engine might handle.
+     * @return true if this engine handles the particular character.
+     * @internal ICU 74 technology preview
      */
-    virtual UBool handles(UChar c) const = 0;
+    virtual bool handles(UChar32 c) const = 0;
 
     /**
-     * <p>Divide up a range of known characters handled by this break engine.</p>
+     * <p>Divide up a range of text handled by this break engine.</p>
      *
      * @param text A UText representing the text
      * @param start The start of the range of known characters
      * @param end The end of the range of known characters
-     * @param foundBreaks Output of C array of int32_t break positions, or 0
+     * @param foundBreaks Output of C array of int32_t break positions, or
+     * nullptr
      * @param foundBreaksCapacity The capacity of foundBreaks
      * @param status Information on any errors encountered.
      * @return The number of breaks found
-     * @draft ICU 74
+     * @internal ICU 74 technology preview
      */
      virtual int32_t fillBreak(UText* text,  int32_t start, int32_t end,
                               int32_t* foundBreaks, int32_t foundBreaksCapacity,
@@ -808,26 +810,10 @@ private:
      * object methods of RuleBasedBreakIterator to avoid undefined behavior.
      * @param toAdopt the ExternalBreakEngine instance to be adopted
      * @param status the in/out status code, no special meanings are assigned
-     * @return a registry key that can be used to unregister this instance
-     * @draft ICU 74
+     * @internal ICU 74 technology preview
      */
-    static URegistryKey U_EXPORT2 registerExternalBreakEngine(
+    static void U_EXPORT2 registerExternalBreakEngine(
                   ExternalBreakEngine* toAdopt, UErrorCode& status);
-
-    /**
-     * Unregister a previously-registered ExternalBreakEngine using the key returned from the
-     * register call.  Key becomes invalid after a successful call and should not be used again.
-     * The ExternalBreakEngine corresponding to the key will be deleted.
-     * Because ICU may choose to cache break engine internally, this must
-     * be called during application shutdown, after all calls to
-     * object methods of RuleBasedBreakIterator to avoid undefined behavior.
-     * @param key the registry key returned by a previous call to registerExternalBreakEngine
-     * @param status the in/out status code, no special meanings are assigned
-     * @return true if the registerExternalBreakEngine for the key was successfully unregistered
-     * @draft ICU 74
-     */
-    static UBool U_EXPORT2 unregisterExternalBreakEngine(
-                  URegistryKey key, UErrorCode& status);
 #endif /* UCONFIG_NO_SERVICE */
 #endif  /* U_HIDE_DRAFT_API */
 

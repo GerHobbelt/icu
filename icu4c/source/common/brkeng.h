@@ -37,7 +37,7 @@ class ExternalBreakEngine;
  * <p>LanguageBreakEngines should normally be implemented so as to
  * be shared between threads without locking.</p>
  */
-class LanguageBreakEngine : public UMemory {
+class LanguageBreakEngine : public UObject {
  public:
 
   /**
@@ -84,20 +84,20 @@ class LanguageBreakEngine : public UMemory {
 };
 
 /*******************************************************************
- * ExternalLanguageBreakEngine
+ * BreakEngineWrapper
  */
 
 /**
- * <p>ExternalLanguageBreakEngine implement LanguageBreakEngine by 
- * a thin wrapper that delegate the task to ExternalLanguageBreakEngine
+ * <p>BreakEngineWrapper implement LanguageBreakEngine by
+ * a thin wrapper that delegate the task to ExternalBreakEngine
  * </p>
  */
-class ExternalLanguageBreakEngine : public  LanguageBreakEngine {
+class BreakEngineWrapper : public  LanguageBreakEngine {
  public:
 
-  ExternalLanguageBreakEngine(ExternalBreakEngine* engine);
+  BreakEngineWrapper(ExternalBreakEngine* engine, UErrorCode &status);
 
-  virtual ~ExternalLanguageBreakEngine();
+  virtual ~BreakEngineWrapper();
 
   virtual UBool handles(UChar32 c, const char* locale) const override;
 
@@ -109,7 +109,7 @@ class ExternalLanguageBreakEngine : public  LanguageBreakEngine {
                               UErrorCode &status) const override;
 
  private:
-  ExternalBreakEngine* delegate;
+  LocalPointer<ExternalBreakEngine> delegate;
 };
 
 /*******************************************************************
@@ -286,9 +286,13 @@ class ICULanguageBreakFactory : public LanguageBreakFactory {
   */
   virtual const LanguageBreakEngine *getEngineFor(UChar32 c, const char* locale) override;
 
-  virtual URegistryKey addExternalEngine(ExternalBreakEngine* engine, UErrorCode& status);
-
-  virtual UBool removeExternalEngine(URegistryKey key, UErrorCode& status);
+  /**
+   * Add and adopt the engine and return an URegistryKey.
+   * @param engine The ExternalBreakEngine to be added and adopt. The caller
+   *     pass the ownership and should not release the memory after this.
+   * @param status the error code.
+   */
+  virtual void addExternalEngine(ExternalBreakEngine* engine, UErrorCode& status);
 
 protected:
  /**

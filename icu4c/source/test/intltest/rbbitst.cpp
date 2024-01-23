@@ -5678,12 +5678,12 @@ class FakeTaiLeBreakEngine : public ExternalBreakEngine {
   }
   virtual ~FakeTaiLeBreakEngine() {
   }
-  virtual UBool isFor(UChar c, const char* /* locale */) const override {
+  virtual bool isFor(UChar32 c, const char* /* locale */) const override {
       // We implmement this for any locale, not return false for some langauge
       // here.
       return handles(c);
   }
-  virtual UBool handles(UChar c) const override {
+  virtual bool handles(UChar32 c) const override {
       return block.contains(c);
   }
   virtual int32_t fillBreak(UText* text,  int32_t start, int32_t end,
@@ -5731,12 +5731,12 @@ class FakeYueBreakEngine : public ExternalBreakEngine {
   }
   virtual ~FakeYueBreakEngine() {
   }
-  virtual UBool isFor(UChar c, const char* locale) const override {
-      // We implmement this for any locale, not return false for some langauge
-      // here.
+  virtual bool isFor(UChar32 c, const char* locale) const override {
+      // We implmement this for any locale starts with "yue" such as
+      // "yue", "yue-CN", "yue-Hant-CN", etc.
       return handles(c) && uprv_strncmp("yue", locale, 3) == 0;
   }
-  virtual UBool handles(UChar c) const override {
+  virtual bool handles(UChar32 c) const override {
       return block.contains(c);
   }
   virtual int32_t fillBreak(UText* text,  int32_t start, int32_t end,
@@ -5773,7 +5773,7 @@ void RBBITest::TestExternalBreakEngineWithFakeYue() {
             BreakIterator::createWordInstance(Locale::getRoot(), status),
             status);
         bi1->setText(text);
-        assertTrue("BreakIterator::createWordInstance( root )",
+        assertTrue(WHERE "BreakIterator::createWordInstance( root )",
                    U_SUCCESS(status));
 
         do {
@@ -5786,9 +5786,9 @@ void RBBITest::TestExternalBreakEngineWithFakeYue() {
     assertTrue("root break Yue as Chinese", expected1 == actual1);
 
     status = U_ZERO_ERROR;
-    URegistryKey yueKey = RuleBasedBreakIterator::registerExternalBreakEngine(
+    RuleBasedBreakIterator::registerExternalBreakEngine(
         new FakeYueBreakEngine(), status);
-    assertTrue("registerExternalBreakEngine w FakeYueBreakEngine",
+    assertTrue(WHERE "registerExternalBreakEngine w FakeYueBreakEngine",
                U_SUCCESS(status));
 
     std::vector<int32_t> actual2;
@@ -5796,7 +5796,7 @@ void RBBITest::TestExternalBreakEngineWithFakeYue() {
         status = U_ZERO_ERROR;
         LocalPointer<BreakIterator> bi2(
             BreakIterator::createWordInstance(Locale("yue"), status), status);
-        assertTrue("BreakIterator::createWordInstance( yue )",
+        assertTrue(WHERE "BreakIterator::createWordInstance( yue )",
                    U_SUCCESS(status));
         bi2->setText(text);
         do {
@@ -5805,12 +5805,8 @@ void RBBITest::TestExternalBreakEngineWithFakeYue() {
     }
     std::vector<int32_t> expected2({{ 0, 1, 2, 4, 5, 8, 10, 12, 14, 16, 18, 20,
       22, 23, 24, 26, 27, 30}});
-    assertTrue("break Yue by Fake external breaker",
+    assertTrue(WHERE "break Yue by Fake external breaker",
                expected2 == actual2);
-
-    RuleBasedBreakIterator::unregisterExternalBreakEngine(yueKey, status);
-    assertTrue("unregisterExternalBreakEngine w FakeYueBreakEngine",
-               U_SUCCESS(status));
 }
 
 void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
@@ -5825,7 +5821,7 @@ void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
             BreakIterator::createLineInstance(Locale::getRoot(), status),
             status);
         bi1->setText(text);
-        assertTrue("BreakIterator::createLineInstance( root )",
+        assertTrue(WHERE "BreakIterator::createLineInstance( root )",
                    U_SUCCESS(status));
 
         do {
@@ -5835,11 +5831,11 @@ void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
 
     std::vector<int32_t> expected1({{
       0, 2, 5, 86, 89, 92 }});
-    assertTrue("root break Tai Le", expected1 == actual1);
+    assertTrue(WHERE "root break Tai Le", expected1 == actual1);
 
-    URegistryKey taiLeKey = RuleBasedBreakIterator::registerExternalBreakEngine(
+    RuleBasedBreakIterator::registerExternalBreakEngine(
         new FakeTaiLeBreakEngine(), status);
-    assertTrue("registerExternalBreakEngine w FakeTaiLeBreakEngine",
+    assertTrue(WHERE "registerExternalBreakEngine w FakeTaiLeBreakEngine",
                U_SUCCESS(status));
 
     std::vector<int32_t> actual2;
@@ -5847,7 +5843,7 @@ void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
         status = U_ZERO_ERROR;
         LocalPointer<BreakIterator> bi2(
             BreakIterator::createLineInstance(Locale("tdd"), status), status);
-        assertTrue("BreakIterator::createLineInstance( tdd )",
+        assertTrue(WHERE "BreakIterator::createLineInstance( tdd )",
                    U_SUCCESS(status));
         bi2->setText(text);
         do {
@@ -5859,10 +5855,6 @@ void RBBITest::TestExternalBreakEngineWithFakeTaiLe() {
          70, 73, 76, 80, 86, 89, 92}});
     assertTrue("break Tai Le by Fake external breaker",
                expected2 == actual2);
-
-    RuleBasedBreakIterator::unregisterExternalBreakEngine(taiLeKey, status);
-    assertTrue("unregisterExternalBreakEngine w FakeTaiLeBreakEngine",
-               U_SUCCESS(status));
 }
 
 #endif // #if !UCONFIG_NO_BREAK_ITERATION
