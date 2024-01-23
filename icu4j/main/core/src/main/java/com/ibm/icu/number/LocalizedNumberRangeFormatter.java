@@ -88,7 +88,7 @@ public class LocalizedNumberRangeFormatter extends NumberRangeFormatterSettings<
      * @return The fluent chain.
      * @draft ICU 74
      */
-    public UnlocalizedNumberRangeFormatter resetLocale() {
+    public UnlocalizedNumberRangeFormatter withoutLocale() {
         return new UnlocalizedNumberRangeFormatter(this, KEY_LOCALE, null);
     }
 

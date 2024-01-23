@@ -827,11 +827,11 @@ public class NumberRangeFormatterTest extends CoreTestFmwk {
     public void locale() {
         LocalizedNumberRangeFormatter lnf = NumberRangeFormatter.withLocale(ULocale.ENGLISH)
             .identityFallback(RangeIdentityFallback.RANGE);
-        UnlocalizedNumberRangeFormatter unf1 = lnf.resetLocale();
+        UnlocalizedNumberRangeFormatter unf1 = lnf.withoutLocale();
         UnlocalizedNumberRangeFormatter unf2 = NumberRangeFormatter.with()
             .identityFallback(RangeIdentityFallback.RANGE)
             .locale(ULocale.forLanguageTag("ar-EG"))
-            .resetLocale();
+            .withoutLocale();
     
         FormattedNumberRange res1 = unf1.locale(ULocale.forLanguageTag("bn")).formatRange(5, 5);
         assertEquals("res1", "\u09EB\u2013\u09EB", res1.toString());

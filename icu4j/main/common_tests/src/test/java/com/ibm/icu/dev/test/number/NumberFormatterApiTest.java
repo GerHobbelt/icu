@@ -5408,11 +5408,11 @@ public class NumberFormatterApiTest extends CoreTestFmwk {
                 .scale(Scale.powerOfTen(2));
         LocalizedNumberFormatter lnf2 = NumberFormatter.with()
                 .notation(Notation.compactLong()).locale(ULocale.FRENCH).unitWidth(UnitWidth.FULL_NAME);
-        UnlocalizedNumberFormatter unf1 = lnf1.resetLocale();
-        UnlocalizedNumberFormatter unf2 = lnf2.resetLocale();
+        UnlocalizedNumberFormatter unf1 = lnf1.withoutLocale();
+        UnlocalizedNumberFormatter unf2 = lnf2.withoutLocale();
 
         assertFormatSingle(
-                "Formatter after resetLocale A",
+                "Formatter after withoutLocale A",
                 "unit/meter unit-width-full-name scale/100",
                 "unit/meter unit-width-full-name scale/100",
                 unf1.unit(MeasureUnit.METER),
@@ -5421,7 +5421,7 @@ public class NumberFormatterApiTest extends CoreTestFmwk {
                 "200 metri");
 
         assertFormatSingle(
-                "Formatter after resetLocale B",
+                "Formatter after withoutLocale B",
                 "compact-long unit/meter unit-width-full-name",
                 "compact-long unit/meter unit-width-full-name",
                 unf2.unit(MeasureUnit.METER),
