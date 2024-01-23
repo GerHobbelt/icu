@@ -11,7 +11,6 @@
  * paragraphLayout doesn't make much sense without
  * BreakIterator...
  */
-#include "layout/LETypes.h"
 #include "layout/LEScripts.h"
 #include "layout/LELanguages.h"
 #include "layout/LayoutEngine.h"

@@ -7,7 +7,6 @@
  **********************************************************************
  */
 
-#include "layout/LETypes.h"
 #include "LXUtilities.h"
 
 U_NAMESPACE_BEGIN
