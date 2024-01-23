@@ -11,10 +11,10 @@
     <version>74.1-SNAPSHOT</version>
   </parent>
 
-  <artifactId>samples</artifactId>
+  <artifactId>perf-tests</artifactId>
 
   <properties>
-    <icu4j.api.doc.root.dir>${project.basedir}/..</icu4j.api.doc.root.dir>
+    <module-name>perf_tests</module-name>
   </properties>
 
   <dependencies>
@@ -28,6 +28,16 @@
       <artifactId>collate</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>icu4j-charset</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.ibm.icu</groupId>
+      <artifactId>tools_misc</artifactId>
+      <version>${project.version}</version>
+    </dependency>
   </dependencies>
 
   <build>
@@ -38,10 +48,6 @@
         <configuration>
           <skip>true</skip>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>exec-maven-plugin</artifactId>
       </plugin>
     </plugins>
   </build>
