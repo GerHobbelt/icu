@@ -8,6 +8,9 @@
  */
 
 #include "unicode/utypes.h"
+
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 #include "layout/LEFontInstance.h"
 
 #include "unicode/locid.h"
@@ -230,3 +233,5 @@ le_int32 ValueRuns::getValue(le_int32 run) const
 }
 
 U_NAMESPACE_END
+
+#endif

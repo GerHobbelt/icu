@@ -8,10 +8,12 @@
  */
 
 #ifndef __LXUTILITIES_H
-
 #define __LXUTILITIES_H
 
 #include "unicode/utypes.h"
+
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 #include "layout/LETypes.h"
 
 U_NAMESPACE_BEGIN
@@ -26,4 +28,6 @@ public:
 };
 
 U_NAMESPACE_END
+
+#endif
 #endif

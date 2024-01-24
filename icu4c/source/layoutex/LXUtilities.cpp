@@ -9,6 +9,8 @@
 
 #include "LXUtilities.h"
 
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 U_NAMESPACE_BEGIN
 
 //
@@ -98,3 +100,5 @@ void LXUtilities::reverse(float array[], le_int32 length)
 }
 
 U_NAMESPACE_END
+
+#endif

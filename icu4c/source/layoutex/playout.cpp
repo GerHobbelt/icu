@@ -11,6 +11,9 @@
  * BreakIterator...
  */
 #include "unicode/utypes.h"
+
+#ifndef U_DO_NOT_USE_LAYOUT_ENGINE
+
 #include "layout/loengine.h"
 #include "layout/plruns.h"
 #include "layout/playout.h"
@@ -328,5 +331,7 @@ pl_getVisualRunLeading(const pl_visualRun *run)
 
     return vr->getLeading();
 }
+
+#endif
 
 #endif
