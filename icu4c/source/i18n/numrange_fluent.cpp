@@ -273,13 +273,13 @@ LocalizedNumberRangeFormatter::~LocalizedNumberRangeFormatter() {
     delete fAtomicFormatter.exchange(nullptr);
 }
 
-LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(const RangeMacroProps& macros, const Locale& locale) {
+LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(const impl::RangeMacroProps& macros, const Locale& locale) {
     fMacros = macros;
     fMacros.locale = locale;
     touchRangeLocales(fMacros);
 }
 
-LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(RangeMacroProps&& macros, const Locale& locale) {
+LocalizedNumberRangeFormatter::LocalizedNumberRangeFormatter(impl::RangeMacroProps&& macros, const Locale& locale) {
     fMacros = std::move(macros);
     fMacros.locale = locale;
     touchRangeLocales(fMacros);
@@ -295,13 +295,13 @@ LocalizedNumberRangeFormatter UnlocalizedNumberRangeFormatter::locale(const Loca
 
 
 UnlocalizedNumberRangeFormatter LocalizedNumberRangeFormatter::withoutLocale() const & {
-    RangeMacroProps macros(fMacros);
+	impl::RangeMacroProps macros(fMacros);
     macros.locale = Locale();
     return UnlocalizedNumberRangeFormatter(macros);
 }
 
 UnlocalizedNumberRangeFormatter LocalizedNumberRangeFormatter::withoutLocale() && {
-    RangeMacroProps macros(std::move(fMacros));
+	impl::RangeMacroProps macros(std::move(fMacros));
     macros.locale = Locale();
     return UnlocalizedNumberRangeFormatter(std::move(macros));
 }
@@ -313,7 +313,7 @@ FormattedNumberRange LocalizedNumberRangeFormatter::formatFormattableRange(
         return FormattedNumberRange(U_ILLEGAL_ARGUMENT_ERROR);
     }
 
-    auto results = new UFormattedNumberRangeData();
+    auto results = new impl::UFormattedNumberRangeData();
     if (results == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         return FormattedNumberRange(status);
@@ -341,7 +341,7 @@ FormattedNumberRange LocalizedNumberRangeFormatter::formatFormattableRange(
 }
 
 void LocalizedNumberRangeFormatter::formatImpl(
-        UFormattedNumberRangeData& results, bool equalBeforeRounding, UErrorCode& status) const {
+		impl::UFormattedNumberRangeData& results, bool equalBeforeRounding, UErrorCode& status) const {
     auto* impl = getFormatter(status);
     if (U_FAILURE(status)) {
         return;
@@ -373,7 +373,7 @@ LocalizedNumberRangeFormatter::getFormatter(UErrorCode& status) const {
     }
 
     // Try computing the formatter on our own
-    auto* temp = new NumberRangeFormatterImpl(fMacros, status);
+    auto* temp = new impl::NumberRangeFormatterImpl(fMacros, status);
     if (U_FAILURE(status)) {
         delete temp;
         return nullptr;
