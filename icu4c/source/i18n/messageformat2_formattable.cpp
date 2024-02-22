@@ -33,28 +33,33 @@ namespace message2 {
         type = other.type;
         isDecimal = other.isDecimal;
 
+        U_ASSERT(type != UFMT_COUNT);
+
         switch (type) {
-        case kDate:
-        case kDouble:
-        case kLong:
-        case kInt64: {
+        case UFMT_DATE:
+        case UFMT_DOUBLE:
+        case UFMT_LONG:
+        case UFMT_INT64: {
             scalar = other.scalar;
             if (other.isDecimal) {
                 icuFormattable = other.icuFormattable;
             }
             break;
         }
-        case kString: {
+        case UFMT_STRING: {
             fString = other.fString;
             break;
         }
-        case kArray: {
+        case UFMT_ARRAY: {
             array = other.array;
             arrayLen = other.arrayLen;
             break;
         }
-        case kObject: {
+        case UFMT_OBJECT: {
             object = other.object;
+            break;
+        }
+        default: {
             break;
         }
         }
@@ -67,15 +72,15 @@ namespace message2 {
         icuFormattable = icu::Formattable(number, status);
         switch (icuFormattable.getType()) {
         case icu::Formattable::Type::kLong: {
-            type = Type::kLong;
+            type = UFMT_LONG;
             break;
         }
         case icu::Formattable::Type::kInt64: {
-            type = Type::kInt64;
+            type = UFMT_INT64;
             break;
         }
         case icu::Formattable::Type::kDouble: {
-            type = Type::kDouble;
+            type = UFMT_DOUBLE;
             break;
         }
         default: {
@@ -86,12 +91,12 @@ namespace message2 {
         }
     }
 
-    Formattable::Type Formattable::getType() const {
+    UFormattableType Formattable::getType() const {
         return type;
     }
 
     const Formattable* Formattable::getArray(int32_t& len) const {
-        U_ASSERT(type == Type::kArray);
+        U_ASSERT(type == UFMT_ARRAY);
         U_ASSERT(array != nullptr);
         len = arrayLen;
         return array;
@@ -103,11 +108,11 @@ namespace message2 {
         }
 
         switch (type) {
-        case kLong:
-        case kInt64: {
+        case UFMT_LONG:
+        case UFMT_INT64: {
             return scalar.fInt64;
         }
-        case kDouble: {
+        case UFMT_DOUBLE: {
             return (icu::Formattable(scalar.fDouble)).getInt64(status);
         }
         default: {
@@ -121,8 +126,8 @@ namespace message2 {
         if (U_FAILURE(status)) {
             return {};
         }
-        // Type must not be kArray or kObject
-        if (type == kArray || type == kObject) {
+        // Type must not be UFMT_ARRAY or UFMT_OBJECT
+        if (type == UFMT_ARRAY || type == UFMT_OBJECT) {
             status = U_ILLEGAL_ARGUMENT_ERROR;
             return {};
         }
@@ -132,23 +137,23 @@ namespace message2 {
         }
 
         switch (type) {
-        case kDate: {
+        case UFMT_DATE: {
             return icu::Formattable(scalar.fDate, icu::Formattable::kIsDate);
         }
-        case kDouble: {
+        case UFMT_DOUBLE: {
             return icu::Formattable(scalar.fDouble);
         }
-        case kLong: {
+        case UFMT_LONG: {
             return icu::Formattable((int32_t) scalar.fInt64);
         }
-        case kInt64: {
+        case UFMT_INT64: {
             return icu::Formattable(scalar.fInt64);
         }
-        case kString: {
+        case UFMT_STRING: {
             return icu::Formattable(fString);
         }
         default: {
-            // Already checked for kArray and kObject
+            // Already checked for UFMT_ARRAY and UFMT_OBJECT
             return icu::Formattable();
         }
         }
@@ -262,23 +267,23 @@ namespace message2 {
             }
         }
 
-        Formattable::Type type = toFormat.getType();
+        UFormattableType type = toFormat.getType();
         switch (type) {
-        case Formattable::Type::kDate: {
+        case UFMT_DATE: {
             UnicodeString result;
             formatDateWithDefaults(locale, toFormat.getDate(), result, status);
             return FormattedPlaceholder(input, FormattedValue(std::move(result)));
         }
-        case Formattable::Type::kDouble: {
+        case UFMT_DOUBLE: {
             return FormattedPlaceholder(input, FormattedValue(formatNumberWithDefaults(locale, toFormat.getDouble(), status)));
         }
-        case Formattable::Type::kLong: {
+        case UFMT_LONG: {
             return FormattedPlaceholder(input, FormattedValue(formatNumberWithDefaults(locale, toFormat.getLong(), status)));
         }
-        case Formattable::Type::kInt64: {
+        case UFMT_INT64: {
             return FormattedPlaceholder(input, FormattedValue(formatNumberWithDefaults(locale, toFormat.getInt64(), status)));
         }
-        case Formattable::Type::kString: {
+        case UFMT_STRING: {
             return FormattedPlaceholder(input, FormattedValue(UnicodeString(toFormat.getString())));
         }
         default: {
