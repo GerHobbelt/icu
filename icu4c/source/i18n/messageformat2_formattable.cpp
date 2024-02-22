@@ -24,70 +24,8 @@ namespace message2 {
         return result;
     }
 
-    Formattable& Formattable::operator=(Formattable&& other) noexcept {
-        type = other.type;
-        isDecimal = other.isDecimal;
-
-        switch (type) {
-        case kDate:
-        case kDouble:
-        case kLong:
-        case kInt64: {
-            scalar = other.scalar;
-            if (isDecimal) {
-                icuFormattable = std::move(other.icuFormattable);
-            }
-            break;
-        }
-        case kString: {
-            fString = std::move(other.fString);
-            break;
-        }
-        case kArray: {
-            array = other.array;
-            arrayLen = other.arrayLen;
-            break;
-        }
-        case kObject: {
-            object = other.object;
-            break;
-        }
-        }
-
-        return *this;
-    }
-
-    Formattable& Formattable::operator=(const Formattable& other)  {
-        if (this != &other) {
-            type = other.type;
-            isDecimal = other.isDecimal;
-
-            switch (type) {
-            case kDate:
-            case kDouble:
-            case kLong:
-            case kInt64: {
-                scalar = other.scalar;
-                if (other.isDecimal) {
-                    icuFormattable = other.icuFormattable;
-                }
-                break;
-            }
-            case kString: {
-                fString = other.fString;
-                break;
-            }
-            case kArray: {
-                array = other.array;
-                arrayLen = other.arrayLen;
-                break;
-            }
-            case kObject: {
-                object = other.object;
-                break;
-            }
-            }
-        }
+    Formattable& Formattable::operator=(Formattable other) noexcept {
+        swap(*this, other);
         return *this;
     }
 
