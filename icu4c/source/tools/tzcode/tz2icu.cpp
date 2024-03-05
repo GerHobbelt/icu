@@ -12,7 +12,7 @@
 */
 #include "tzfile.h" // from Olson tzcode archive, copied to this dir
 
-#ifdef WIN32
+#ifdef _WIN32
 
  #include <windows.h>
  #undef min // windows.h/STL conflict

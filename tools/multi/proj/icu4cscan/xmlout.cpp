@@ -3,7 +3,21 @@
 // Copyright (C) 2008-2012 IBM Corporation and Others. All Rights Reserved. 
 #include <stdio.h>
 #include "xmlout.h"
+
+#ifdef _WIN32
+
+#include <windows.h>
+#undef min // windows.h/STL conflict
+#undef max // windows.h/STL conflict
+// "identifier was truncated to 'number' characters" warning
+#pragma warning(disable: 4786)
+
+#else
+
 #include <unistd.h>
+
+#endif
+
 #include <stdlib.h>
 
 XMLFile::XMLFile(FILE *f) {

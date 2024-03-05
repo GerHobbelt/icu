@@ -21,13 +21,13 @@ TestLog::~TestLog() {}
 IcuTestErrorCode::~IcuTestErrorCode() {
     // Safe because our errlog() does not throw exceptions.
     if(isFailure()) {
-        errlog(false, u"destructor: expected success", nullptr);
+        errlog(false, UnicodeString(u"destructor: expected success"), nullptr);
     }
 }
 
 UBool IcuTestErrorCode::errIfFailureAndReset() {
     if(isFailure()) {
-        errlog(false, u"expected success", nullptr);
+        errlog(false, UnicodeString(u"expected success"), nullptr);
         reset();
         return true;
     } else {
@@ -43,7 +43,7 @@ UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
         va_start(ap, fmt);
         vsnprintf(buffer, sizeof(buffer), fmt, ap);
         va_end(ap);
-        errlog(false, u"expected success", buffer);
+        errlog(false, UnicodeString(u"expected success"), buffer);
         reset();
         return true;
     } else {
@@ -54,7 +54,7 @@ UBool IcuTestErrorCode::errIfFailureAndReset(const char *fmt, ...) {
 
 UBool IcuTestErrorCode::errDataIfFailureAndReset() {
     if(isFailure()) {
-        errlog(true, u"data: expected success", nullptr);
+        errlog(true, UnicodeString(u"data: expected success"), nullptr);
         reset();
         return true;
     } else {
@@ -70,7 +70,7 @@ UBool IcuTestErrorCode::errDataIfFailureAndReset(const char *fmt, ...) {
         va_start(ap, fmt);
         vsnprintf(buffer, sizeof(buffer), fmt, ap);
         va_end(ap);
-        errlog(true, u"data: expected success", buffer);
+        errlog(true, UnicodeString(u"data: expected success"), buffer);
         reset();
         return true;
     } else {
