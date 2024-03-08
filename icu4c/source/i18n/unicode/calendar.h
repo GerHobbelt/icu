@@ -1558,7 +1558,7 @@ protected:
      * @return       The value for the UCAL_MONTH.
      * @internal
      */
-    virtual int32_t internalGetMonth() const;
+    virtual int32_t internalGetMonth(UErrorCode& status) const;
 
     /**
      * Use this function instead of internalGet(UCAL_MONTH, defaultValue). The implementation
@@ -1571,7 +1571,7 @@ protected:
      * @return       The value for the UCAL_MONTH.
      * @internal
      */
-    virtual int32_t internalGetMonth(int32_t defaultValue) const;
+    virtual int32_t internalGetMonth(int32_t defaultValue, UErrorCode& status) const;
 
 #ifndef U_HIDE_DEPRECATED_API
     /**
@@ -1665,7 +1665,7 @@ protected:
      * @internal
      */
     virtual int64_t handleComputeMonthStart(int32_t eyear, int32_t month,
-                                                   UBool useMonth) const  = 0;
+                                            UBool useMonth, UErrorCode& status) const  = 0;
 
     /**
      * Return the number of days in the given month of the given extended
@@ -1674,7 +1674,7 @@ protected:
      * implementation than the default implementation in Calendar.
      * @internal
      */
-    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month) const ;
+    virtual int32_t handleGetMonthLength(int32_t extendedYear, int32_t month, UErrorCode& status) const ;
 
     /**
      * Return the number of days in the given extended year of this
@@ -1716,7 +1716,7 @@ protected:
      * @return the extended year, UCAL_EXTENDED_YEAR
      * @internal
      */
-    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy);
+    virtual int32_t handleGetExtendedYearFromWeekFields(int32_t yearWoy, int32_t woy, UErrorCode& status);
 
     /**
      * Validate a single field of this calendar.  Subclasses should
@@ -2024,7 +2024,7 @@ protected:
      * @param eyear The extended year
      * @internal
      */
-    virtual int32_t getDefaultMonthInYear(int32_t eyear) ;
+    virtual int32_t getDefaultMonthInYear(int32_t eyear, UErrorCode& status) ;
 
 
     /**
@@ -2155,7 +2155,7 @@ protected:
      * returns the local DOW, valid range 0..6
      * @internal
      */
-    int32_t getLocalDOW();
+    int32_t getLocalDOW(UErrorCode& status);
 #endif  /* U_HIDE_INTERNAL_API */
 
 private:
