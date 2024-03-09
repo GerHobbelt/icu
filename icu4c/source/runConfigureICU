@@ -257,8 +257,8 @@ case $platform in
         CXX=g++; export CXX
         RELEASE_CFLAGS='-O3'
         RELEASE_CXXFLAGS='-O3'
-        DEBUG_CFLAGS='-g'
-        DEBUG_CXXFLAGS='-g'
+        DEBUG_CFLAGS='-g -O0'
+        DEBUG_CXXFLAGS='-g -O0'
         ;;
     Linux/clang)
         THE_OS="Linux"
@@ -275,8 +275,8 @@ case $platform in
         THE_COMP="the default C++"
         RELEASE_CFLAGS='-O3'
         RELEASE_CXXFLAGS='-O3'
-        DEBUG_CFLAGS='-g'
-        DEBUG_CXXFLAGS='-g'
+        DEBUG_CFLAGS='-g -O0'
+        DEBUG_CXXFLAGS='-g -O0'
         ;;
     Cygwin)
         THE_OS="Cygwin"
