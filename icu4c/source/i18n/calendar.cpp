@@ -2075,6 +2075,7 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
             return;
         }
     case UCAL_JULIAN_DAY:
+        // set(field, internalGet(field) + amount);
         if (uprv_add32_overflow(
             amount, internalGet(field), &amount)) {
             status = U_ILLEGAL_ARGUMENT_ERROR;
