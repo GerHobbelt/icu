@@ -58,21 +58,6 @@ ulocimp_getKeywords(const char *localeID,
              UBool valuesToo,
              UErrorCode *status);
 
-icu::CharString U_EXPORT2
-ulocimp_getLanguage(const char *localeID,
-                    const char **pEnd,
-                    UErrorCode &status);
-
-icu::CharString U_EXPORT2
-ulocimp_getScript(const char *localeID,
-                  const char **pEnd,
-                  UErrorCode &status);
-
-icu::CharString U_EXPORT2
-ulocimp_getCountry(const char *localeID,
-                   const char **pEnd,
-                   UErrorCode &status);
-
 U_CAPI void U_EXPORT2
 ulocimp_getName(const char* localeID,
                 icu::ByteSink& sink,
@@ -93,6 +78,18 @@ ulocimp_getKeywordValue(const char* localeID,
                         const char* keywordName,
                         icu::ByteSink& sink,
                         UErrorCode* status);
+
+U_EXPORT icu::CharString U_EXPORT2
+ulocimp_getLanguage(const char* localeID, UErrorCode& status);
+
+U_EXPORT icu::CharString U_EXPORT2
+ulocimp_getScript(const char* localeID, UErrorCode& status);
+
+U_EXPORT icu::CharString U_EXPORT2
+ulocimp_getRegion(const char* localeID, UErrorCode& status);
+
+U_EXPORT icu::CharString U_EXPORT2
+ulocimp_getVariant(const char* localeID, UErrorCode& status);
 
 U_EXPORT void U_EXPORT2
 ulocimp_setKeywordValue(const char* keywordName,
