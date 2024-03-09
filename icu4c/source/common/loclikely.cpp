@@ -42,15 +42,8 @@
  * parameters may be nullptr pointers. If they are, their corresponding length parameters
  * must be less than or equal to 0.
  *
- * If the length of the new string exceeds the capacity of the output buffer,
- * the function copies as many bytes to the output buffer as it can, and returns
- * the error U_BUFFER_OVERFLOW_ERROR.
- *
  * If an illegal argument is provided, the function returns the error
  * U_ILLEGAL_ARGUMENT_ERROR.
- *
- * Note that this function can return the warning U_STRING_NOT_TERMINATED_WARNING if
- * the tag string fits in the output buffer, but the null terminator doesn't.
  *
  * @param lang The language tag to use.
  * @param langLength The length of the language tag.
@@ -58,6 +51,8 @@
  * @param scriptLength The length of the script tag.
  * @param region The region tag to use.
  * @param regionLength The length of the region tag.
+ * @param variant The region tag to use.
+ * @param variantLength The length of the region tag.
  * @param trailing Any trailing data to append to the new tag.
  * @param trailingLength The length of the trailing data.
  * @param sink The output sink receiving the tag string.
@@ -71,147 +66,61 @@ createTagStringWithAlternates(
     int32_t scriptLength,
     const char* region,
     int32_t regionLength,
+    const char* variant,
+    int32_t variantLength,
     const char* trailing,
     int32_t trailingLength,
     icu::ByteSink& sink,
     UErrorCode* err) {
-
     if (U_FAILURE(*err)) {
-        goto error;
-    }
-    else if (langLength >= ULOC_LANG_CAPACITY ||
-             scriptLength >= ULOC_SCRIPT_CAPACITY ||
-             regionLength >= ULOC_COUNTRY_CAPACITY) {
-        goto error;
-    }
-    else {
-        UBool regionAppended = false;
-
-        if (langLength > 0) {
-            sink.Append(lang, langLength);
-        }
-
-        if (scriptLength > 0) {
-            sink.Append("_", 1);
-            sink.Append(script, scriptLength);
-        }
-
-        if (regionLength > 0) {
-            sink.Append("_", 1);
-            sink.Append(region, regionLength);
-
-            regionAppended = true;
-        }
-
-        if (trailingLength > 0) {
-            if (*trailing != '@') {
-                sink.Append("_", 1);
-                if (!regionAppended) {
-                    /* extra separator is required */
-                    sink.Append("_", 1);
-                }
-            }
-
-            /*
-             * Copy the trailing data into the supplied buffer.
-             */
-            sink.Append(trailing, trailingLength);
-        }
-
         return;
     }
 
-error:
-
-    /**
-     * An overflow indicates the locale ID passed in
-     * is ill-formed.  If we got here, and there was
-     * no previous error, it's an implicit overflow.
-     **/
-    if (*err ==  U_BUFFER_OVERFLOW_ERROR ||
-        U_SUCCESS(*err)) {
+    if (langLength >= ULOC_LANG_CAPACITY ||
+            scriptLength >= ULOC_SCRIPT_CAPACITY ||
+            regionLength >= ULOC_COUNTRY_CAPACITY) {
         *err = U_ILLEGAL_ARGUMENT_ERROR;
-    }
-}
-
-/**
- * Parse the language, script, and region subtags from a tag string, and copy the
- * results into the corresponding output parameters.
- *
- * If an illegal argument is provided, the function returns the error
- * U_ILLEGAL_ARGUMENT_ERROR.
- *
- * @param localeID The locale ID to parse.
- * @param lang The language tag buffer.
- * @param script The script tag buffer.
- * @param region The region tag buffer.
- * @param err A pointer to a UErrorCode for error reporting.
- * @return The number of chars of the localeID parameter consumed.
- **/
-static int32_t U_CALLCONV
-parseTagString(
-    const char* localeID,
-    icu::CharString& lang,
-    icu::CharString& script,
-    icu::CharString& region,
-    UErrorCode* err)
-{
-    icu::CharString variant;
-    const char* position = localeID;
-
-    if (U_FAILURE(*err) || localeID == nullptr) {
-        goto error;
+        return;
     }
 
-    ulocimp_getSubtags(localeID, &lang, &script, &region, &variant, &position, *err);
-
-    if(U_FAILURE(*err)) {
-        goto error;
+    if (langLength > 0) {
+        sink.Append(lang, langLength);
     }
 
-    if (!variant.isEmpty()) {
-        position -= 1 + variant.length();
+    if (scriptLength > 0) {
+        sink.Append("_", 1);
+        sink.Append(script, scriptLength);
     }
 
-    if (_isIDSeparator(*position)) {
-        ++position;
+    if (regionLength > 0) {
+        sink.Append("_", 1);
+        sink.Append(region, regionLength);
     }
 
-    if (region.isEmpty() && *position != 0 && *position != '@') {
-        /* back up over consumed trailing separator */
-        --position;
+    if (variantLength > 0) {
+        if (regionLength == 0) {
+            /* extra separator is required */
+            sink.Append("_", 1);
+        }
+        sink.Append("_", 1);
+        sink.Append(variant, variantLength);
     }
 
-exit:
-
-    return (int32_t)(position - localeID);
-
-error:
-
-    /**
-     * If we get here, we have no explicit error, it's the result of an
-     * illegal argument.
-     **/
-    if (!U_FAILURE(*err)) {
-        *err = U_ILLEGAL_ARGUMENT_ERROR;
+    if (trailingLength > 0) {
+        /*
+         * Copy the trailing data into the supplied buffer.
+         */
+        sink.Append(trailing, trailingLength);
     }
-
-    goto exit;
 }
 
 namespace {
-inline bool CHECK_TRAILING_VARIANT_SIZE(const char* trailing, int32_t trailingLength) {
+inline bool CHECK_TRAILING_VARIANT_SIZE(const char* variant, int32_t variantLength) {
     int32_t count = 0;
-    int32_t i;
-    for (i = 0; i < trailingLength; i++) {
-        if (trailing[i] == '-' || trailing[i] == '_') {
+    for (int32_t i = 0; i < variantLength; i++) {
+        if (_isIDSeparator(variant[i])) {
             count = 0;
-            if (count > 8) {
-                return false;
-            }
-        } else if (trailing[i] == '@') {
-            break;
-        } else if (count > 8) {
+        } else if (count == 8) {
             return false;
         } else {
             count++;
@@ -225,94 +134,76 @@ static UBool
 _uloc_addLikelySubtags(const char* localeID,
                        icu::ByteSink& sink,
                        UErrorCode* err) {
+    if (U_FAILURE(*err)) {
+        return false;
+    }
+
+    if (localeID == nullptr) {
+        *err = U_ILLEGAL_ARGUMENT_ERROR;
+        return false;
+    }
+
     icu::CharString lang;
     icu::CharString script;
     icu::CharString region;
-    const char* trailing = "";
-    int32_t trailingLength = 0;
-    int32_t trailingIndex = 0;
-
-    if(U_FAILURE(*err)) {
-        goto error;
-    }
-    if (localeID == nullptr) {
-        goto error;
+    icu::CharString variant;
+    const char* trailing = nullptr;
+    ulocimp_getSubtags(localeID, &lang, &script, &region, &variant, &trailing, *err);
+    if (U_FAILURE(*err)) {
+        return false;
     }
 
-    trailingIndex = parseTagString(
-        localeID,
-        lang,
-        script,
-        region,
-        err);
-    if(U_FAILURE(*err)) {
-        /* Overflow indicates an illegal argument error */
-        if (*err == U_BUFFER_OVERFLOW_ERROR) {
-            *err = U_ILLEGAL_ARGUMENT_ERROR;
-        }
-
-        goto error;
+    if (!CHECK_TRAILING_VARIANT_SIZE(variant.data(), variant.length())) {
+        *err = U_ILLEGAL_ARGUMENT_ERROR;
+        return false;
     }
+
     if (lang.length() > 3) {
         if (lang.length() == 4 && script.isEmpty()) {
             script = std::move(lang);
             lang.clear();
         } else {
-            goto error;
+            *err = U_ILLEGAL_ARGUMENT_ERROR;
+            return false;
         }
     }
 
-    /* Find the length of the trailing portion. */
-    while (_isIDSeparator(localeID[trailingIndex])) {
-        trailingIndex++;
+    int32_t trailingLength = (int32_t)uprv_strlen(trailing);
+
+    const icu::LikelySubtags* likelySubtags = icu::LikelySubtags::getSingleton(*err);
+    if (U_FAILURE(*err)) {
+        return false;
     }
-    trailing = &localeID[trailingIndex];
-    trailingLength = (int32_t)uprv_strlen(trailing);
-
-    if (!CHECK_TRAILING_VARIANT_SIZE(trailing, trailingLength)) goto error;
-
-    {
-        const icu::LikelySubtags* likelySubtags = icu::LikelySubtags::getSingleton(*err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
-        // We need to keep l on the stack because lsr may point into internal
-        // memory of l.
-        icu::Locale l = icu::Locale::createFromName(localeID);
-        if (l.isBogus()) {
-            goto error;
-        }
-        icu::LSR lsr = likelySubtags->makeMaximizedLsrFrom(l, true, *err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
-        const char* language = lsr.language;
-        if (uprv_strcmp(language, "und") == 0) {
-            language = "";
-        }
-        createTagStringWithAlternates(
-            language,
-            (int32_t)uprv_strlen(language),
-            lsr.script,
-            (int32_t)uprv_strlen(lsr.script),
-            lsr.region,
-            (int32_t)uprv_strlen(lsr.region),
-            trailing,
-            trailingLength,
-            sink,
-            err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
-    }
-    return true;
-
-error:
-
-    if (!U_FAILURE(*err)) {
+    // We need to keep l on the stack because lsr may point into internal
+    // memory of l.
+    icu::Locale l = icu::Locale::createFromName(localeID);
+    if (l.isBogus()) {
         *err = U_ILLEGAL_ARGUMENT_ERROR;
+        return false;
     }
-    return false;
+    icu::LSR lsr = likelySubtags->makeMaximizedLsrFrom(l, true, *err);
+    if (U_FAILURE(*err)) {
+        return false;
+    }
+    const char* language = lsr.language;
+    if (uprv_strcmp(language, "und") == 0) {
+        language = "";
+    }
+    createTagStringWithAlternates(
+        language,
+        (int32_t)uprv_strlen(language),
+        lsr.script,
+        (int32_t)uprv_strlen(lsr.script),
+        lsr.region,
+        (int32_t)uprv_strlen(lsr.region),
+        variant.data(),
+        variant.length(),
+        trailing,
+        trailingLength,
+        sink,
+        err);
+
+    return U_SUCCESS(*err);
 }
 
 // Add likely subtags to the sink
@@ -326,88 +217,62 @@ _uloc_minimizeSubtags(const char* localeID,
                       icu::ByteSink& sink,
                       bool favorScript,
                       UErrorCode* err) {
-    icu::CharString maximizedTagBuffer;
+    if (U_FAILURE(*err)) {
+        return;
+    }
+
+    if (localeID == nullptr) {
+        *err = U_ILLEGAL_ARGUMENT_ERROR;
+        return;
+    }
 
     icu::CharString lang;
     icu::CharString script;
     icu::CharString region;
-    const char* trailing = "";
-    int32_t trailingLength = 0;
-    int32_t trailingIndex = 0;
-
-    if(U_FAILURE(*err)) {
-        goto error;
-    }
-    else if (localeID == nullptr) {
-        goto error;
-    }
-
-    trailingIndex =
-        parseTagString(
-            localeID,
-            lang,
-            script,
-            region,
-            err);
-    if(U_FAILURE(*err)) {
-
-        /* Overflow indicates an illegal argument error */
-        if (*err == U_BUFFER_OVERFLOW_ERROR) {
-            *err = U_ILLEGAL_ARGUMENT_ERROR;
-        }
-
-        goto error;
-    }
-
-    /* Find the spot where the variants or the keywords begin, if any. */
-    while (_isIDSeparator(localeID[trailingIndex])) {
-        trailingIndex++;
-    }
-    trailing = &localeID[trailingIndex];
-    trailingLength = (int32_t)uprv_strlen(trailing);
-
-    if (!CHECK_TRAILING_VARIANT_SIZE(trailing, trailingLength)) goto error;
-
-    {
-        const icu::LikelySubtags* likelySubtags = icu::LikelySubtags::getSingleton(*err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
-        icu::LSR lsr = likelySubtags->minimizeSubtags(
-            lang.toStringPiece(),
-            script.toStringPiece(),
-            region.toStringPiece(),
-            favorScript,
-            *err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
-        const char* language = lsr.language;
-        if (uprv_strcmp(language, "und") == 0) {
-            language = "";
-        }
-        createTagStringWithAlternates(
-            language,
-            (int32_t)uprv_strlen(language),
-            lsr.script,
-            (int32_t)uprv_strlen(lsr.script),
-            lsr.region,
-            (int32_t)uprv_strlen(lsr.region),
-            trailing,
-            trailingLength,
-            sink,
-            err);
-        if(U_FAILURE(*err)) {
-            goto error;
-        }
+    icu::CharString variant;
+    const char* trailing = nullptr;
+    ulocimp_getSubtags(localeID, &lang, &script, &region, &variant, &trailing, *err);
+    if (U_FAILURE(*err)) {
         return;
     }
 
-error:
-
-    if (!U_FAILURE(*err)) {
+    if (!CHECK_TRAILING_VARIANT_SIZE(variant.data(), variant.length())) {
         *err = U_ILLEGAL_ARGUMENT_ERROR;
+        return;
     }
+
+    int32_t trailingLength = (int32_t)uprv_strlen(trailing);
+
+    const icu::LikelySubtags* likelySubtags = icu::LikelySubtags::getSingleton(*err);
+    if (U_FAILURE(*err)) {
+        return;
+    }
+    icu::LSR lsr = likelySubtags->minimizeSubtags(
+        lang.toStringPiece(),
+        script.toStringPiece(),
+        region.toStringPiece(),
+        favorScript,
+        *err);
+    if (U_FAILURE(*err)) {
+        return;
+    }
+    const char* language = lsr.language;
+    if (uprv_strcmp(language, "und") == 0) {
+        language = "";
+    }
+    createTagStringWithAlternates(
+        language,
+        (int32_t)uprv_strlen(language),
+        lsr.script,
+        (int32_t)uprv_strlen(lsr.script),
+        lsr.region,
+        (int32_t)uprv_strlen(lsr.region),
+        variant.data(),
+        variant.length(),
+        trailing,
+        trailingLength,
+        sink,
+        err);
 }
 
 U_CAPI int32_t U_EXPORT2
