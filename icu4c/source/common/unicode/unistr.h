@@ -3976,7 +3976,8 @@ inline bool
 UnicodeString::operator== (const UnicodeString& text) const
 {
   if(isBogus()) {
-    return text.isBogus();
+		// warning C4800: Implicit conversion from 'UBool' to bool. Possible information loss
+    return !!text.isBogus();
   } else {
     int32_t len = length(), textLength = text.length();
     return !text.isBogus() && len == textLength && doEquals(text, len);
