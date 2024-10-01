@@ -743,6 +743,7 @@ namespace message2 {
 		    virtual ~Builder();
             }; // class OptionMap::Builder
         private:
+            friend class message2::MessageFormatter;
             friend class message2::Serializer;
 
             bool bogus = false;
@@ -1134,6 +1135,7 @@ namespace message2 {
 
         private:
             friend class Builder;
+            friend class message2::MessageFormatter;
             friend class message2::Serializer;
 
             UMarkupType type;
