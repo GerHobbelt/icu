@@ -171,7 +171,7 @@ UBool collateWithLocaleInCPP(const Locale& locale, UErrorCode& status)
 
 ```c++
 extern "C" UBool collateWithLocaleInC(const char* locale, UErrorCode *status);
-int main()
+int main(void)
 {
    UErrorCode status = U_ZERO_ERROR;
    fprintf(stdout, "\n");

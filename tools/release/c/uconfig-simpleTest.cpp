@@ -5,7 +5,7 @@
 #include <unicode/putil.h>
 #include <unicode/uclean.h>
 
-int main() {
+int main(void) {
   UErrorCode status = U_ZERO_ERROR;
   u_init(&status);
   puts(u_errorName(status));

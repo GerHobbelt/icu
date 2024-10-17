@@ -48,7 +48,7 @@
  *          }
  *      }
  *  
- *      int main(){
+ *      int main(void){
  *          // time the normalization function 
  *          double timeTaken = 0;
  *          Params param;

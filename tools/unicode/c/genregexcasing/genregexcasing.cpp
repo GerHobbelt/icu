@@ -33,7 +33,7 @@ std::string sstring(const UnicodeString &us) {
     return retString;
 }
 
-int main() {
+int main(void) {
 
     std::map<UChar32, std::set<UChar32>> cmap;
 

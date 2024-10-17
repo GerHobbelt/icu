@@ -61,7 +61,7 @@ static void U_CALLCONV traceData(
     std::cout << fnName << " " << buf << std::endl;
 }
 
-int main() {
+int main(void) {
     icu::ErrorCode status;
 
     const void* context = nullptr;

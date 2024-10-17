@@ -80,7 +80,7 @@ class StringEnumeration;
  *    #include "unicode/ustream.h"
  *    using namespace std;
  *    
- *    int main() {
+ *    int main(void) {
  *        double myNumber = 7.0;
  *        UnicodeString myString;
  *        UErrorCode success = U_ZERO_ERROR;

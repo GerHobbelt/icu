@@ -345,7 +345,7 @@ capture-group text from the find.
         #include <stdio.h>
         #include "unicode/regex.h"
 
-        int main() {
+        int main(void) {
             UErrorCode status = U_ZERO_ERROR;
             RegexMatcher m(UnicodeString(" +"), 0, status);
             UnicodeString text("Here is some    text.");

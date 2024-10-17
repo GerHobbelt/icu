@@ -1112,7 +1112,7 @@ void convsample_50() {
 
 /* main */
 
-int main()
+int main(void)
 {
 
   printf("Default Converter=%s\n", ucnv_getDefaultName() );

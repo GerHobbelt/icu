@@ -28,7 +28,7 @@ void printUnicodeString(UFILE *out, const UnicodeString &s) {
 }
 
 
-int main()
+int main(void)
 {
     UFILE *out;
     UErrorCode status  = U_ZERO_ERROR;
