@@ -70,7 +70,8 @@
       <ImportLibrary>..\..\$(IcuLibOutputDir)\icu.lib</ImportLibrary>
       <!-- MSFT-Change: This forces dynamic linking of the UCRT. -->
       <IgnoreSpecificDefaultLibraries>libucrtd.lib;libucrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>/DEFAULTLIB:ucrtd.lib /def:icu.def %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/DEFAULTLIB:ucrtd.lib /def:icu.def /release /guard:cf %(AdditionalOptions)</AdditionalOptions>
+		  <SubSystem>Console</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <!-- Options that are common to all 'Release' project configurations -->
@@ -86,7 +87,8 @@
       <ImportLibrary>..\..\$(IcuLibOutputDir)\icu.lib</ImportLibrary>
       <!-- MSFT-Change: This forces dynamic linking of the UCRT. -->
       <IgnoreSpecificDefaultLibraries>libucrtd.lib;libucrt.lib</IgnoreSpecificDefaultLibraries>
-      <AdditionalOptions>/DEFAULTLIB:ucrt.lib /def:icu.def %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>/DEFAULTLIB:ucrt.lib /def:icu.def /release /guard:cf %(AdditionalOptions)</AdditionalOptions>
+	    <SubSystem>Console</SubSystem>
       <!-- FIXME: Also filter out IGNORE_WINDOWS_HEADERS? -->
     </Link>
   </ItemDefinitionGroup>

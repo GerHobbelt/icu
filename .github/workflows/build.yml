@@ -38,8 +38,8 @@ jobs:
     - name: Build entire Solution x86
       run: |
         $env:ICU_DATA_FILTER_FILE = '${{ github.workspace }}/build/filters/filter.json'
-        msbuild icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=x86 /p:SkipUWP=true
-        msbuild icu/icu4c/source/common-and-i18n/combined.vcxproj /p:Configuration=Release /p:Platform=x86
+        msbuild icu/icu4c/source/allinone/allinone.sln /p:Configuration=Release /p:Platform=Win32 /p:SkipUWP=true
+        msbuild icu/icu4c/source/common-and-i18n/combined.vcxproj /p:Configuration=Release /p:Platform=Win32
       # The following tests fail with this error, the x64 passes.
       #  testing ICU in "D:\a\microsoft-icu\microsoft-icu\icu\icu4c\source\allinone\"\..\..  arch=x86 type=Release
       # ==== icuinfo =========================================================================

@@ -30,7 +30,7 @@ echo. Got Library: %~1
 del cmemory.obj %~1.dll %~1.lib %~1.exp ucln_cmn.lib ucln_cmn.exp ucln_cmn.obj umutex.obj utrace.obj
 :: Generate a .lib with the required forwarding rules
 lib /MACHINE:%arch% /nologo /def:..\common-and-i18n\%~1.def
-:: Generate a .dll with all of the implementations for dll export (implemented in ucln_cmn.cpp + deps) as well as the lib above
-cl /nologo /LD /DU_COMMON_IMPLEMENTATION /DU_EXPORT_2= /DU_EXPORT= /DU_PLATFORM_HAS_WIN32_API ucln_cmn.cpp cmemory.cpp umutex.cpp utrace.cpp %~1.lib /link /def:..\common-and-i18n\%~1.def /out:%~1.dll /MACHINE:%arch% /DLL
+:: Generate a .dll with just the .exp generated above, no code - just forward
+link %1.exp /NOENTRY /nologo /out:%~1.dll /MACHINE:%arch% /DLL /release /SUBSYSTEM:CONSOLE /guard:cf
 move %~1.dll %out_dir%\%~1.dll
 :goto :eof
