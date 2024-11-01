@@ -45,6 +45,22 @@
  * @stable ICU 2.4
  */
 
+#if defined(BUILD_MONOLITHIC)
+#define U_IMPORT
+#define U_STATIC_IMPLEMENTATION
+
+#define U_CHARSET_IS_UTF8        1
+
+#define U_DO_NOT_USE_LAYOUT_ENGINE 
+#define U_COMBINED_IMPLEMENTATION 
+#define U_COMMON_IMPLEMENTATION 
+#define U_I18N_IMPLEMENTATION 
+#define U_IO_IMPLEMENTATION 
+#define U_LAYOUT_IMPLEMENTATION 
+#define U_LAYOUTEX_IMPLEMENTATION 
+#define U_TOOLUTIL_IMPLEMENTATION 
+#endif
+
 /**
  * If this switch is defined, ICU will attempt to load a header file named "uconfig_local.h"
  * prior to determining default settings for uconfig variables.
