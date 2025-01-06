@@ -771,7 +771,7 @@
                             UPRV_HAS_DECLSPEC_ATTRIBUTE(__dllimport__))
 #error "Monolithic build should define U_STATIC_IMPLEMENTATION"
 #   define U_EXPORT __declspec(dllexport)
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(__open_xl__)
 #error "Monolithic build should define U_STATIC_IMPLEMENTATION"
 #   define U_EXPORT __attribute__((visibility("default")))
 #elif (defined(__SUNPRO_CC) && __SUNPRO_CC >= 0x550) \
@@ -815,7 +815,7 @@
  */
 #ifdef U_HIDDEN
     /* Use the predefined value. */
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || defined(__open_xl__)
 #   define U_HIDDEN __attribute__((visibility("hidden")))
 #else
 #   define U_HIDDEN 

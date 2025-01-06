@@ -4,14 +4,11 @@
 package com.ibm.icu.dev.test.message2;
 
 import java.io.Reader;
-import java.lang.reflect.Type;
-import java.util.Map;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-import com.google.gson.reflect.TypeToken;
 import com.ibm.icu.dev.test.CoreTestFmwk;
 
 @SuppressWarnings({"static-method", "javadoc"})
@@ -43,7 +40,10 @@ public class CoreTest extends CoreTestFmwk {
                                                 "syntax-errors-diagnostics.json",
                                                 "syntax-errors-diagnostics-multiline.json",
                                                 "syntax-errors-end-of-input.json",
+                                                "syntax-errors-reserved.json",
                                                 "tricky-declarations.json",
+                                                "unsupported-expressions.json",
+                                                "unsupported-statements.json",
                                                 "valid-tests.json"};
 
     @Test
