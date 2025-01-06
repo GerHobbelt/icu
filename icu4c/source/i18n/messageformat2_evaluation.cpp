@@ -5,8 +5,9 @@
 
 #if !UCONFIG_NO_FORMATTING
 
+#if !UCONFIG_NO_MF2
+
 #include "messageformat2_allocation.h"
-#include "messageformat2_cached_formatters.h"
 #include "messageformat2_evaluation.h"
 #include "messageformat2_macros.h"
 #include "uvector.h" // U_ASSERT
@@ -39,10 +40,8 @@ const ResolvedFunctionOption* FunctionOptions::getResolvedFunctionOptions(int32_
 FunctionOptions::FunctionOptions(UVector&& optionsVector, UErrorCode& status) {
     CHECK_ERROR(status);
 
-    options = moveVectorToArray<ResolvedFunctionOption>(optionsVector, functionOptionsLen);
-    if (options == nullptr) {
-        status = U_MEMORY_ALLOCATION_ERROR;
-    }
+    functionOptionsLen = optionsVector.size();
+    options = moveVectorToArray<ResolvedFunctionOption>(optionsVector, status);
 }
 
 UBool FunctionOptions::getFunctionOption(const UnicodeString& key, Formattable& option) const {
@@ -184,8 +183,6 @@ PrioritizedVariant::~PrioritizedVariant() {}
 
     Closure::~Closure() {}
 
-    CachedFormatters::~CachedFormatters() {}
-
     // MessageContext methods
 
     void MessageContext::checkErrors(UErrorCode& status) const {
@@ -204,5 +201,7 @@ PrioritizedVariant::~PrioritizedVariant() {}
 
 } // namespace message2
 U_NAMESPACE_END
+
+#endif /* #if !UCONFIG_NO_MF2 */
 
 #endif /* #if !UCONFIG_NO_FORMATTING */

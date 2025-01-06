@@ -24,7 +24,7 @@
 #include "umutex.h"
 #include <float.h>
 #include "gregoimp.h" // Math
-#include "astro.h" // CalendarAstronomer
+#include "astro.h" // CalendarAstronomer and CalendarCache
 #include "unicode/simpletz.h"
 #include "uhash.h"
 #include "ucln_in.h"
@@ -116,9 +116,9 @@ U_NAMESPACE_BEGIN
 namespace {
 
 const TimeZone* getAstronomerTimeZone();
-int32_t newMoonNear(const TimeZone*, double, UBool);
-int32_t newYear(const TimeZone* timeZone, int32_t);
-UBool isLeapMonthBetween(const TimeZone*, int32_t, int32_t);
+int32_t newMoonNear(const TimeZone*, double, UBool, UErrorCode&);
+int32_t newYear(const icu::ChineseCalendar::Setting&, int32_t, UErrorCode&);
+UBool isLeapMonthBetween(const TimeZone*, int32_t, int32_t, UErrorCode&);
 
 } // namespace
 
@@ -128,27 +128,13 @@ ChineseCalendar* ChineseCalendar::clone() const {
 
 ChineseCalendar::ChineseCalendar(const Locale& aLocale, UErrorCode& success)
 :   Calendar(TimeZone::forLocaleOrDefault(aLocale), aLocale, success),
-    hasLeapMonthBetweenWinterSolstices(false),
-    fEpochYear(CHINESE_EPOCH_YEAR),
-    fAstronomerTimeZone(getAstronomerTimeZone())
-{
-    setTimeInMillis(getNow(), success); // Call this again now that the vtable is set up properly.
-}
-
-ChineseCalendar::ChineseCalendar(const Locale& aLocale, int32_t epochYear,
-                                const TimeZone* zoneAstroCalc, UErrorCode &success)
-:   Calendar(TimeZone::forLocaleOrDefault(aLocale), aLocale, success),
-    hasLeapMonthBetweenWinterSolstices(false),
-    fEpochYear(epochYear),
-    fAstronomerTimeZone(zoneAstroCalc)
+    hasLeapMonthBetweenWinterSolstices(false)
 {
     setTimeInMillis(getNow(), success); // Call this again now that the vtable is set up properly.
 }
 
 ChineseCalendar::ChineseCalendar(const ChineseCalendar& other) : Calendar(other) {
     hasLeapMonthBetweenWinterSolstices = other.hasLeapMonthBetweenWinterSolstices;
-    fEpochYear = other.fEpochYear;
-    fAstronomerTimeZone = other.fAstronomerTimeZone;
 }
 
 ChineseCalendar::~ChineseCalendar()
@@ -239,12 +225,16 @@ int32_t ChineseCalendar::handleGetExtendedYear(UErrorCode& status) {
         // adjust to the instance specific epoch
         int32_t cycle = internalGet(UCAL_ERA, 1);
         year = internalGet(UCAL_YEAR, 1);
+        const Setting setting = getSetting(status);
+        if (U_FAILURE(status)) {
+            return 0;
+        }
         // Handle int32 overflow calculation for
         // year = year + (cycle-1) * 60 -(fEpochYear - CHINESE_EPOCH_YEAR)
         if (uprv_add32_overflow(cycle, -1, &cycle) || // 0-based cycle
             uprv_mul32_overflow(cycle, 60, &cycle) ||
             uprv_add32_overflow(year, cycle, &year) ||
-            uprv_add32_overflow(year, -(fEpochYear-CHINESE_EPOCH_YEAR),
+            uprv_add32_overflow(year, -(setting.epochYear-CHINESE_EPOCH_YEAR),
                                 &year)) {
             status = U_ILLEGAL_ARGUMENT_ERROR;
             return 0;
@@ -262,13 +252,17 @@ int32_t ChineseCalendar::handleGetExtendedYear(UErrorCode& status) {
  * @stable ICU 2.8
  */
 int32_t ChineseCalendar::handleGetMonthLength(int32_t extendedYear, int32_t month, UErrorCode& status) const {
+    const Setting setting = getSetting(status);
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     int32_t thisStart = handleComputeMonthStart(extendedYear, month, true, status);
     if (U_FAILURE(status)) {
         return 0;
     }
     thisStart = thisStart -
         kEpochStartAsJulianDay + 1; // Julian day -> local days
-    int32_t nextStart = newMoonNear(fAstronomerTimeZone, thisStart + SYNODIC_GAP, true);
+    int32_t nextStart = newMoonNear(setting.zoneAstroCalc, thisStart + SYNODIC_GAP, true, status);
     return nextStart - thisStart;
 }
 
@@ -318,7 +312,9 @@ struct MonthInfo {
   bool isLeapMonth;
   bool hasLeapMonthBetweenWinterSolstices;
 };
-struct MonthInfo computeMonthInfo(const TimeZone* timeZone, int32_t gyear, int32_t days);
+struct MonthInfo computeMonthInfo(
+    const icu::ChineseCalendar::Setting& setting,
+    int32_t gyear, int32_t days, UErrorCode& status);
 
 }  // namespace
 
@@ -350,13 +346,21 @@ int64_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, U
         month = (int32_t)m;
     }
 
+    const Setting setting = getSetting(status);
+    if (U_FAILURE(status)) {
+       return 0;
+    }
     int32_t gyear;
-    if (uprv_add32_overflow(eyear, fEpochYear - 1, &gyear)) {
+    if (uprv_add32_overflow(eyear, setting.epochYear - 1, &gyear)) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
-    int32_t theNewYear = newYear(fAstronomerTimeZone, gyear);
-    int32_t newMoon = newMoonNear(fAstronomerTimeZone, theNewYear + month * 29, true);
+
+    int32_t theNewYear = newYear(setting, gyear, status);
+    int32_t newMoon = newMoonNear(setting.zoneAstroCalc, theNewYear + month * 29, true, status);
+    if (U_FAILURE(status)) {
+       return 0;
+    }
 
     // Ignore IS_LEAP_MONTH field if useMonth is false
     bool isLeapMonth = false;
@@ -370,9 +374,15 @@ int64_t ChineseCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, U
     int32_t unusedDayOfYear;
     Grego::dayToFields(newMoon, gyear, unusedMonth, unusedDayOfWeek, unusedDayOfMonth, unusedDayOfYear);
 
-    struct MonthInfo monthInfo = computeMonthInfo(fAstronomerTimeZone, gyear, newMoon);
+    struct MonthInfo monthInfo = computeMonthInfo(setting, gyear, newMoon, status);
+    if (U_FAILURE(status)) {
+       return 0;
+    }
     if (month != monthInfo.month-1 || isLeapMonth != monthInfo.isLeapMonth) {
-        newMoon = newMoonNear(fAstronomerTimeZone, newMoon + SYNODIC_GAP, true);
+        newMoon = newMoonNear(setting.zoneAstroCalc, newMoon + SYNODIC_GAP, true, status);
+        if (U_FAILURE(status)) {
+           return 0;
+        }
     }
     int32_t julianDay;
     if (uprv_add32_overflow(newMoon-1, kEpochStartAsJulianDay, &julianDay)) {
@@ -452,9 +462,15 @@ struct RollMonthInfo rollMonth(const TimeZone* timeZone, int32_t amount, int32_t
             // otherwise it will be the start of month 1.
             int prevMoon = output.thisMoon -
                 (int) (CalendarAstronomer::SYNODIC_MONTH * (month - 0.5));
-            prevMoon = newMoonNear(timeZone, prevMoon, true);
-            if (isLeapMonthBetween(timeZone, prevMoon, output.thisMoon)) {
+            prevMoon = newMoonNear(timeZone, prevMoon, true, status);
+            if (U_FAILURE(status)) {
+               return output;
+            }
+            if (isLeapMonthBetween(timeZone, prevMoon, output.thisMoon, status)) {
                 ++month;
+            }
+            if (U_FAILURE(status)) {
+               return output;
             }
         }
     }
@@ -484,13 +500,15 @@ void ChineseCalendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode
     case UCAL_MONTH:
     case UCAL_ORDINAL_MONTH:
         if (amount != 0) {
+            const Setting setting = getSetting(status);
             int32_t day = get(UCAL_JULIAN_DAY, status) - kEpochStartAsJulianDay; // Get local day
             int32_t month = get(UCAL_MONTH, status); // 0-based month
             int32_t dayOfMonth = get(UCAL_DAY_OF_MONTH, status);
             bool isLeapMonth = get(UCAL_IS_LEAP_MONTH, status) == 1;
             if (U_FAILURE(status)) break;
-            struct RollMonthInfo r = rollMonth(fAstronomerTimeZone, amount,
-                                               day, month, dayOfMonth, isLeapMonth, hasLeapMonthBetweenWinterSolstices, status);
+            struct RollMonthInfo r = rollMonth(
+                setting.zoneAstroCalc, amount, day, month, dayOfMonth, isLeapMonth,
+                hasLeapMonthBetweenWinterSolstices, status);
             if (U_FAILURE(status)) break;
             if (r.newMoon != r.month) {
                 offsetMonth(r.thisMoon, dayOfMonth, r.newMoon - r.month, status);
@@ -526,15 +544,18 @@ namespace {
  * @param days days after January 1, 1970 0:00 in the astronomical base zone
  * @return milliseconds after January 1, 1970 0:00 GMT
  */
-double daysToMillis(const TimeZone* timeZone, double days) {
+double daysToMillis(const TimeZone* timeZone, double days, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     double millis = days * (double)kOneDay;
     if (timeZone != nullptr) {
         int32_t rawOffset, dstOffset;
-        UErrorCode status = U_ZERO_ERROR;
         timeZone->getOffset(millis, false, rawOffset, dstOffset, status);
-        if (U_SUCCESS(status)) {
-            return millis - (double)(rawOffset + dstOffset);
+        if (U_FAILURE(status)) {
+            return 0;
         }
+        return millis - (double)(rawOffset + dstOffset);
     }
     return millis - (double)CHINA_OFFSET;
 }
@@ -545,14 +566,17 @@ double daysToMillis(const TimeZone* timeZone, double days) {
  * @param millis milliseconds after January 1, 1970 0:00 GMT
  * @return days after January 1, 1970 0:00 in the astronomical base zone
  */
-double millisToDays(const TimeZone* timeZone, double millis) {
+double millisToDays(const TimeZone* timeZone, double millis, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     if (timeZone != nullptr) {
         int32_t rawOffset, dstOffset;
-        UErrorCode status = U_ZERO_ERROR;
         timeZone->getOffset(millis, false, rawOffset, dstOffset, status);
-        if (U_SUCCESS(status)) {
-            return ClockMath::floorDivide(millis + (double)(rawOffset + dstOffset), kOneDay);
+        if (U_FAILURE(status)) {
+            return 0;
         }
+        return ClockMath::floorDivide(millis + (double)(rawOffset + dstOffset), kOneDay);
     }
     return ClockMath::floorDivide(millis + (double)CHINA_OFFSET, kOneDay);
 }
@@ -566,33 +590,47 @@ double millisToDays(const TimeZone* timeZone, double millis) {
  * Return the major solar term on or after December 15 of the given
  * Gregorian year, that is, the winter solstice of the given year.
  * Computations are relative to Asia/Shanghai time zone.
- * @param timeZone time zone for the Astro calculation.
+ * @param setting setting (time zone and caches) for the Astro calculation.
  * @param gyear a Gregorian year
  * @return days after January 1, 1970 0:00 Asia/Shanghai of the
  * winter solstice of the given year
  */
-int32_t winterSolstice(const TimeZone* timeZone, int32_t gyear) {
+int32_t winterSolstice(const icu::ChineseCalendar::Setting& setting,
+                       int32_t gyear, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+    const TimeZone* timeZone = setting.zoneAstroCalc;
 
-    UErrorCode status = U_ZERO_ERROR;
-    int32_t cacheValue = CalendarCache::get(&gWinterSolsticeCache, gyear, status);
+    int32_t cacheValue = CalendarCache::get(setting.winterSolsticeCache, gyear, status);
+    if (U_FAILURE(status)) {
+        return 0;
+    }
 
     if (cacheValue == 0) {
         // In books December 15 is used, but it fails for some years
         // using our algorithms, e.g.: 1298 1391 1492 1553 1560.  That
         // is, winterSolstice(1298) starts search at Dec 14 08:00:00
         // PST 1298 with a final result of Dec 14 10:31:59 PST 1299.
-        double ms = daysToMillis(timeZone, Grego::fieldsToDay(gyear, UCAL_DECEMBER, 1));
+        double ms = daysToMillis(timeZone, Grego::fieldsToDay(gyear, UCAL_DECEMBER, 1), status);
+        if (U_FAILURE(status)) {
+            return 0;
+        }
 
         // Winter solstice is 270 degrees solar longitude aka Dongzhi
         double days = millisToDays(timeZone,
                                    CalendarAstronomer(ms)
-                                       .getSunTime(CalendarAstronomer::WINTER_SOLSTICE(), true));
+                                       .getSunTime(CalendarAstronomer::WINTER_SOLSTICE(), true),
+                                   status);
+        if (U_FAILURE(status)) {
+            return 0;
+        }
         if (days < INT32_MIN || days > INT32_MAX) {
             status = U_ILLEGAL_ARGUMENT_ERROR;
             return 0;
         }
         cacheValue = (int32_t) days;
-        CalendarCache::put(&gWinterSolsticeCache, gyear, cacheValue, status);
+        CalendarCache::put(setting.winterSolsticeCache, gyear, cacheValue, status);
     }
     if(U_FAILURE(status)) {
         cacheValue = 0;
@@ -607,14 +645,23 @@ int32_t winterSolstice(const TimeZone* timeZone, int32_t gyear) {
  * @param days days after January 1, 1970 0:00 Asia/Shanghai
  * @param after if true, search for a new moon on or after the given
  * date; otherwise, search for a new moon before it
+ * @param status
  * @return days after January 1, 1970 0:00 Asia/Shanghai of the nearest
  * new moon after or before <code>days</code>
  */
-int32_t newMoonNear(const TimeZone* timeZone, double days, UBool after) {
+int32_t newMoonNear(const TimeZone* timeZone, double days, UBool after, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+    double ms = daysToMillis(timeZone, days, status);
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     return (int32_t) millisToDays(
         timeZone,
-        CalendarAstronomer(daysToMillis(timeZone, days))
-              .getMoonTime(CalendarAstronomer::NEW_MOON(), after));
+        CalendarAstronomer(ms)
+              .getMoonTime(CalendarAstronomer::NEW_MOON(), after),
+              status);
 }
 
 /**
@@ -636,10 +683,20 @@ int32_t synodicMonthsBetween(int32_t day1, int32_t day2) {
  * @param timeZone time zone for the Astro calculation.
  * @param days days after January 1, 1970 0:00 Asia/Shanghai
  */
-int32_t majorSolarTerm(const TimeZone* timeZone, int32_t days) {
+int32_t majorSolarTerm(const TimeZone* timeZone, int32_t days, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     // Compute (floor(solarLongitude / (pi/6)) + 2) % 12
-    int32_t term = ( ((int32_t)(6 * CalendarAstronomer(daysToMillis(timeZone, days))
+    double ms = daysToMillis(timeZone, days, status);
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+    int32_t term = ( ((int32_t)(6 * CalendarAstronomer(ms)
                                 .getSunLongitude() / CalendarAstronomer::PI)) + 2 ) % 12;
+    if (U_FAILURE(status)) {
+        return 0;
+    }
     if (term < 1) {
         term += 12;
     }
@@ -652,9 +709,17 @@ int32_t majorSolarTerm(const TimeZone* timeZone, int32_t days) {
  * @param newMoon days after January 1, 1970 0:00 Asia/Shanghai of a new
  * moon
  */
-UBool hasNoMajorSolarTerm(const TimeZone* timeZone, int32_t newMoon) {
-    return majorSolarTerm(timeZone, newMoon) ==
-        majorSolarTerm(timeZone, newMoonNear(timeZone, newMoon + SYNODIC_GAP, true));
+UBool hasNoMajorSolarTerm(const TimeZone* timeZone, int32_t newMoon, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return false;
+    }
+    int32_t term1 = majorSolarTerm(timeZone, newMoon, status);
+    int32_t term2 = majorSolarTerm(
+        timeZone, newMoonNear(timeZone, newMoon + SYNODIC_GAP, true, status), status);
+    if (U_FAILURE(status)) {
+        return false;
+    }
+    return term1 == term2;
 }
 
 
@@ -671,7 +736,10 @@ UBool hasNoMajorSolarTerm(const TimeZone* timeZone, int32_t newMoon) {
  * @param newMoon2 days after January 1, 1970 0:00 astronomical base zone
  * of a new moon
  */
-UBool isLeapMonthBetween(const TimeZone* timeZone, int32_t newMoon1, int32_t newMoon2) {
+UBool isLeapMonthBetween(const TimeZone* timeZone, int32_t newMoon1, int32_t newMoon2, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return false;
+    }
 
 #ifdef U_DEBUG_CHNSECAL
     // This is only needed to debug the timeOfAngle divergence bug.
@@ -684,10 +752,13 @@ UBool isLeapMonthBetween(const TimeZone* timeZone, int32_t newMoon1, int32_t new
 #endif
 
     while (newMoon2 >= newMoon1) {
-        if (hasNoMajorSolarTerm(timeZone, newMoon2)) {
+        if (hasNoMajorSolarTerm(timeZone, newMoon2, status)) {
             return true;
         }
-        newMoon2 = newMoonNear(timeZone, newMoon2 - SYNODIC_GAP, false);
+        newMoon2 = newMoonNear(timeZone, newMoon2 - SYNODIC_GAP, false, status);
+        if (U_FAILURE(status)) {
+            return false;
+        }
     }
     return false;
 }
@@ -695,43 +766,70 @@ UBool isLeapMonthBetween(const TimeZone* timeZone, int32_t newMoon1, int32_t new
 
 /**
  * Compute the information about the year.
- * @param timeZone time zone for the Astro calculation.
+ * @param setting setting (time zone and caches) for the Astro calculation.
  * @param gyear the Gregorian year of the given date
  * @param days days after January 1, 1970 0:00 astronomical base zone
  * of the date to compute fields for
  * @return The MonthInfo result.
  */
-struct MonthInfo computeMonthInfo(const TimeZone* timeZone, int32_t gyear, int32_t days) {
-    struct MonthInfo output;
+struct MonthInfo computeMonthInfo(
+    const icu::ChineseCalendar::Setting& setting,
+    int32_t gyear, int32_t days, UErrorCode& status) {
+    struct MonthInfo output = {0, 0, 0, false, false};
+    if (U_FAILURE(status)) {
+        return output;
+    }
     // Find the winter solstices before and after the target date.
     // These define the boundaries of this Chinese year, specifically,
     // the position of month 11, which always contains the solstice.
     // We want solsticeBefore <= date < solsticeAfter.
     int32_t solsticeBefore;
-    int32_t solsticeAfter = winterSolstice(timeZone, gyear);
+    int32_t solsticeAfter = winterSolstice(setting, gyear, status);
+    if (U_FAILURE(status)) {
+        return output;
+    }
     if (days < solsticeAfter) {
-        solsticeBefore = winterSolstice(timeZone, gyear - 1);
+        solsticeBefore = winterSolstice(setting, gyear - 1, status);
     } else {
         solsticeBefore = solsticeAfter;
-        solsticeAfter = winterSolstice(timeZone, gyear + 1);
+        solsticeAfter = winterSolstice(setting, gyear + 1, status);
+    }
+    if (U_FAILURE(status)) {
+        return output;
     }
 
+    const TimeZone* timeZone = setting.zoneAstroCalc;
     // Find the start of the month after month 11.  This will be either
     // the prior month 12 or leap month 11 (very rare).  Also find the
     // start of the following month 11.
-    int32_t firstMoon = newMoonNear(timeZone, solsticeBefore + 1, true);
-    int32_t lastMoon = newMoonNear(timeZone, solsticeAfter + 1, false);
-    output.thisMoon = newMoonNear(timeZone, days + 1, false); // Start of this month
+    int32_t firstMoon = newMoonNear(timeZone, solsticeBefore + 1, true, status);
+    int32_t lastMoon = newMoonNear(timeZone, solsticeAfter + 1, false, status);
+    if (U_FAILURE(status)) {
+        return output;
+    }
+    output.thisMoon = newMoonNear(timeZone, days + 1, false, status); // Start of this month
+    if (U_FAILURE(status)) {
+        return output;
+    }
     output.hasLeapMonthBetweenWinterSolstices = synodicMonthsBetween(firstMoon, lastMoon) == 12;
 
     output.month = synodicMonthsBetween(firstMoon, output.thisMoon);
-    int32_t theNewYear = newYear(timeZone, gyear);
+    int32_t theNewYear = newYear(setting, gyear, status);
+    if (U_FAILURE(status)) {
+        return output;
+    }
     if (days < theNewYear) {
-        theNewYear = newYear(timeZone, gyear-1);
+        theNewYear = newYear(setting, gyear-1, status);
+        if (U_FAILURE(status)) {
+            return output;
+        }
     }
     if (output.hasLeapMonthBetweenWinterSolstices &&
-        isLeapMonthBetween(timeZone, firstMoon, output.thisMoon)) {
+        isLeapMonthBetween(timeZone, firstMoon, output.thisMoon, status)) {
         output.month--;
+    }
+    if (U_FAILURE(status)) {
+        return output;
     }
     if (output.month < 1) {
         output.month += 12;
@@ -741,9 +839,13 @@ struct MonthInfo computeMonthInfo(const TimeZone* timeZone, int32_t gyear, int32
         output.ordinalMonth += 12;
     }
     output.isLeapMonth = output.hasLeapMonthBetweenWinterSolstices &&
-        hasNoMajorSolarTerm(timeZone, output.thisMoon) &&
+        hasNoMajorSolarTerm(timeZone, output.thisMoon, status) &&
         !isLeapMonthBetween(timeZone, firstMoon,
-                            newMoonNear(timeZone, output.thisMoon - SYNODIC_GAP, false));
+                            newMoonNear(timeZone, output.thisMoon - SYNODIC_GAP, false, status),
+                            status);
+    if (U_FAILURE(status)) {
+        return output;
+    }
     return output;
 }
 
@@ -779,11 +881,18 @@ void ChineseCalendar::handleComputeFields(int32_t julianDay, UErrorCode & status
     int32_t gyear = getGregorianYear();
     int32_t gmonth = getGregorianMonth();
 
-    struct MonthInfo monthInfo = computeMonthInfo(fAstronomerTimeZone, gyear, days);
+    const Setting setting = getSetting(status);
+    if (U_FAILURE(status)) {
+       return;
+    }
+    struct MonthInfo monthInfo = computeMonthInfo(setting, gyear, days, status);
+    if (U_FAILURE(status)) {
+       return;
+    }
     hasLeapMonthBetweenWinterSolstices = monthInfo.hasLeapMonthBetweenWinterSolstices;
 
     // Extended year and cycle year is based on the epoch year
-    int32_t eyear = gyear - fEpochYear;
+    int32_t eyear = gyear - setting.epochYear;
     int32_t cycle_year = gyear - CHINESE_EPOCH_YEAR;
     if (monthInfo.month < 11 ||
         gmonth >= UCAL_JULY) {
@@ -800,9 +909,15 @@ void ChineseCalendar::handleComputeFields(int32_t julianDay, UErrorCode & status
     // date is in month 11, leap 11, 12.  There is never a leap 12.
     // New year computations are cached so this should be cheap in
     // the long run.
-    int32_t theNewYear = newYear(fAstronomerTimeZone, gyear);
+    int32_t theNewYear = newYear(setting, gyear, status);
+    if (U_FAILURE(status)) {
+       return;
+    }
     if (days < theNewYear) {
-        theNewYear = newYear(fAstronomerTimeZone, gyear-1);
+        theNewYear = newYear(setting, gyear-1, status);
+    }
+    if (U_FAILURE(status)) {
+       return;
     }
     cycle++;
     yearOfCycle++;
@@ -844,32 +959,45 @@ namespace {
 
 /**
  * Return the Chinese new year of the given Gregorian year.
- * @param timeZone time zone for the Astro calculation.
+ * @param setting setting (time zone and caches) for the Astro calculation.
  * @param gyear a Gregorian year
  * @return days after January 1, 1970 0:00 astronomical base zone of the
  * Chinese new year of the given year (this will be a new moon)
  */
-int32_t newYear(const TimeZone* timeZone, int32_t gyear) {
-    UErrorCode status = U_ZERO_ERROR;
-    int32_t cacheValue = CalendarCache::get(&gNewYearCache, gyear, status);
+int32_t newYear(const icu::ChineseCalendar::Setting& setting,
+                int32_t gyear, UErrorCode& status) {
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+    const TimeZone* timeZone = setting.zoneAstroCalc;
+    int32_t cacheValue = CalendarCache::get(setting.newYearCache, gyear, status);
+    if (U_FAILURE(status)) {
+        return 0;
+    }
 
     if (cacheValue == 0) {
 
-        int32_t solsticeBefore= winterSolstice(timeZone, gyear - 1);
-        int32_t solsticeAfter = winterSolstice(timeZone, gyear);
-        int32_t newMoon1 = newMoonNear(timeZone, solsticeBefore + 1, true);
-        int32_t newMoon2 = newMoonNear(timeZone, newMoon1 + SYNODIC_GAP, true);
-        int32_t newMoon11 = newMoonNear(timeZone, solsticeAfter + 1, false);
+        int32_t solsticeBefore= winterSolstice(setting, gyear - 1, status);
+        int32_t solsticeAfter = winterSolstice(setting, gyear, status);
+        int32_t newMoon1 = newMoonNear(timeZone, solsticeBefore + 1, true, status);
+        int32_t newMoon2 = newMoonNear(timeZone, newMoon1 + SYNODIC_GAP, true, status);
+        int32_t newMoon11 = newMoonNear(timeZone, solsticeAfter + 1, false, status);
+        if (U_FAILURE(status)) {
+            return 0;
+        }
 
         if (synodicMonthsBetween(newMoon1, newMoon11) == 12 &&
-            (hasNoMajorSolarTerm(timeZone, newMoon1) ||
-             hasNoMajorSolarTerm(timeZone, newMoon2))) {
-            cacheValue = newMoonNear(timeZone, newMoon2 + SYNODIC_GAP, true);
+            (hasNoMajorSolarTerm(timeZone, newMoon1, status) ||
+             hasNoMajorSolarTerm(timeZone, newMoon2, status))) {
+            cacheValue = newMoonNear(timeZone, newMoon2 + SYNODIC_GAP, true, status);
         } else {
             cacheValue = newMoon2;
         }
+        if (U_FAILURE(status)) {
+            return 0;
+        }
 
-        CalendarCache::put(&gNewYearCache, gyear, cacheValue, status);
+        CalendarCache::put(setting.newYearCache, gyear, cacheValue, status);
     }
     if(U_FAILURE(status)) {
         cacheValue = 0;
@@ -893,7 +1021,10 @@ int32_t newYear(const TimeZone* timeZone, int32_t gyear) {
  */
 void ChineseCalendar::offsetMonth(int32_t newMoon, int32_t dayOfMonth, int32_t delta,
                                   UErrorCode& status) {
-    if (U_FAILURE(status)) { return; }
+    const Setting setting = getSetting(status);
+    if (U_FAILURE(status)) {
+        return;
+    }
 
     // Move to the middle of the month before our target month.
     double value = newMoon;
@@ -906,7 +1037,10 @@ void ChineseCalendar::offsetMonth(int32_t newMoon, int32_t dayOfMonth, int32_t d
     newMoon = static_cast<int32_t>(value);
 
     // Search forward to the target month's new moon
-    newMoon = newMoonNear(fAstronomerTimeZone, newMoon, true);
+    newMoon = newMoonNear(setting.zoneAstroCalc, newMoon, true, status);
+    if (U_FAILURE(status)) {
+        return;
+    }
 
     // Find the target dayOfMonth
     int32_t jd = newMoon + kEpochStartAsJulianDay - 1 + dayOfMonth;
@@ -1037,6 +1171,15 @@ int32_t ChineseCalendar::internalGetMonth(int32_t defaultValue, UErrorCode& stat
         return internalGet(UCAL_MONTH, defaultValue);
     }
     return internalGetMonth(status);
+}
+
+ChineseCalendar::Setting ChineseCalendar::getSetting(UErrorCode&) const {
+  return {
+        CHINESE_EPOCH_YEAR,
+        getAstronomerTimeZone(),
+        &gWinterSolsticeCache,
+        &gNewYearCache
+  };
 }
 
 U_NAMESPACE_END

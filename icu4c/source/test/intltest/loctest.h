@@ -132,6 +132,7 @@ public:
     void TestKnownCanonicalizedListCorrect();
     void TestConstructorAcceptsBCP47();
 
+    void TestPseudoLocales();
     void TestAddLikelySubtags();
     void TestMinimizeSubtags();
     void TestAddLikelyAndMinimizeSubtags();

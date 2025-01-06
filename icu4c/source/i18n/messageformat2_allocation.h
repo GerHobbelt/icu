@@ -1,6 +1,8 @@
 // © 2024 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 
+#include "unicode/utypes.h"
+
 #ifndef U_HIDE_DEPRECATED_API
 
 #ifndef MESSAGEFORMAT2_UTILS_H
@@ -9,6 +11,8 @@
 #if U_SHOW_CPLUSPLUS_API
 
 #if !UCONFIG_NO_FORMATTING
+
+#if !UCONFIG_NO_MF2
 
 #include "unicode/unistr.h"
 #include "uvector.h"
@@ -20,16 +24,15 @@ namespace message2 {
     // Helpers
 
     template<typename T>
-    static T* copyArray(const T* source, int32_t& len) { // `len` is an in/out param
-        if (source == nullptr) {
-            len = 0;
+    static T* copyArray(const T* source, int32_t len, UErrorCode& status) {
+        if (U_FAILURE(status)) {
             return nullptr;
         }
+        U_ASSERT(source != nullptr);
+        U_ASSERT(len >= 0);
         T* dest = new T[len];
         if (dest == nullptr) {
-            // Set length to 0 to prevent the
-            // array from being accessed
-            len = 0;
+            status = U_MEMORY_ALLOCATION_ERROR;
         } else {
             for (int32_t i = 0; i < len; i++) {
                 dest[i] = source[i];
@@ -39,13 +42,14 @@ namespace message2 {
     }
 
     template<typename T>
-    static T* copyVectorToArray(const UVector& source, int32_t& len) {
-        len = source.size();
+    static T* copyVectorToArray(const UVector& source, UErrorCode& status) {
+        if (U_FAILURE(status)) {
+            return nullptr;
+        }
+        int32_t len = source.size();
         T* dest = new T[len];
         if (dest == nullptr) {
-            // Set length to 0 to prevent the
-            // array from being accessed
-            len = 0;
+            status = U_MEMORY_ALLOCATION_ERROR;
         } else {
             for (int32_t i = 0; i < len; i++) {
                 dest[i] = *(static_cast<T*>(source.elementAt(i)));
@@ -55,19 +59,21 @@ namespace message2 {
     }
 
     template<typename T>
-    static T* moveVectorToArray(UVector& source, int32_t& len) {
-        len = source.size();
+    static T* moveVectorToArray(UVector& source, UErrorCode& status) {
+        if (U_FAILURE(status)) {
+            return nullptr;
+        }
+
+        int32_t len = source.size();
         T* dest = new T[len];
         if (dest == nullptr) {
-            // Set length to 0 to prevent the
-            // array from being accessed
-            len = 0;
+            status = U_MEMORY_ALLOCATION_ERROR;
         } else {
             for (int32_t i = 0; i < len; i++) {
                 dest[i] = std::move(*static_cast<T*>(source.elementAt(i)));
             }
+            source.removeAllElements();
         }
-        source.removeAllElements();
         return dest;
     }
 
@@ -128,6 +134,8 @@ namespace message2 {
 } // namespace message2
 
 U_NAMESPACE_END
+
+#endif /* #if !UCONFIG_NO_MF2 */
 
 #endif /* #if !UCONFIG_NO_FORMATTING */
 

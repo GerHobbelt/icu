@@ -1,6 +1,8 @@
 // © 2024 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
 
+#include "unicode/utypes.h"
+
 #ifndef U_HIDE_DEPRECATED_API
 
 #ifndef MESSAGEFORMAT_PARSER_H
@@ -16,11 +18,41 @@
 
 #if !UCONFIG_NO_FORMATTING
 
+#if !UCONFIG_NO_MF2
+
 U_NAMESPACE_BEGIN
 
 namespace message2 {
 
     using namespace data_model;
+
+    // Used for parameterizing options parsing code
+    // over the two builders that use it (Operator and Markup)
+    template <class T>
+    class OptionAdder {
+        private:
+            T& builder;
+        public:
+            OptionAdder(T& b) : builder(b) {}
+            void addOption(const UnicodeString& k, Operand&& r, UErrorCode& s) {
+                builder.addOption(k, std::move(r), s);
+            }
+    };
+
+    // Used for parameterizing attributes parsing code
+    // over the two builders that use it (Expression and Markup)
+    // Unfortunately the same OptionAdder class can't just be reused,
+    // becaues duplicate options are forbidden while duplicate attributes are not
+    template <class T>
+    class AttributeAdder {
+        private:
+            T& builder;
+        public:
+            AttributeAdder(T& b) : builder(b) {}
+            void addAttribute(const UnicodeString& k, Operand&& r, UErrorCode& s) {
+                builder.addAttribute(k, std::move(r), s);
+            }
+    };
 
     // Parser class (private)
     class Parser : public UMemory {
@@ -94,12 +126,14 @@ namespace message2 {
         Literal parseUnquotedLiteral(UErrorCode&);
         Literal parseQuotedLiteral(UErrorCode&);
 	Literal parseLiteral(UErrorCode&);
-        void parseAttribute(UVector&, UErrorCode&);
-        OptionMap parseAttributes(UErrorCode&);
-        void parseOption(Operator::Builder&, UErrorCode&);
-        void parseOption(UVector&, UErrorCode&);
-        void parseOptions(Operator::Builder&, UErrorCode&);
-        OptionMap parseOptions(UErrorCode&);
+        template<class T>
+        void parseAttribute(AttributeAdder<T>&, UErrorCode&);
+        template<class T>
+        void parseAttributes(AttributeAdder<T>&, UErrorCode&);
+        template<class T>
+        void parseOption(OptionAdder<T>&, UErrorCode&);
+        template<class T>
+        void parseOptions(OptionAdder<T>&, UErrorCode&);
 	void parseReservedEscape(UnicodeString&, UErrorCode&);
 	void parseReservedChunk(Reserved::Builder&, UErrorCode&);
 	Reserved parseReserved(UErrorCode&);
@@ -137,6 +171,8 @@ namespace message2 {
 } // namespace message2
 
 U_NAMESPACE_END
+
+#endif /* #if !UCONFIG_NO_MF2 */
 
 #endif /* #if !UCONFIG_NO_FORMATTING */
 

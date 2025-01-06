@@ -10,6 +10,8 @@
 
 #if !UCONFIG_NO_FORMATTING
 
+#if !UCONFIG_NO_MF2
+
 #include "unicode/localpointer.h"
 #include "unicode/messageformat2_data_model_names.h"
 
@@ -40,34 +42,12 @@ static inline std::vector<T> toStdVector(const T* arr, int32_t len) {
     return result;
 }
 
-namespace message2 {
-
-    namespace data_model {
-        class Binding;
-        class Literal;
-        class Operator;
-    } // namespace data_model
-} // namespace message2
-
-/// @cond DOXYGEN_IGNORE
-// Export an explicit template instantiation of the LocalPointer that is used as a
-// data member of various MFDataModel classes.
-// (When building DLLs for Windows this is required.)
-// (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
-// for similar examples.)
-#if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
+#if defined(U_REAL_MSVC)
 #pragma warning(push)
-#pragma warning(disable: 4661)
+// Ignore warning 4251 as these templates are instantiated later in this file,
+// after the classes used to instantiate them have been defined.
+#pragma warning(disable: 4251)
 #endif
-template class U_I18N_API LocalPointerBase<message2::data_model::Literal>;
-template class U_I18N_API LocalArray<message2::data_model::Literal>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
-#endif
-/// @endcond
 
 namespace message2 {
     class Checker;
@@ -78,6 +58,10 @@ namespace message2 {
 
 
   namespace data_model {
+        class Binding;
+        class Literal;
+        class Operator;
+
         /**
          * The `Reserved` class represents a `reserved` annotation, as in the `reserved` nonterminal
          * in the MessageFormat 2 grammar or the `Reserved` interface
@@ -86,7 +70,7 @@ namespace message2 {
          *
          * `Reserved` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Reserved : public UMemory {
@@ -96,7 +80,7 @@ namespace message2 {
              *
              * @return The number of literals.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             int32_t numParts() const;
@@ -107,7 +91,7 @@ namespace message2 {
              * @param i Index of the part being accessed.
              * @return A reference to he i'th literal in the sequence
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Literal& getPart(int32_t i) const;
@@ -118,7 +102,7 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
@@ -133,7 +117,7 @@ namespace message2 {
                  * @param status Input/output error code
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& add(Literal&& part, UErrorCode& status) noexcept;
@@ -146,7 +130,7 @@ namespace message2 {
                  * param status Input/output error code
                  * @return          The new Reserved object
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Reserved build(UErrorCode& status) const noexcept;
@@ -156,43 +140,48 @@ namespace message2 {
                  *
                  * param status Input/output error code
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class Reserved::Builder
             /**
              * Non-member swap function.
              * @param r1 will get r2's contents
              * @param r2 will get r1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Reserved& r1, Reserved& r2) noexcept {
                 using std::swap;
 
+                swap(r1.bogus, r2.bogus);
                 swap(r1.parts, r2.parts);
                 swap(r1.len, r2.len);
             }
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Reserved(const Reserved& other);
             /**
              * Assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Reserved& operator=(Reserved) noexcept;
@@ -200,14 +189,14 @@ namespace message2 {
              * Default constructor.
              * Puts the Reserved into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Reserved() { parts = LocalArray<Literal>(); }
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Reserved();
@@ -215,11 +204,16 @@ namespace message2 {
             friend class Builder;
             friend class Operator;
 
+            // True if a copy failed; this has to be distinguished
+            // from a valid `Reserved` with empty parts
+            bool bogus = false;
+
             // Possibly-empty list of parts
             // `literal` reserved as a quoted literal; `reserved-char` / `reserved-escape`
             // strings represented as unquoted literals
             /* const */ LocalArray<Literal> parts;
             int32_t len = 0;
+
             Reserved(const UVector& parts, UErrorCode& status) noexcept;
             // Helper
             static void initLiterals(Reserved&, const Reserved&);
@@ -233,7 +227,7 @@ namespace message2 {
          *
          * `Literal` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Literal : public UObject {
@@ -243,7 +237,7 @@ namespace message2 {
              *
              * @return A string representation of the literal enclosed in quote characters.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UnicodeString quoted() const;
@@ -252,7 +246,7 @@ namespace message2 {
              *
              * @return A string representation of this literal.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& unquoted() const;
@@ -262,7 +256,7 @@ namespace message2 {
              * @return true if and only if this literal appeared as a quoted literal in the
              *         message.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isQuoted() const { return thisIsQuoted; }
@@ -274,14 +268,14 @@ namespace message2 {
              *  @param s The string contents of this literal; escape sequences are assumed to have
              *           been interpreted already.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Literal(UBool q, const UnicodeString& s) : thisIsQuoted(q), contents(s) {}
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Literal(const Literal& other) : thisIsQuoted(other.thisIsQuoted), contents(other.contents) {}
@@ -290,7 +284,7 @@ namespace message2 {
              * @param l1 will get l2's contents
              * @param l2 will get l1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Literal& l1, Literal& l2) noexcept {
@@ -302,7 +296,7 @@ namespace message2 {
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Literal& operator=(Literal) noexcept;
@@ -310,7 +304,7 @@ namespace message2 {
              * Default constructor.
              * Puts the Literal into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Literal() = default;
@@ -326,7 +320,7 @@ namespace message2 {
              * (according to `UnicodeString`'s less-than operator).
              * Returns false otherwise.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             bool operator<(const Literal& other) const;
@@ -342,14 +336,14 @@ namespace message2 {
              * (according to `UnicodeString`'s equality operator).
              * Returns false otherwise.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             bool operator==(const Literal& other) const;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Literal();
@@ -363,6 +357,21 @@ namespace message2 {
   } // namespace data_model
 } // namespace message2
 
+/// @cond DOXYGEN_IGNORE
+// Export an explicit template instantiation of the LocalPointer that is used as a
+// data member of various MFDataModel classes.
+// (When building DLLs for Windows this is required.)
+// (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
+// for similar examples.)
+#if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
+template class U_I18N_API LocalPointerBase<message2::data_model::Literal>;
+template class U_I18N_API LocalArray<message2::data_model::Literal>;
+#endif
+#if defined(U_REAL_MSVC)
+#pragma warning(pop)
+#endif
+/// @endcond
+
 U_NAMESPACE_END
 
 /// @cond DOXYGEN_IGNORE
@@ -372,7 +381,7 @@ U_NAMESPACE_END
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
+#if defined(U_REAL_MSVC) && defined(_MSVC_STL_VERSION)
 struct U_I18N_API std::_Nontrivial_dummy_type;
 template class U_I18N_API std::_Variant_storage_<false, icu::UnicodeString, icu::message2::data_model::Literal>;
 #endif
@@ -398,7 +407,7 @@ namespace message2 {
          *
          * `Operand` is immutable and is copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Operand : public UObject {
@@ -408,7 +417,7 @@ namespace message2 {
              *
              * @return True if and only if the operand is a variable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isVariable() const;
@@ -417,7 +426,7 @@ namespace message2 {
              *
              * @return True if and only if the operand is a literal.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isLiteral() const;
@@ -426,7 +435,7 @@ namespace message2 {
              *
              * @return True if and only if the operand is the null operand.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual UBool isNull() const;
@@ -436,7 +445,7 @@ namespace message2 {
              *
              * @return A reference to the name of the variable
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& asVariable() const;
@@ -446,7 +455,7 @@ namespace message2 {
              *
              * @return A reference to the literal
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Literal& asLiteral() const;
@@ -454,7 +463,7 @@ namespace message2 {
              * Default constructor.
              * Creates a null Operand.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Operand() : contents(std::nullopt) {}
@@ -464,7 +473,7 @@ namespace message2 {
              * @param v The variable name; an operand corresponding
              *        to a reference to `v` is returned.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit Operand(const UnicodeString& v) : contents(VariableName(v)) {}
@@ -474,7 +483,7 @@ namespace message2 {
              * @param l The literal to use for this operand; an operand
              *        corresponding to `l` is returned.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit Operand(const Literal& l) : contents(l) {}
@@ -483,7 +492,7 @@ namespace message2 {
              * @param o1 will get o2's contents
              * @param o2 will get o1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Operand& o1, Operand& o2) noexcept {
@@ -495,21 +504,21 @@ namespace message2 {
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual Operand& operator=(Operand) noexcept;
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Operand(const Operand&);
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Operand();
@@ -529,7 +538,7 @@ namespace message2 {
          *
          * `Key` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Key : public UObject {
@@ -539,7 +548,7 @@ namespace message2 {
              *
              * @return True if and only if this is the wildcard key
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isWildcard() const { return !contents.has_value(); }
@@ -549,14 +558,14 @@ namespace message2 {
              *
              * @return The literal contents of the key
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Literal& asLiteral() const;
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Key(const Key& other) : contents(other.contents) {}
@@ -564,7 +573,7 @@ namespace message2 {
              * Wildcard constructor; constructs a Key representing the
              * catchall or wildcard key, '*'.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Key() : contents(std::nullopt) {}
@@ -574,7 +583,7 @@ namespace message2 {
              * @param lit A Literal to use for this key. The result matches the
              *        literal `lit`.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit Key(const Literal& lit) : contents(lit) {}
@@ -583,7 +592,7 @@ namespace message2 {
              * @param k1 will get k2's contents
              * @param k2 will get k1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Key& k1, Key& k2) noexcept {
@@ -594,7 +603,7 @@ namespace message2 {
             /**
              * Assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Key& operator=(Key) noexcept;
@@ -608,7 +617,7 @@ namespace message2 {
              * < `other.asLiteral()`.
              * Returns false otherwise.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             bool operator<(const Key& other) const;
@@ -622,14 +631,14 @@ namespace message2 {
              * == `other.asLiteral()`.
              * Returns false otherwise.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             bool operator==(const Key& other) const;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Key();
@@ -646,16 +655,8 @@ namespace message2 {
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable: 4661)
-#endif
 template class U_I18N_API LocalPointerBase<message2::data_model::Key>;
 template class U_I18N_API LocalArray<message2::data_model::Key>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 /// @endcond
 
@@ -668,7 +669,7 @@ namespace message2 {
          *
          * `SelectorKeys` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API SelectorKeys : public UObject {
@@ -680,7 +681,7 @@ namespace message2 {
              *         Returns an empty list if allocating this `SelectorKeys`
              *         object previously failed.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Key> getKeys() const {
@@ -692,7 +693,7 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
@@ -709,7 +710,7 @@ namespace message2 {
                  * @param status Input/output error code
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& add(Key&& key, UErrorCode& status) noexcept;
@@ -722,7 +723,7 @@ namespace message2 {
                  * @param status    Input/output error code
                  * @return          The new SelectorKeys object
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 SelectorKeys build(UErrorCode& status) const;
@@ -732,17 +733,21 @@ namespace message2 {
                  *
                  * @param status Input/output error code
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class SelectorKeys::Builder
             /**
              * Less than operator. Compares the two key lists lexicographically.
@@ -755,7 +760,7 @@ namespace message2 {
              * lexicographically.
              * Returns false otherwise.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             bool operator<(const SelectorKeys& other) const;
@@ -763,7 +768,7 @@ namespace message2 {
              * Default constructor.
              * Puts the SelectorKeys into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             SelectorKeys() : len(0) {}
@@ -772,7 +777,7 @@ namespace message2 {
              * @param s1 will get s2's contents
              * @param s2 will get s1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(SelectorKeys& s1, SelectorKeys& s2) noexcept {
@@ -784,25 +789,24 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             SelectorKeys(const SelectorKeys& other);
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             SelectorKeys& operator=(SelectorKeys other) noexcept;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~SelectorKeys();
-
         private:
             friend class Builder;
             friend class message2::Checker;
@@ -828,7 +832,7 @@ namespace message2 {
          *
          * `Option` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Option : public UObject {
@@ -838,7 +842,7 @@ namespace message2 {
              *
              * @return A reference to the operand.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Operand& getValue() const { return rand; }
@@ -847,7 +851,7 @@ namespace message2 {
              *
              * @return A reference to the option name.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& getName() const { return name; }
@@ -858,7 +862,7 @@ namespace message2 {
              * @param n The name of the option.
              * @param r The value of the option.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Option(const UnicodeString& n, Operand&& r) : name(n), rand(std::move(r)) {}
@@ -866,7 +870,7 @@ namespace message2 {
              * Default constructor.
              * Returns an Option in a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Option() {}
@@ -875,7 +879,7 @@ namespace message2 {
              * @param o1 will get o2's contents
              * @param o2 will get o1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Option& o1, Option& o2) noexcept {
@@ -887,21 +891,21 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Option(const Option& other);
             /**
              * Assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Option& operator=(Option other) noexcept;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Option();
@@ -919,16 +923,8 @@ namespace message2 {
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable: 4661)
-#endif
 template class U_I18N_API LocalPointerBase<message2::data_model::Option>;
 template class U_I18N_API LocalArray<message2::data_model::Option>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 /// @endcond
 
@@ -959,6 +955,28 @@ namespace message2 {
             OptionMap(const UVector&, UErrorCode&);
             OptionMap(Option*, int32_t);
             virtual ~OptionMap();
+
+            class U_I18N_API Builder : public UObject {
+                private:
+                    UVector* options;
+                    bool checkDuplicates = true;
+                public:
+                    Builder& add(Option&& opt, UErrorCode&);
+                    Builder(UErrorCode&);
+                    static Builder attributes(UErrorCode&);
+                    // As this class is private, build() is destructive
+                    OptionMap build(UErrorCode&);
+		    friend inline void swap(Builder& m1, Builder& m2) noexcept {
+		      using std::swap;
+
+		      swap(m1.options, m2.options);
+		      swap(m1.checkDuplicates, m2.checkDuplicates);
+		    }
+		    Builder(Builder&&);
+		    Builder(const Builder&) = delete;
+		    Builder& operator=(Builder) noexcept;
+		    virtual ~Builder();
+            }; // class OptionMap::Builder
         private:
             friend class message2::Serializer;
 
@@ -1002,7 +1020,7 @@ U_NAMESPACE_END
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
+#if defined(U_REAL_MSVC) && defined(_MSVC_STL_VERSION)
 template class U_I18N_API std::_Variant_storage_<false, icu::message2::data_model::Reserved,icu::message2::data_model::Callable>;
 #endif
 template class U_I18N_API std::variant<icu::message2::data_model::Reserved,icu::message2::data_model::Callable>;
@@ -1025,7 +1043,7 @@ namespace message2 {
          *
          * `Operator` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Operator : public UObject {
@@ -1035,7 +1053,7 @@ namespace message2 {
              *
              * @return true if and only if this operator represents a reserved sequence.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isReserved() const { return std::holds_alternative<Reserved>(contents); }
@@ -1045,7 +1063,7 @@ namespace message2 {
              *
              * @return The function name of this operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const FunctionName& getFunctionName() const;
@@ -1055,7 +1073,7 @@ namespace message2 {
              *
              * @return The reserved sequence represented by this operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Reserved& asReserved() const;
@@ -1065,7 +1083,7 @@ namespace message2 {
              *
              * @return A vector of function options for this operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Option> getOptions() const {
@@ -1081,7 +1099,7 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
@@ -1092,13 +1110,7 @@ namespace message2 {
                 bool hasOptions = false;
                 Reserved asReserved;
                 FunctionName functionName;
-                // The next field is used internally to construct Operators
-                // and overrides the `options` vector.
-                // This is because it's easiest to share the code
-                // for parsing options between Operator::Builder and Markup::Builder.
-                OptionMap optionMap;
-                UVector* options; // Not a LocalPointer for the same reason as in `SelectorKeys::Builder`
-                Builder& setOptionMap(OptionMap&&);
+                OptionMap::Builder options;
             public:
                 /**
                  * Sets this operator to be a reserved sequence.
@@ -1109,7 +1121,7 @@ namespace message2 {
                  *                 (Passed by move.)
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setReserved(Reserved&& reserved);
@@ -1121,7 +1133,7 @@ namespace message2 {
                  * @param func The function name.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setFunctionName(FunctionName&& func);
@@ -1135,7 +1147,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& addOption(const UnicodeString &key, Operand&& value, UErrorCode& status) noexcept;
@@ -1153,7 +1165,7 @@ namespace message2 {
                  * @param status    Input/output error code.
                  * @return          The new Operator
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Operator build(UErrorCode& status);
@@ -1163,22 +1175,26 @@ namespace message2 {
                  *
                  * @param status    Input/output error code.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class Operator::Builder
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Operator(const Operator& other) noexcept;
@@ -1187,7 +1203,7 @@ namespace message2 {
              * @param o1 will get o2's contents
              * @param o2 will get o1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Operator& o1, Operator& o2) noexcept {
@@ -1198,7 +1214,7 @@ namespace message2 {
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Operator& operator=(Operator) noexcept;
@@ -1206,14 +1222,14 @@ namespace message2 {
              * Default constructor.
              * Puts the Operator into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Operator() : contents(Reserved()) {}
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Operator();
@@ -1222,7 +1238,6 @@ namespace message2 {
             friend class Builder;
             friend class message2::Checker;
             friend class message2::MessageFormatter;
-            friend class message2::Parser;
             friend class message2::Serializer;
 
             // Function call constructor
@@ -1270,7 +1285,7 @@ namespace message2 {
          *
          * `Markup` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Markup : public UObject {
@@ -1280,7 +1295,7 @@ namespace message2 {
              *
              * @return True if and only if this represents an opening tag.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isOpen() const { return (type == UMARKUP_OPEN); }
@@ -1289,7 +1304,7 @@ namespace message2 {
              *
              * @return True if and only if this represents an closing tag.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isClose() const { return (type == UMARKUP_CLOSE); }
@@ -1298,7 +1313,7 @@ namespace message2 {
              *
              * @return True if and only if this represents a standalone tag.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isStandalone() const { return (type == UMARKUP_STANDALONE); }
@@ -1307,7 +1322,7 @@ namespace message2 {
              *
              * @return A reference to the string identifying the markup
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& getName() const { return name; }
@@ -1316,7 +1331,7 @@ namespace message2 {
              *
              * @return A reference to the string identifying the markup
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Option> getOptions() const { return options.getOptions(); }
@@ -1325,7 +1340,7 @@ namespace message2 {
              *
              * @return A vector of attributes
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Option> getAttributes() const { return attributes.getOptions(); }
@@ -1333,14 +1348,14 @@ namespace message2 {
              * Default constructor.
              * Puts the Markup into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Markup() {}
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Markup();
@@ -1350,30 +1365,17 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
             private:
                 friend class Markup;
-                friend class message2::Parser;
 
                 UnicodeString name;
-                UVector* options; // Not a LocalPointer for the same reason as in `SelectorKeys::Builder`
-                UVector* attributes;
-                // The next two fields are used internally by the parser
-                // and override the `options` and `attributes` vectors.
-                // This is because it's easiest to share the code
-                // for parsing options between Operator::Builder and Markup::Builder.
-                OptionMap optionMap;
-                OptionMap attributeMap;
+                OptionMap::Builder options;
+                OptionMap::Builder attributes;
                 UMarkupType type = UMARKUP_COUNT;
-                Builder& setOptionMap(OptionMap&&);
-
-                // TODO: Would probably be best to make this method public (same for Markup)
-                // and not make the parser a friend class.
-                // Same for options on Operator and Markup. (addAll())
-                Builder& setAttributeMap(OptionMap&& m);
             public:
                 /**
                  * Sets the name of this markup.
@@ -1381,7 +1383,7 @@ namespace message2 {
                  * @param n A string representing the name.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setName(const UnicodeString& n) { name = n; return *this; }
@@ -1390,7 +1392,7 @@ namespace message2 {
                  *
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setOpen() { type = UMARKUP_OPEN; return *this; }
@@ -1399,7 +1401,7 @@ namespace message2 {
                  *
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setClose() { type = UMARKUP_CLOSE; return *this; }
@@ -1408,7 +1410,7 @@ namespace message2 {
                  *
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setStandalone() { type = UMARKUP_STANDALONE; return *this; }
@@ -1420,10 +1422,10 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
-                Builder& addOption(const UnicodeString &key, Operand&& value, UErrorCode& status) noexcept;
+                Builder& addOption(const UnicodeString &key, Operand&& value, UErrorCode& status);
                 /**
                  * Adds a single attribute.
                  *
@@ -1432,10 +1434,10 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
-                Builder& addAttribute(const UnicodeString &key, Operand&& value, UErrorCode& status) noexcept;
+                Builder& addAttribute(const UnicodeString &key, Operand&& value, UErrorCode& status);
                 /**
                  * Constructs a new immutable `Markup` using the name and type
                  * and (optionally) options and attributes that were previously set.
@@ -1450,7 +1452,7 @@ namespace message2 {
                  * @param status    Input/output error code.
                  * @return          The new Markup.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Markup build(UErrorCode& status);
@@ -1460,17 +1462,21 @@ namespace message2 {
                  *
                  * @param status    Input/output error code.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class Markup::Builder
 
         private:
@@ -1496,7 +1502,7 @@ namespace message2 {
          *
          * `Expression` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Expression : public UObject {
@@ -1508,7 +1514,7 @@ namespace message2 {
              * @return True if and only if the expression has
              *         an annotation and has no operand.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isStandaloneAnnotation() const;
@@ -1520,7 +1526,7 @@ namespace message2 {
              * @return True if and only if the expression has an annotation
              *         that is a function.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isFunctionCall() const;
@@ -1531,7 +1537,7 @@ namespace message2 {
              * @return True if and only if the expression has an
              *         annotation that is a reserved sequence,
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isReserved() const;
@@ -1545,7 +1551,7 @@ namespace message2 {
              * @return A non-owned pointer to the operator of this expression,
              *         which does not outlive the expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Operator* getOperator(UErrorCode& status) const;
@@ -1555,7 +1561,7 @@ namespace message2 {
              * @return A reference to the operand of this expression,
              *         which may be the null operand.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Operand& getOperand() const;
@@ -1564,7 +1570,7 @@ namespace message2 {
              *
              * @return A vector of attributes
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Option> getAttributes() const { return attributes.getOptions(); }
@@ -1574,27 +1580,18 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
             private:
                 friend class Expression;
-                friend class message2::Parser;
 
                 bool hasOperand = false;
                 bool hasOperator = false;
                 Operand rand;
                 Operator rator;
-                UVector* attributes; // Not a LocalPointer for the same reason as in `SelectorKeys::builder`
-                // The next field is used internally by the parser
-                // and overrides `attributes` vector.
-                // This is because it's easiest to share the code
-                // for parsing options between Expression::Builder and Markup::Builder.
-                OptionMap attributeMap;
-                // Provided as a private method so that the parser
-                // can use the same attribute-parsing code for Expression and Markup
-                Builder& setAttributeMap(OptionMap&& m);
+                OptionMap::Builder attributes;
             public:
                 /**
                  * Sets the operand of this expression.
@@ -1602,7 +1599,7 @@ namespace message2 {
                  * @param rAnd The operand to set. Passed by move.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setOperand(Operand&& rAnd);
@@ -1612,7 +1609,7 @@ namespace message2 {
                  * @param rAtor The operator to set. Passed by move.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setOperator(Operator&& rAtor);
@@ -1624,7 +1621,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& addAttribute(const UnicodeString &key, Operand&& value, UErrorCode& status);
@@ -1642,7 +1639,7 @@ namespace message2 {
                  * @param status    Input/output error code.
                  * @return          The new Expression.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Expression build(UErrorCode& status);
@@ -1652,24 +1649,28 @@ namespace message2 {
                  *
                  * @param status    Input/output error code.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class Expression::Builder
             /**
              * Non-member swap function.
              * @param e1 will get e2's contents
              * @param e2 will get e1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Expression& e1, Expression& e2) noexcept {
@@ -1682,14 +1683,14 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Expression(const Expression& other);
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Expression& operator=(Expression) noexcept;
@@ -1697,14 +1698,14 @@ namespace message2 {
              * Default constructor.
              * Puts the Expression into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Expression();
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Expression();
@@ -1743,16 +1744,8 @@ namespace message2 {
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable: 4661)
-#endif
 template class U_I18N_API LocalPointerBase<message2::data_model::Expression>;
 template class U_I18N_API LocalArray<message2::data_model::Expression>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 /// @endcond
 
@@ -1768,7 +1761,7 @@ namespace message2 {
          *
          * `UnsupportedStatement` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API UnsupportedStatement : public UObject {
@@ -1778,7 +1771,7 @@ namespace message2 {
              *
              * @return A reference to a string.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& getKeyword() const { return keyword; }
@@ -1790,7 +1783,7 @@ namespace message2 {
              * @return A non-owned pointer to a `Reserved` annotation,
              *         which is non-null if U_SUCCESS(status).
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Reserved* getBody(UErrorCode& status) const;
@@ -1799,7 +1792,7 @@ namespace message2 {
              *
              * @return A vector of Expressions.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             std::vector<Expression> getExpressions() const {
@@ -1815,7 +1808,7 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
@@ -1835,7 +1828,7 @@ namespace message2 {
                  * @param k The keyword to set.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setKeyword(const UnicodeString& k);
@@ -1845,7 +1838,7 @@ namespace message2 {
                  * @param r The `Reserved` annotation to set as the body. Passed by move.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& setBody(Reserved&& r);
@@ -1856,7 +1849,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& addExpression(Expression&& e, UErrorCode& status);
@@ -1872,7 +1865,7 @@ namespace message2 {
                  * @param status    Input/output error code.
                  * @return          The new UnsupportedStatement
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 UnsupportedStatement build(UErrorCode& status) const;
@@ -1882,24 +1875,28 @@ namespace message2 {
                  *
                  * @param status    Input/output error code.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class UnsupportedStatement::Builder
             /**
              * Non-member swap function.
              * @param s1 will get s2's contents
              * @param s2 will get s1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(UnsupportedStatement& s1, UnsupportedStatement& s2) noexcept {
@@ -1913,14 +1910,14 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UnsupportedStatement(const UnsupportedStatement& other);
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UnsupportedStatement& operator=(UnsupportedStatement) noexcept;
@@ -1928,14 +1925,14 @@ namespace message2 {
              * Default constructor.
              * Puts the UnsupportedStatement into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UnsupportedStatement() : expressions(LocalArray<Expression>()) {}
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~UnsupportedStatement();
@@ -1962,7 +1959,7 @@ namespace message2 {
          *
          * `PatternPart` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class PatternPart : public UObject {
@@ -1972,7 +1969,7 @@ namespace message2 {
              *
              * @return True if and only if this is a text part.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isText() const { return std::holds_alternative<UnicodeString>(piece); }
@@ -1981,7 +1978,7 @@ namespace message2 {
              *
              * @return True if and only if this is a markup part.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isMarkup() const { return std::holds_alternative<Markup>(piece); }
@@ -1990,7 +1987,7 @@ namespace message2 {
              *
              * @return True if and only if this is an expression part.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             UBool isExpression() const { return std::holds_alternative<Expression>(piece); }
@@ -2000,7 +1997,7 @@ namespace message2 {
              *
              * @return A reference to the part's underlying expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Expression& contents() const;
@@ -2010,7 +2007,7 @@ namespace message2 {
              *
              * @return A reference to the part's underlying expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Markup& asMarkup() const;
@@ -2020,7 +2017,7 @@ namespace message2 {
              *
              * @return A reference to a string representing the part's text..
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const UnicodeString& asText() const;
@@ -2029,7 +2026,7 @@ namespace message2 {
              * @param p1 will get p2's contents
              * @param p2 will get p1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(PatternPart& p1, PatternPart& p2) noexcept {
@@ -2040,21 +2037,21 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             PatternPart(const PatternPart& other);
             /**
              * Assignment operator.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             PatternPart& operator=(PatternPart) noexcept;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~PatternPart();
@@ -2064,7 +2061,7 @@ namespace message2 {
              *
              * @param t A text string.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit PatternPart(const UnicodeString& t) : piece(t) {}
@@ -2074,7 +2071,7 @@ namespace message2 {
              *
              * @param e An Expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit PatternPart(Expression&& e) : piece(e) {}
@@ -2084,7 +2081,7 @@ namespace message2 {
              *
              * @param m A Markup.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             explicit PatternPart(Markup&& m) : piece(m) {}
@@ -2092,7 +2089,7 @@ namespace message2 {
              * Default constructor.
              * Puts the PatternPart into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             PatternPart() = default;
@@ -2111,18 +2108,10 @@ namespace message2 {
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable: 4661)
-#endif
 template class U_I18N_API LocalPointerBase<message2::data_model::PatternPart>;
 template class U_I18N_API LocalArray<message2::data_model::PatternPart>;
 template class U_I18N_API LocalPointerBase<message2::data_model::UnsupportedStatement>;
 template class U_I18N_API LocalArray<message2::data_model::UnsupportedStatement>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 /// @endcond
 
@@ -2135,7 +2124,7 @@ namespace message2 {
          *
          * `Pattern` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Pattern : public UObject {
@@ -2150,7 +2139,7 @@ namespace message2 {
              * @return A forward iterator of variants. Each element is either a string (text part)
              *         or an expression part.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Iterator begin() const {
@@ -2162,7 +2151,7 @@ namespace message2 {
              * @return A forward iterator of variants. This should only be used for comparisons
              *         against an iterator returned by incrementing begin().
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Iterator end() const {
@@ -2174,7 +2163,7 @@ namespace message2 {
              *
              * Builder is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             class U_I18N_API Builder : public UMemory {
@@ -2191,7 +2180,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& add(Expression&& part, UErrorCode& status) noexcept;
@@ -2202,7 +2191,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& add(Markup&& part, UErrorCode& status) noexcept;
@@ -2213,7 +2202,7 @@ namespace message2 {
                  * @param status Input/output error code.
                  * @return A reference to the builder.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder& add(UnicodeString&& part, UErrorCode& status) noexcept;
@@ -2226,7 +2215,7 @@ namespace message2 {
                  * @param status    Input/output error code.
                  * @return          The pattern object
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Pattern build(UErrorCode& status) const noexcept;
@@ -2236,24 +2225,28 @@ namespace message2 {
                  *
                  * @param status Input/output error code
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Builder(UErrorCode& status);
                 /**
                  * Destructor.
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 virtual ~Builder();
+                Builder(const Builder&) = delete;
+                Builder& operator=(const Builder&) = delete;
+                Builder(Builder&&) = delete;
+                Builder& operator=(Builder&&) = delete;
             }; // class Pattern::Builder
 
             /**
              * Default constructor.
              * Puts the Pattern into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Pattern() : parts(LocalArray<PatternPart>()) {}
@@ -2262,33 +2255,34 @@ namespace message2 {
              * @param p1 will get p2's contents
              * @param p2 will get p1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Pattern& p1, Pattern& p2) noexcept {
                 using std::swap;
 
+                swap(p1.bogus, p2.bogus);
                 swap(p1.len, p2.len);
                 swap(p1.parts, p2.parts);
             }
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Pattern(const Pattern& other) noexcept;
+            Pattern(const Pattern& other);
             /**
              * Assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Pattern& operator=(Pattern) noexcept;
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Pattern();
@@ -2299,7 +2293,7 @@ namespace message2 {
              *
              * `Pattern::Iterator` is mutable and is not copyable or movable.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             struct U_I18N_API Iterator {
@@ -2321,7 +2315,7 @@ namespace message2 {
                 /**
                  * Dereference operator (gets the element at the current iterator position)
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 reference operator*() const {
@@ -2331,14 +2325,14 @@ namespace message2 {
                 /**
                  * Increment operator (advances to the next iterator position)
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 Iterator operator++() { pos++; return *this; }
                 /**
                  * Inequality comparison operator (used for comparing an iterator to the result of end())
                  *
-                 * @internal ICU 75.0 technology preview
+                 * @internal ICU 75 technology preview
                  * @deprecated This API is for technology preview only.
                  */
                 friend bool operator!= (const Iterator& a, const Iterator& b) { return !(a == b); }
@@ -2348,6 +2342,11 @@ namespace message2 {
             friend class Builder;
             friend class message2::MessageFormatter;
             friend class message2::Serializer;
+
+            // Set to true if a copy constructor fails;
+            // needed in order to distinguish an uninitialized
+            // Pattern from a 0-length pattern
+            bool bogus = false;
 
             // Possibly-empty array of parts
             int32_t len = 0;
@@ -2362,10 +2361,10 @@ namespace message2 {
              *
              * @return The number of parts in the pattern.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
-            int32_t numParts() const { return len; }
+            int32_t numParts() const;
             /**
              * Returns the `i`th part in the pattern.
              * Precondition: i < numParts()
@@ -2373,17 +2372,15 @@ namespace message2 {
              * @param i Index of the part being accessed.
              * @return  A reference to the part at index `i`.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const PatternPart& getPart(int32_t i) const;
 
             // Gets around not being able to declare Pattern::Iterator as a friend
             // in PatternPart
-            static const std::variant<UnicodeString, Expression, Markup>& patternContents(const PatternPart& p) {
-                return p.piece;
-            }
-
+            static const std::variant<UnicodeString, Expression, Markup>&
+                patternContents(const PatternPart& p) { return p.piece; }
         }; // class Pattern
 
         /**
@@ -2393,7 +2390,7 @@ namespace message2 {
          *
          * `Variant` is immutable, copyable and movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Variant : public UObject {
@@ -2403,7 +2400,7 @@ namespace message2 {
              *
              * @return A reference to the pattern.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Pattern& getPattern() const { return p; }
@@ -2412,7 +2409,7 @@ namespace message2 {
              *
              * @return A reference to the keys.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const SelectorKeys& getKeys() const { return k; }
@@ -2424,7 +2421,7 @@ namespace message2 {
              * @param keys A reference to a `SelectorKeys`.
              * @param pattern A pattern (passed by move)
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Variant(const SelectorKeys& keys, Pattern&& pattern) : k(keys), p(std::move(pattern)) {}
@@ -2433,7 +2430,7 @@ namespace message2 {
              * @param v1 will get v2's contents
              * @param v2 will get v1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Variant& v1, Variant& v2) noexcept {
@@ -2445,7 +2442,7 @@ namespace message2 {
             /**
              * Assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Variant& operator=(Variant other) noexcept;
@@ -2453,21 +2450,21 @@ namespace message2 {
              * Default constructor.
              * Returns a Variant in a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Variant() = default;
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Variant(const Variant&);
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Variant();
@@ -2485,7 +2482,7 @@ namespace message2 {
          *
          * `Binding` is immutable and copyable. It is not movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Binding : public UObject {
@@ -2495,7 +2492,7 @@ namespace message2 {
              *
              * @return A reference to the expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const Expression& getValue() const;
@@ -2504,7 +2501,7 @@ namespace message2 {
              *
              * @return A reference to the variable name.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             const VariableName& getVariable() const { return var; }
@@ -2519,7 +2516,7 @@ namespace message2 {
              *                   U_INVALID_STATE_ERROR.
              * @param errorCode Input/output error code
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             static Binding input(UnicodeString&& variableName, Expression&& rhs, UErrorCode& errorCode);
@@ -2537,7 +2534,7 @@ namespace message2 {
              * @param v A variable name.
              * @param e An expression.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Binding(const VariableName& v, Expression&& e) : var(v), expr(std::move(e)), local(true), annotation(nullptr) {}
@@ -2546,7 +2543,7 @@ namespace message2 {
              * @param b1 will get b2's contents
              * @param b2 will get b1's contents
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             friend inline void swap(Binding& b1, Binding& b2) noexcept {
@@ -2561,14 +2558,14 @@ namespace message2 {
             /**
              * Copy constructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Binding(const Binding& other);
             /**
              * Copy assignment operator
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Binding& operator=(Binding) noexcept;
@@ -2576,14 +2573,14 @@ namespace message2 {
              * Default constructor.
              * Puts the Binding into a valid but undefined state.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Binding() : local(true) {}
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Binding();
@@ -2619,18 +2616,10 @@ namespace message2 {
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
-// Ignore warning 4661 as LocalPointerBase does not use operator== or operator!=
-#pragma warning(push)
-#pragma warning(disable: 4661)
-#endif
 template class U_I18N_API LocalPointerBase<message2::data_model::Variant>;
 template class U_I18N_API LocalPointerBase<message2::data_model::Binding>;
 template class U_I18N_API LocalArray<message2::data_model::Variant>;
 template class U_I18N_API LocalArray<message2::data_model::Binding>;
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 #endif
 /// @endcond
 
@@ -2643,7 +2632,7 @@ namespace message2 {
     class MFDataModel;
 
     #ifndef U_IN_DOXYGEN
-    class Matcher {
+    class Matcher : public UObject {
     public:
         Matcher& operator=(Matcher);
         Matcher(const Matcher&);
@@ -2652,30 +2641,38 @@ namespace message2 {
          * @param m1 will get m2's contents
          * @param m2 will get m1's contents
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         friend inline void swap(Matcher& m1, Matcher& m2) noexcept {
             using std::swap;
 
+            if (m1.bogus) {
+                m2.bogus = true;
+                return;
+            }
+            if (m2.bogus) {
+                m1.bogus = true;
+                return;
+            }
             swap(m1.selectors, m2.selectors);
             swap(m1.numSelectors, m2.numSelectors);
             swap(m1.variants, m2.variants);
             swap(m1.numVariants, m2.numVariants);
         }
+        virtual ~Matcher();
     private:
 
         friend class MFDataModel;
 
-        Matcher(Expression* ss, int32_t ns, Variant* vs, int32_t nv) : selectors(ss), numSelectors(ns), variants(vs), numVariants(nv) {
-            if (selectors == nullptr) {
-                numSelectors = 0;
-            }
-            if (variants == nullptr) {
-                numVariants = 0;
-            }
-        }
+        Matcher(Expression* ss, int32_t ns, Variant* vs, int32_t nv);
         Matcher() {}
+
+        // A Matcher may have numSelectors=0 and numVariants=0
+        // (this is a data model error, but it's representable).
+        // So we have to keep a separate flag to track failed copies.
+        bool bogus = false;
+
         // The expressions that are being matched on.
         LocalArray<Expression> selectors;
         // The number of selectors
@@ -2697,7 +2694,7 @@ U_NAMESPACE_END
 // (See measunit_impl.h, datefmt.h, collationiterator.h, erarules.h and others
 // for similar examples.)
 #if U_PF_WINDOWS <= U_PLATFORM && U_PLATFORM <= U_PF_CYGWIN
-#if defined(_MSC_VER)
+#if defined(U_REAL_MSVC) && defined(_MSVC_STL_VERSION)
 template class U_I18N_API std::_Variant_storage_<false, icu::message2::Matcher,icu::message2::data_model::Pattern>;
 #endif
 template class U_I18N_API std::variant<icu::message2::Matcher,icu::message2::data_model::Pattern>;
@@ -2723,7 +2720,7 @@ namespace message2 {
      *
      * `MFDataModel` is immutable, copyable and movable.
      *
-     * @internal ICU 75.0 technology preview
+     * @internal ICU 75 technology preview
      * @deprecated This API is for technology preview only.
      */
     class U_I18N_API MFDataModel : public UMemory {
@@ -2767,7 +2764,7 @@ namespace message2 {
          *
          * @return A vector of bindings for local variables.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         std::vector<Binding> getLocalVariables() const {
@@ -2782,7 +2779,7 @@ namespace message2 {
          *
          * @return A vector of selectors.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         const std::vector<Expression> getSelectors() const {
@@ -2798,7 +2795,7 @@ namespace message2 {
          *
          * @return A vector of variants.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         std::vector<Variant> getVariants() const {
@@ -2816,7 +2813,7 @@ namespace message2 {
          *
          * @return A vector of unsupported statements.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         std::vector<UnsupportedStatement> getUnsupportedStatements() const {
@@ -2832,7 +2829,7 @@ namespace message2 {
          *
          * @return A reference to the pattern.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         const Pattern& getPattern() const;
@@ -2841,7 +2838,7 @@ namespace message2 {
          * The mutable `MFDataModel::Builder` class allows the data model to be
          * constructed incrementally.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Builder;
@@ -2850,7 +2847,7 @@ namespace message2 {
          * Default constructor.
          * Puts the MFDataModel into a valid but undefined state.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         MFDataModel();
@@ -2859,7 +2856,7 @@ namespace message2 {
          * @param m1 will get m2's contents
          * @param m2 will get m1's contents
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         friend inline void swap(MFDataModel& m1, MFDataModel& m2) noexcept {
@@ -2882,21 +2879,21 @@ namespace message2 {
         /**
          * Assignment operator
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         MFDataModel& operator=(MFDataModel) noexcept;
         /**
          * Copy constructor.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         MFDataModel(const MFDataModel& other);
         /**
          * Destructor.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         virtual ~MFDataModel();
@@ -2905,7 +2902,7 @@ namespace message2 {
          * The mutable `MFDataModel::Builder` class allows the data model to be
          * constructed incrementally. Builder is not copyable or movable.
          *
-         * @internal ICU 75.0 technology preview
+         * @internal ICU 75 technology preview
          * @deprecated This API is for technology preview only.
          */
         class U_I18N_API Builder : public UMemory {
@@ -2931,6 +2928,9 @@ namespace message2 {
              * @param status Input/output error code. Set to U_DUPLICATE_DECLARATION_ERROR
              *                   if `addBinding()` was previously called with a binding
              *                   with the same variable name as `b`.
+             *
+             * @internal ICU 75 technology preview
+             * @deprecated This API is for technology preview only.
              */
             Builder& addBinding(Binding&& b, UErrorCode& status);
             /**
@@ -2938,6 +2938,10 @@ namespace message2 {
              *
              * @param s The statement. Passed by move.
              * @param status Input/output error code.
+             *
+             *
+             * @internal ICU 75 technology preview
+             * @deprecated This API is for technology preview only.
              */
             Builder& addUnsupportedStatement(UnsupportedStatement&& s, UErrorCode& status);
             /**
@@ -2948,7 +2952,7 @@ namespace message2 {
              * @param errorCode Input/output error code
              * @return A reference to the builder.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Builder& addSelector(Expression&& selector, UErrorCode& errorCode) noexcept;
@@ -2961,7 +2965,7 @@ namespace message2 {
              * @param errorCode Input/output error code
              * @return A reference to the builder.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Builder& addVariant(SelectorKeys&& keys, Pattern&& pattern, UErrorCode& errorCode) noexcept;
@@ -2973,7 +2977,7 @@ namespace message2 {
              *                Passed by move.
              * @return A reference to the builder.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Builder& setPattern(Pattern&& pattern);
@@ -2993,7 +2997,7 @@ namespace message2 {
              * @param status Input/output error code.
              * @return       The new MFDataModel
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             MFDataModel build(UErrorCode& status) const noexcept;
@@ -3006,17 +3010,21 @@ namespace message2 {
              *
              * @param status Input/output error code.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             Builder(UErrorCode& status);
             /**
              * Destructor.
              *
-             * @internal ICU 75.0 technology preview
+             * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
             virtual ~Builder();
+            Builder(const Builder&) = delete;
+            Builder& operator=(const Builder&) = delete;
+            Builder(Builder&&) = delete;
+            Builder& operator=(Builder&&) = delete;
         }; // class Builder
 
     private:
@@ -3069,6 +3077,8 @@ namespace message2 {
 U_NAMESPACE_END
 
 #endif // U_HIDE_DEPRECATED_API
+
+#endif /* #if !UCONFIG_NO_MF2 */
 
 #endif /* #if !UCONFIG_NO_FORMATTING */
 
