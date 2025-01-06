@@ -17,8 +17,15 @@
 *******************************************************************************
 */
 
+#include "unicode/utypes.h"
+#include "unicode/uniset.h"
+#include "unicode/utf16.h"
+
 #include "line.h"
+
 #include <stdio.h>
+
+U_NAMESPACE_USE
 
 UnicodeSet * Line::needsQuoting = nullptr;
 

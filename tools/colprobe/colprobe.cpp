@@ -29,6 +29,7 @@
 #include "uprops.h"
 #include "hash.h"
 #include "ucol_imp.h"
+#include "line.h"
 
 #include "unicode/ustdio.h"
 #include "unicode/utrans.h"
@@ -42,7 +43,7 @@
 #include "colprobe.h"
 
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32)
 #include <windows.h>
 #else
 //

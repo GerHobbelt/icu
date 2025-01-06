@@ -26,6 +26,8 @@
 
 #ifndef COLPROBE_LINE_H
 #define COLPROBE_LINE_H
+
+#include "unicode/uversion.h"
 #include "unicode/utypes.h"
 #include "unicode/ucol.h"
 #include "unicode/ustring.h"
@@ -36,6 +38,8 @@
 
 #include <stdlib.h>
 #include <string.h>
+
+U_NAMESPACE_BEGIN
 
 static const int MAX_EXPANSION_PREFIXES = 10;
 
@@ -111,5 +115,6 @@ public:
   static UnicodeSet *needsQuoting;
 };
 
+U_NAMESPACE_END
 
 #endif //COLPROBE_LINE_H
