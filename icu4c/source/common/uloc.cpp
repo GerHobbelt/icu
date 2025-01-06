@@ -30,7 +30,9 @@
      l = lang, C = ctry, M = charmap, V = variant
 */
 
+#include <algorithm>
 #include <optional>
+#include <string_view>
 
 #include "unicode/bytestream.h"
 #include "unicode/errorcode.h"
@@ -551,17 +553,17 @@ namespace {
  * @param status return status (keyword too long)
  * @return the keyword name
  */
-CharString locale_canonKeywordName(const char* keywordName, UErrorCode& status)
+CharString locale_canonKeywordName(std::string_view keywordName, UErrorCode& status)
 {
   if (U_FAILURE(status)) { return {}; }
   CharString result;
 
-  for (; *keywordName != 0; keywordName++) {
-    if (!UPRV_ISALPHANUM(*keywordName)) {
+  for (char c : keywordName) {
+    if (!UPRV_ISALPHANUM(c)) {
       status = U_ILLEGAL_ARGUMENT_ERROR; /* malformed keyword name */
       return {};
     }
-    result.append(uprv_tolower(*keywordName), status);
+    result.append(uprv_tolower(c), status);
   }
   if (result.isEmpty()) {
     status = U_ILLEGAL_ARGUMENT_ERROR; /* empty keyword name */
@@ -733,6 +735,11 @@ uloc_getKeywordValue(const char* localeID,
                      char* buffer, int32_t bufferCapacity,
                      UErrorCode* status)
 {
+    if (U_FAILURE(*status)) { return 0; }
+    if (keywordName == nullptr || *keywordName == '\0') {
+        *status = U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
     return ByteSinkUtil::viaByteSinkToTerminatedChars(
         buffer, bufferCapacity,
         [&](ByteSink& sink, UErrorCode& status) {
@@ -743,7 +750,7 @@ uloc_getKeywordValue(const char* localeID,
 
 U_EXPORT CharString
 ulocimp_getKeywordValue(const char* localeID,
-                        const char* keywordName,
+                        std::string_view keywordName,
                         UErrorCode& status)
 {
     return ByteSinkUtil::viaByteSinkToCharString(
@@ -755,13 +762,13 @@ ulocimp_getKeywordValue(const char* localeID,
 
 U_EXPORT void
 ulocimp_getKeywordValue(const char* localeID,
-                        const char* keywordName,
+                        std::string_view keywordName,
                         icu::ByteSink& sink,
                         UErrorCode& status)
 {
     if (U_FAILURE(status)) { return; }
 
-    if (localeID == nullptr || keywordName == nullptr || keywordName[0] == 0) {
+    if (localeID == nullptr || keywordName.empty()) {
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return;
     }
@@ -2285,8 +2292,17 @@ uloc_getISOCountries()
 U_CAPI const char* U_EXPORT2
 uloc_toUnicodeLocaleKey(const char* keyword)
 {
-    const char* bcpKey = ulocimp_toBcpKey(keyword);
-    if (bcpKey == nullptr && ultag_isUnicodeLocaleKey(keyword, -1)) {
+    if (keyword == nullptr || *keyword == '\0') { return nullptr; }
+    std::optional<std::string_view> result = ulocimp_toBcpKeyWithFallback(keyword);
+    return result.has_value() ? result->data() : nullptr;  // Known to be NUL terminated.
+}
+
+U_EXPORT std::optional<std::string_view>
+ulocimp_toBcpKeyWithFallback(std::string_view keyword)
+{
+    std::optional<std::string_view> bcpKey = ulocimp_toBcpKey(keyword);
+    if (!bcpKey.has_value() &&
+        ultag_isUnicodeLocaleKey(keyword.data(), static_cast<int32_t>(keyword.size()))) {
         // unknown keyword, but syntax is fine..
         return keyword;
     }
@@ -2296,8 +2312,18 @@ uloc_toUnicodeLocaleKey(const char* keyword)
 U_CAPI const char* U_EXPORT2
 uloc_toUnicodeLocaleType(const char* keyword, const char* value)
 {
-    const char* bcpType = ulocimp_toBcpType(keyword, value, nullptr, nullptr);
-    if (bcpType == nullptr && ultag_isUnicodeLocaleType(value, -1)) {
+    if (keyword == nullptr || *keyword == '\0' ||
+        value == nullptr || *value == '\0') { return nullptr; }
+    std::optional<std::string_view> result = ulocimp_toBcpTypeWithFallback(keyword, value);
+    return result.has_value() ? result->data() : nullptr;  // Known to be NUL terminated.
+}
+
+U_EXPORT std::optional<std::string_view>
+ulocimp_toBcpTypeWithFallback(std::string_view keyword, std::string_view value)
+{
+    std::optional<std::string_view> bcpType = ulocimp_toBcpType(keyword, value);
+    if (!bcpType.has_value() &&
+        ultag_isUnicodeLocaleType(value.data(), static_cast<int32_t>(value.size()))) {
         // unknown keyword, but syntax is fine..
         return value;
     }
@@ -2307,37 +2333,28 @@ uloc_toUnicodeLocaleType(const char* keyword, const char* value)
 namespace {
 
 bool
-isWellFormedLegacyKey(const char* legacyKey)
+isWellFormedLegacyKey(std::string_view key)
 {
-    const char* p = legacyKey;
-    while (*p) {
-        if (!UPRV_ISALPHANUM(*p)) {
-            return false;
-        }
-        p++;
-    }
-    return true;
+    return std::all_of(key.begin(), key.end(), UPRV_ISALPHANUM);
 }
 
 bool
-isWellFormedLegacyType(const char* legacyType)
+isWellFormedLegacyType(std::string_view legacyType)
 {
-    const char* p = legacyType;
     int32_t alphaNumLen = 0;
-    while (*p) {
-        if (*p == '_' || *p == '/' || *p == '-') {
+    for (char c : legacyType) {
+        if (c == '_' || c == '/' || c == '-') {
             if (alphaNumLen == 0) {
                 return false;
             }
             alphaNumLen = 0;
-        } else if (UPRV_ISALPHANUM(*p)) {
+        } else if (UPRV_ISALPHANUM(c)) {
             alphaNumLen++;
         } else {
             return false;
         }
-        p++;
     }
-    return (alphaNumLen != 0);
+    return alphaNumLen != 0;
 }
 
 }  // namespace
@@ -2345,8 +2362,16 @@ isWellFormedLegacyType(const char* legacyType)
 U_CAPI const char* U_EXPORT2
 uloc_toLegacyKey(const char* keyword)
 {
-    const char* legacyKey = ulocimp_toLegacyKey(keyword);
-    if (legacyKey == nullptr) {
+    if (keyword == nullptr || *keyword == '\0') { return nullptr; }
+    std::optional<std::string_view> result = ulocimp_toLegacyKeyWithFallback(keyword);
+    return result.has_value() ? result->data() : nullptr;  // Known to be NUL terminated.
+}
+
+U_EXPORT std::optional<std::string_view>
+ulocimp_toLegacyKeyWithFallback(std::string_view keyword)
+{
+    std::optional<std::string_view> legacyKey = ulocimp_toLegacyKey(keyword);
+    if (!legacyKey.has_value() && isWellFormedLegacyKey(keyword)) {
         // Checks if the specified locale key is well-formed with the legacy locale syntax.
         //
         // Note:
@@ -2354,9 +2379,7 @@ uloc_toLegacyKey(const char* keyword)
         //  * http://www.unicode.org/reports/tr35/#Unicode_locale_identifier and
         //  * http://www.unicode.org/reports/tr35/#Old_Locale_Extension_Syntax
         //  Keys can only consist of [0-9a-zA-Z].
-        if (isWellFormedLegacyKey(keyword)) {
-            return keyword;
-        }
+        return keyword;
     }
     return legacyKey;
 }
@@ -2364,8 +2387,17 @@ uloc_toLegacyKey(const char* keyword)
 U_CAPI const char* U_EXPORT2
 uloc_toLegacyType(const char* keyword, const char* value)
 {
-    const char* legacyType = ulocimp_toLegacyType(keyword, value, nullptr, nullptr);
-    if (legacyType == nullptr) {
+    if (keyword == nullptr || *keyword == '\0' ||
+        value == nullptr || *value == '\0') { return nullptr; }
+    std::optional<std::string_view> result = ulocimp_toLegacyTypeWithFallback(keyword, value);
+    return result.has_value() ? result->data() : nullptr;  // Known to be NUL terminated.
+}
+
+U_EXPORT std::optional<std::string_view>
+ulocimp_toLegacyTypeWithFallback(std::string_view keyword, std::string_view value)
+{
+    std::optional<std::string_view> legacyType = ulocimp_toLegacyType(keyword, value);
+    if (!legacyType.has_value() && isWellFormedLegacyType(value)) {
         // Checks if the specified locale type is well-formed with the legacy locale syntax.
         //
         // Note:
@@ -2374,9 +2406,7 @@ uloc_toLegacyType(const char* keyword, const char* value)
         //  * http://www.unicode.org/reports/tr35/#Old_Locale_Extension_Syntax
         //  Values (types) can only consist of [0-9a-zA-Z], plus for legacy values
         //  we allow [/_-+] in the middle (e.g. "Etc/GMT+1", "Asia/Tel_Aviv")
-        if (isWellFormedLegacyType(value)) {
-            return value;
-        }
+        return value;
     }
     return legacyType;
 }
