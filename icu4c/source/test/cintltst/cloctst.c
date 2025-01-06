@@ -2879,7 +2879,7 @@ static void TestDisplayNameWarning(void) {
  * starts with `prefix' plus an additional element, that is, string ==
  * prefix + '_' + x, then return 1.  Otherwise return a value < 0.
  */
-static UBool _loccmp(const char* string, const char* prefix) {
+static int32_t _loccmp(const char* string, const char* prefix) {
     int32_t slen = (int32_t)uprv_strlen(string),
             plen = (int32_t)uprv_strlen(prefix);
     int32_t c = uprv_strncmp(string, prefix, plen);
@@ -3924,6 +3924,13 @@ const char* const basic_maximize_data[][2] = {
     // ICU-22545 & ICU-22742
     "ru_XC",
     "ru_Cyrl_XC"
+  }, {
+    // ICU-22765
+    "und@x=private",
+    "en_Latn_US@x=private",
+  }, {
+    "th@x=private",
+    "th_Thai_TH@x=private",
   }
 };
 
