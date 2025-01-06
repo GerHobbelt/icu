@@ -186,6 +186,9 @@ bool Key::operator==(const Key& other) const {
     if (isWildcard()) {
         return other.isWildcard();
     }
+    if (other.isWildcard()) {
+        return false;
+    }
     return (asLiteral() == other.asLiteral());
 }
 
@@ -281,6 +284,10 @@ OptionMap::OptionMap(const UVector& opts, UErrorCode& status) : len(opts.size())
 
 OptionMap::OptionMap(const OptionMap& other) : len(other.len) {
     U_ASSERT(!other.bogus);
+    if (len == 0) {
+        bogus = false;
+        return;
+    }
     UErrorCode localErrorCode = U_ZERO_ERROR;
     Option* result = copyArray(other.options.getAlias(), len, localErrorCode);
     if (U_FAILURE(localErrorCode)) {
@@ -829,23 +836,19 @@ const Expression& Binding::getValue() const {
         } else {
             const Operator* rator = rhs.getOperator(errorCode);
             bool hasOperator = U_SUCCESS(errorCode);
-            if (hasOperator && rator->isReserved()) {
-                errorCode = U_INVALID_STATE_ERROR;
+            // Clear error code -- the "error" from the absent operator
+            // is handled
+            errorCode = U_ZERO_ERROR;
+            b = Binding(variableName, std::move(rhs));
+            b.local = false;
+            if (hasOperator) {
+                rator = b.getValue().getOperator(errorCode);
+                U_ASSERT(U_SUCCESS(errorCode));
+                b.annotation = &rator->contents;
             } else {
-                // Clear error code -- the "error" from the absent operator
-                // is handled
-                errorCode = U_ZERO_ERROR;
-                b = Binding(variableName, std::move(rhs));
-                b.local = false;
-                if (hasOperator) {
-                    rator = b.getValue().getOperator(errorCode);
-                    U_ASSERT(U_SUCCESS(errorCode));
-                    b.annotation = std::get_if<Callable>(&(rator->contents));
-                } else {
-                    b.annotation = nullptr;
-                }
-                U_ASSERT(!hasOperator || b.annotation != nullptr);
+                b.annotation = nullptr;
             }
+            U_ASSERT(!hasOperator || b.annotation != nullptr);
         }
     }
     return b;
@@ -853,7 +856,8 @@ const Expression& Binding::getValue() const {
 
 const OptionMap& Binding::getOptionsInternal() const {
     U_ASSERT(annotation != nullptr);
-    return annotation->getOptions();
+    U_ASSERT(std::holds_alternative<Callable>(*annotation));
+    return std::get_if<Callable>(annotation)->getOptions();
 }
 
 void Binding::updateAnnotation() {
@@ -863,7 +867,7 @@ void Binding::updateAnnotation() {
         return;
     }
     U_ASSERT(U_SUCCESS(localErrorCode) && !rator->isReserved());
-    annotation = std::get_if<Callable>(&(rator->contents));
+    annotation = &rator->contents;
 }
 
 Binding::Binding(const Binding& other) : var(other.var), expr(other.expr), local(other.local) {

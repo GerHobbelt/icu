@@ -1,18 +1,26 @@
 name: CIFuzz
 on:
-  # comments out triggerin on PR for now
-  # pull_request:
-  #   paths:
-  #    - '**.c'
-  #    - '**.cc'
-  #    - '**.cpp'
-  #    - '**.cxx'
-  #    - '**.h'
-  # Only trigger by post merge for now.
+  pull_request:
+    branches: '**'
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cxx'
+      - '**.h'
+      - '.github/workflows/**'
   push:
     branches:
       - main
       - 'maint/maint*'
+    paths:
+      - '**.c'
+      - '**.cc'
+      - '**.cpp'
+      - '**.cxx'
+      - '**.h'
+      - '.github/workflows/**'
+  workflow_dispatch:
 permissions: {}
 jobs:
   Fuzzing:
@@ -45,7 +53,7 @@ jobs:
         path: ./out/artifacts   
     - name: Upload Sarif
       if: always() && steps.build.outcome == 'success'
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@v3.26.6
       with:
         # Path to SARIF file relative to the root of the repository
         sarif_file: cifuzz-sarif/results.sarif
