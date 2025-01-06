@@ -741,7 +741,7 @@ fSkippedWallTime(UCAL_WALLTIME_LAST)
         delete zone;
         return;
     }
-    if(zone == 0) {
+    if (zone == nullptr) {
 #if defined (U_DEBUG_CAL)
         fprintf(stderr, "%s:%d: ILLEGAL ARG because timezone cannot be 0\n",
             __FILE__, __LINE__);
@@ -1532,7 +1532,7 @@ uint8_t Calendar::julianDayToDayOfWeek(int32_t julian)
 {
     // If julian is negative, then julian%7 will be negative, so we adjust
     // accordingly.  We add 1 because Julian day 0 is Monday.
-    int8_t dayOfWeek = (int8_t) ((julian + 1) % 7);
+    int8_t dayOfWeek = (int8_t) ((julian + 1LL) % 7);
 
     uint8_t result = (uint8_t)(dayOfWeek + ((dayOfWeek < 0) ? (7+UCAL_SUNDAY ) : UCAL_SUNDAY));
     return result;
@@ -1764,8 +1764,8 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
             int32_t max = getActualMaximum(field,status);
             int32_t gap = max - min + 1;
 
-            int32_t value = internalGet(field) + amount;
-            value = (value - min) % gap;
+            int64_t value = internalGet(field);
+            value = (value + amount - min) % gap;
             if (value < 0) {
                 value += gap;
             }
@@ -1787,7 +1787,7 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
         {
             // Assume min == 0 in calculations below
             double start = getTimeInMillis(status);
-            int32_t oldHour = internalGet(field);
+            int64_t oldHour = internalGet(field);
             int32_t max = getMaximum(field);
             int32_t newHour = (oldHour + amount) % (max + 1);
             if (newHour < 0) {
@@ -1804,11 +1804,12 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
         // DAY_OF_MONTH if, after updating the MONTH field, it is illegal.
         // E.g., <jan31>.roll(MONTH, 1) -> <feb28> or <feb29>.
         {
-            int32_t max = getActualMaximum(UCAL_MONTH, status);
-            int32_t mon = (internalGet(UCAL_MONTH) + amount) % (max+1);
+            int32_t max = getActualMaximum(UCAL_MONTH, status) + 1;
+            int64_t mon = internalGet(UCAL_MONTH);
+            mon = (mon + amount) % max;
 
             if (mon < 0) {
-                mon += (max + 1);
+                mon += max;
             }
             set(UCAL_MONTH, mon);
 
@@ -1825,16 +1826,19 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
             // * If era==0 and years go backwards in time, change sign of amount.
             // * Until we have new API per #9393, we temporarily hardcode knowledge of
             //   which calendars have era 0 years that go backwards.
-            UBool era0WithYearsThatGoBackwards = false;
-            int32_t era = get(UCAL_ERA, status);
-            if (era == 0) {
-                const char * calType = getType();
-                if ( uprv_strcmp(calType,"gregorian")==0 || uprv_strcmp(calType,"roc")==0 || uprv_strcmp(calType,"coptic")==0 ) {
-                    amount = -amount;
-                    era0WithYearsThatGoBackwards = true;
+            int32_t era = internalGet(UCAL_ERA);
+            if (era == 0 && isEra0CountingBackward()) {
+                if (uprv_mul32_overflow(amount, -1, &amount)) {
+                    status = U_ILLEGAL_ARGUMENT_ERROR;
+                    return;
                 }
             }
-            int32_t newYear = internalGet(field) + amount;
+            int32_t newYear;
+            if (uprv_add32_overflow(
+                amount, internalGet(field), &newYear)) {
+                status = U_ILLEGAL_ARGUMENT_ERROR;
+                return;
+            }
             if (era > 0 || newYear >= 1) {
                 int32_t maxYear = getActualMaximum(field, status);
                 if (maxYear < 32768) {
@@ -1851,7 +1855,7 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
             // else we are in era 0 with newYear < 1;
             // calendars with years that go backwards must pin the year value at 0,
             // other calendars can have years < 0 in era 0
-            } else if (era0WithYearsThatGoBackwards) {
+            } else if (era == 0 && isEra0CountingBackward()) {
                 newYear = 1;
             }
             set(field, newYear);
@@ -1862,7 +1866,12 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
 
     case UCAL_EXTENDED_YEAR:
         // Rolling the year can involve pinning the DAY_OF_MONTH.
-        set(field, internalGet(field) + amount);
+        if (uprv_add32_overflow(
+            amount, internalGet(field), &amount)) {
+            status = U_ILLEGAL_ARGUMENT_ERROR;
+            return;
+        }
+        set(field, amount);
         pinField(UCAL_MONTH,status);
         pinField(UCAL_DAY_OF_MONTH,status);
         return;
@@ -1934,7 +1943,7 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
                 status =  U_INTERNAL_PROGRAM_ERROR;
                 return;
             }
-            int32_t day_of_month = (internalGet(UCAL_DAY_OF_MONTH) + amount*7 -
+            int32_t day_of_month = (internalGet(UCAL_DAY_OF_MONTH) + amount*7LL -
                 start) % gap;
             if (day_of_month < 0) day_of_month += gap;
             day_of_month += start;
@@ -1996,7 +2005,7 @@ void Calendar::roll(UCalendarDateFields field, int32_t amount, UErrorCode& statu
                 status =  U_INTERNAL_PROGRAM_ERROR;
                 return;
             }
-            int32_t day_of_year = (internalGet(UCAL_DAY_OF_YEAR) + amount*7 -
+            int32_t day_of_year = (internalGet(UCAL_DAY_OF_YEAR) + amount*7LL -
                 start) % gap;
             if (day_of_year < 0) day_of_year += gap;
             day_of_year += start;
@@ -2162,14 +2171,10 @@ void Calendar::add(UCalendarDateFields field, int32_t amount, UErrorCode& status
         //   this by applying the amount to the UCAL_EXTENDED_YEAR field; but since
         //   we would still need to handle UCAL_YEAR_WOY as below, might as well
         //   also handle UCAL_YEAR the same way.
-        int32_t era = get(UCAL_ERA, status);
-        if (era == 0) {
-          const char * calType = getType();
-          if ( uprv_strcmp(calType,"gregorian")==0 || uprv_strcmp(calType,"roc")==0 || uprv_strcmp(calType,"coptic")==0 ) {
-            if (uprv_mul32_overflow(amount, -1, &amount)) {
-                status = U_ILLEGAL_ARGUMENT_ERROR;
-                return;
-            }
+        if (get(UCAL_ERA, status) == 0 && isEra0CountingBackward()) {
+          if (uprv_mul32_overflow(amount, -1, &amount)) {
+              status = U_ILLEGAL_ARGUMENT_ERROR;
+              return;
           }
         }
       }
@@ -2355,6 +2360,7 @@ int32_t Calendar::fieldDifference(UDate targetMs, UCalendarDateFields field, UEr
                     __FILE__, __LINE__, fldName(field));
 #endif
                 ec = U_ILLEGAL_ARGUMENT_ERROR;
+                return 0;
             }
         }
         // Do a binary search
@@ -2392,6 +2398,7 @@ int32_t Calendar::fieldDifference(UDate targetMs, UCalendarDateFields field, UEr
                         __FILE__, __LINE__, fldName(field));
 #endif
                     ec = U_ILLEGAL_ARGUMENT_ERROR;
+                    return 0;
                 }
             }
         }

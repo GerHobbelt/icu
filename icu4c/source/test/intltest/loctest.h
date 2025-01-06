@@ -24,6 +24,7 @@ public:
      * Test methods to set and get data fields
      **/
     void TestBasicGetters();
+    void TestVariantLengthLimit();
     /**
      * Test methods to set and get data fields
      **/

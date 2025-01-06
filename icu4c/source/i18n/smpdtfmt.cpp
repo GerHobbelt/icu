@@ -332,9 +332,7 @@ SimpleDateFormat::~SimpleDateFormat()
     if (fSharedNumberFormatters) {
         freeSharedNumberFormatters(fSharedNumberFormatters);
     }
-    if (fTimeZoneFormat) {
-        delete fTimeZoneFormat;
-    }
+    delete fTimeZoneFormat;
     delete fSimpleNumberFormatter;
 
 #if !UCONFIG_NO_BREAK_ITERATION
@@ -507,7 +505,7 @@ SimpleDateFormat::SimpleDateFormat(const Locale& locale,
         // This constructor doesn't fail; it uses last resort data
         fSymbols = new DateFormatSymbols(status);
         /* test for nullptr */
-        if (fSymbols == 0) {
+        if (fSymbols == nullptr) {
             status = U_MEMORY_ALLOCATION_ERROR;
             return;
         }
@@ -709,7 +707,7 @@ void SimpleDateFormat::construct(EStyle timeStyle,
     fSymbols = DateFormatSymbols::createForLocale(locale, status);
     if (U_FAILURE(status)) return;
     /* test for nullptr */
-    if (fSymbols == 0) {
+    if (fSymbols == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         return;
     }
@@ -1114,9 +1112,7 @@ SimpleDateFormat::_format(Calendar& cal, UnicodeString& appendTo,
                   prevCh, handler, *workCal, status);
     }
 
-    if (calClone != nullptr) {
-        delete calClone;
-    }
+    delete calClone;
 
     return appendTo;
 }
@@ -1312,7 +1308,7 @@ SimpleDateFormat::initSimpleNumberFormatter(UErrorCode &status) {
     if (U_FAILURE(status)) {
         return;
     }
-    auto* df = dynamic_cast<const DecimalFormat*>(fNumberFormat);
+    const auto* df = dynamic_cast<const DecimalFormat*>(fNumberFormat);
     if (df == nullptr) {
         return;
     }
@@ -1527,7 +1523,7 @@ SimpleDateFormat::subFormat(UnicodeString &appendTo,
     // "GGGG" is wide era name, "GGGGG" is narrow era name, anything else is abbreviated name
     case UDAT_ERA_FIELD:
         {
-            auto calType = cal.getType();
+            const auto* calType = cal.getType();
             if (uprv_strcmp(calType,"chinese") == 0 || uprv_strcmp(calType,"dangi") == 0) {
                 zeroPaddingNumber(currentNumberFormat,appendTo, value, 1, 9); // as in ICU4J
             } else {
@@ -2168,7 +2164,7 @@ SimpleDateFormat::zeroPaddingNumber(
         data.quantity.setToLong(value);
         number::SimpleNumber number(&data, localStatus);
         number.setMinimumIntegerDigits(minDigits, localStatus);
-        number.truncateStart(maxDigits, localStatus);
+        number.setMaximumIntegerDigits(maxDigits, localStatus);
 
         number::FormattedNumber result = fSimpleNumberFormatter->format(std::move(number), localStatus);
         if (U_FAILURE(localStatus)) {
@@ -2182,7 +2178,7 @@ SimpleDateFormat::zeroPaddingNumber(
     }
 
     // Check for RBNF (no clone necessary)
-    auto* rbnf = dynamic_cast<const RuleBasedNumberFormat*>(currentNumberFormat);
+    const auto* rbnf = dynamic_cast<const RuleBasedNumberFormat*>(currentNumberFormat);
     if (rbnf != nullptr) {
         FieldPosition pos(FieldPosition::DONT_CARE);
         rbnf->format(value, appendTo, pos);  // 3rd arg is there to speed up processing
@@ -2656,12 +2652,8 @@ ExitParse:
         cal.setTime(workCal->getTime(status), status);
     }
 
-    if (numericLeapMonthFormatter != nullptr) {
-        delete numericLeapMonthFormatter;
-    }
-    if (calClone != nullptr) {
-        delete calClone;
-    }
+    delete numericLeapMonthFormatter;
+    delete calClone;
 
     // If any Calendar calls failed, we pretend that we
     // couldn't parse the string, when in reality this isn't quite accurate--
@@ -3922,7 +3914,7 @@ void SimpleDateFormat::parseInt(const UnicodeString& text,
                                 UBool allowNegative,
                                 const NumberFormat *fmt) const {
     UnicodeString oldPrefix;
-    auto* fmtAsDF = dynamic_cast<const DecimalFormat*>(fmt);
+    const auto* fmtAsDF = dynamic_cast<const DecimalFormat*>(fmt);
     LocalPointer<DecimalFormat> df;
     if (!allowNegative && fmtAsDF != nullptr) {
         df.adoptInstead(fmtAsDF->clone());

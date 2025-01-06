@@ -3799,7 +3799,6 @@ static void decToString(const decNumber *dn, char *string, Flag eng) {
       } /* cut  */
     }
   *c='\0';          /* terminate the string (all paths)  */
-  return;
   } /* decToString  */
 
 /* ------------------------------------------------------------------ */
@@ -6716,7 +6715,6 @@ static void decReverse(Unit *ulo, Unit *uhi) {
     *ulo=*uhi;
     *uhi=temp;
     }
-  return;
   } /* decReverse  */
 
 /* ------------------------------------------------------------------ */
@@ -7083,7 +7081,6 @@ static void decSetCoeff(decNumber *dn, decContext *set, const Unit *lsu,
     } /* not unit boundary  */
 
   if (*residue!=0) *status|=DEC_Inexact; /* record inexactitude  */
-  return;
   } /* decSetCoeff  */
 
 /* ------------------------------------------------------------------ */
@@ -7382,7 +7379,6 @@ static void decFinalize(decNumber *dn, decContext *set, Int *residue,
     }
   dn->exponent-=shift;   /* adjust the exponent to match  */
   *status|=DEC_Clamped;  /* and record the dirty deed  */
-  return;
   } /* decFinalize  */
 
 /* ------------------------------------------------------------------ */
@@ -7799,7 +7795,6 @@ static void decStatus(decNumber *dn, uInt status, decContext *set) {
       }
     }
   uprv_decContextSetStatus(set, status);     /* [may not return]  */
-  return;
   } /* decStatus  */
 
 /* ------------------------------------------------------------------ */

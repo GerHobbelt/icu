@@ -120,7 +120,6 @@ class ConversionRateDataSink : public ResourceSink {
                 cr->systems.appendInvariantChars(systems, status);
             }
         }
-        return;
     }
 
   private:
@@ -440,7 +439,7 @@ MaybeStackVector<UnitPreference>
         }
     }
 
-    CharString region = ulocimp_getRegionForSupplementalData(locale.getName(), false, status);
+    CharString region = ulocimp_getRegionForSupplementalData(locale.getName(), true, status);
 
     // Check the locale system tag, e.g `ms=metric`.
     UErrorCode internalMeasureTagStatus = U_ZERO_ERROR;

@@ -731,7 +731,7 @@ UBool SimpleTimeZone::inDaylightTime(UDate date, UErrorCode& status) const
     if (U_FAILURE(status)) return false;
     GregorianCalendar *gc = new GregorianCalendar(*this, status);
     /* test for nullptr */
-    if (gc == 0) {
+    if (gc == nullptr) {
         status = U_MEMORY_ALLOCATION_ERROR;
         return false;
     }
@@ -1054,18 +1054,10 @@ SimpleTimeZone::clearTransitionRules() {
 
 void
 SimpleTimeZone::deleteTransitionRules() {
-    if (initialRule != nullptr) {
-        delete initialRule;
-    }
-    if (firstTransition != nullptr) {
-        delete firstTransition;
-    }
-    if (stdRule != nullptr) {
-        delete stdRule;
-    }
-    if (dstRule != nullptr) {
-        delete dstRule;
-    }
+    delete initialRule;
+    delete firstTransition;
+    delete stdRule;
+    delete dstRule;
     clearTransitionRules();
  }
 

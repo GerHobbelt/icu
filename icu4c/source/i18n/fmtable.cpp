@@ -788,9 +788,7 @@ Formattable::populateDecimalQuantity(number::impl::DecimalQuantity& output, UErr
 // ---------------------------------------
 void
 Formattable::adoptDecimalQuantity(DecimalQuantity *dq) {
-    if (fDecimalQuantity != nullptr) {
-        delete fDecimalQuantity;
-    }
+    delete fDecimalQuantity;
     fDecimalQuantity = dq;
     if (dq == nullptr) { // allow adoptDigitList(nullptr) to clear
         return;

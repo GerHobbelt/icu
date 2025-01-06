@@ -190,12 +190,12 @@ LocaleTest::LocaleTest()
 
 LocaleTest::~LocaleTest()
 {
-    if (dataTable != 0) {
+    if (dataTable != nullptr) {
         for (int32_t i = 0; i < 33; i++) {
             delete []dataTable[i];
         }
         delete []dataTable;
-        dataTable = 0;
+        dataTable = nullptr;
     }
 }
 
@@ -204,6 +204,7 @@ void LocaleTest::runIndexedTest( int32_t index, UBool exec, const char* &name, c
     TESTCASE_AUTO_BEGIN;
     TESTCASE_AUTO(TestBug11421);         // Must run early in list to trigger failure.
     TESTCASE_AUTO(TestBasicGetters);
+    TESTCASE_AUTO(TestVariantLengthLimit);
     TESTCASE_AUTO(TestSimpleResourceInfo);
     TESTCASE_AUTO(TestDisplayNames);
     TESTCASE_AUTO(TestSimpleObjectStuff);
@@ -407,6 +408,69 @@ void LocaleTest::TestBasicGetters() {
         errln("Locale.clone() failed");
     }
     delete pb;
+}
+
+void LocaleTest::TestVariantLengthLimit() {
+    static constexpr char valid[] =
+        "_"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678";
+
+    static constexpr char invalid[] =
+        "_"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678"
+        "_12345678X";  // One character too long.
+
+    constexpr const char* variantsExpected = valid + 2;  // Skip initial "__".
+
+    Locale validLocale(valid);
+    if (validLocale.isBogus()) {
+        errln("Valid locale is unexpectedly bogus.");
+    } else if (uprv_strcmp(variantsExpected, validLocale.getVariant()) != 0) {
+        errln("Expected variants \"%s\" but got variants \"%s\"\n",
+              variantsExpected, validLocale.getVariant());
+    }
+
+    Locale invalidLocale(invalid);
+    if (!invalidLocale.isBogus()) {
+        errln("Invalid locale is unexpectedly NOT bogus.");
+    }
 }
 
 void LocaleTest::TestParallelAPIValues() {
@@ -869,7 +933,7 @@ void LocaleTest::doTestDisplayNames(Locale& displayLocale, int32_t compareIndex)
 
 void LocaleTest::setUpDataTable()
 {
-    if (dataTable == 0) {
+    if (dataTable == nullptr) {
         dataTable = new UnicodeString*[33];
 
         for (int32_t i = 0; i < 33; i++) {
@@ -1432,7 +1496,7 @@ LocaleTest::date(int32_t y, int32_t m, int32_t d, int32_t hr, int32_t min, int32
 {
     UErrorCode status = U_ZERO_ERROR;
     Calendar *cal = Calendar::createInstance(status);
-    if (cal == 0)
+    if (cal == nullptr)
         return 0.0;
     cal->clear();
     cal->set(1900 + y, m, d, hr, min, sec); // Add 1900 to follow java.util.Date protocol
@@ -1625,7 +1689,7 @@ void LocaleTest::Test20639_DeprecatesISO3Language() {
         {"ro", "ron"},
         {"mo", "mol"},
     };
-    for (auto& cas : cases) {
+    for (const auto& cas : cases) {
         Locale loc(cas.localeName);
         const char* actual = loc.getISO3Language();
         assertEquals(cas.localeName, cas.expectedISO3Language, actual);
@@ -4668,7 +4732,7 @@ void LocaleTest::TestGetLocale() {
         DateFormat* df =
             DateFormat::createDateInstance(DateFormat::kDefault,
                                            Locale::createFromName(req));
-        if (df == 0){
+        if (df == nullptr) {
             dataerrln("Error calling DateFormat::createDateInstance()");
         } else {
             SimpleDateFormat* dat = dynamic_cast<SimpleDateFormat*>(df);
@@ -4721,7 +4785,7 @@ void LocaleTest::TestGetLocale() {
         
             // After registering something, the behavior should be different
             URegistryKey key = BreakIterator::registerInstance(brk, reqLoc, UBRK_WORD, ec);
-            brk = 0; // registerInstance adopts
+            brk = nullptr; // registerInstance adopts
             if (U_FAILURE(ec)) {
                 errln("FAIL: BreakIterator::registerInstance() failed");
             } else {
@@ -4745,7 +4809,7 @@ void LocaleTest::TestGetLocale() {
                     errln("FAIL: BreakIterator::unregister() failed");
                 }
                 delete brk;
-                brk = 0;
+                brk = nullptr;
             }
 
             // After unregistering, should behave normally again
@@ -4789,7 +4853,7 @@ void LocaleTest::TestGetLocale() {
 
             // After registering something, the behavior should be different
             URegistryKey key = Collator::registerInstance(coll, reqLoc, ec);
-            coll = 0; // registerInstance adopts
+            coll = nullptr; // registerInstance adopts
             if (U_FAILURE(ec)) {
                 errln("FAIL: Collator::registerInstance() failed");
             } else {
@@ -4815,7 +4879,7 @@ void LocaleTest::TestGetLocale() {
                     errln("FAIL: Collator::unregister() failed");
                 }
                 delete coll;
-                coll = 0;
+                coll = nullptr;
             }
 
             // After unregistering, should behave normally again
@@ -4969,9 +5033,9 @@ static Locale _canonicalize(int32_t selector, /* 0==createFromName, 1==createCan
     case 1:
         return Locale::createCanonical(localeID);
     case 2:
-        return Locale(localeID);
+        return {localeID};
     default:
-        return Locale("");
+        return {""};
     }
 }
 
@@ -4994,6 +5058,18 @@ void LocaleTest::TestCanonicalization()
         { "no@ny", "no@ny", "no__NY" /* not: "nn" [alan ICU3.0] */ }, /* POSIX ID */
         { "no-no.utf32@B", "no_NO.utf32@B", "no_NO_B" }, /* POSIX ID */
         { "qz-qz@Euro", "qz_QZ@Euro", "qz_QZ_EURO" }, /* qz-qz uses private use iso codes */
+
+        // A very long charset name in IANA charset
+        { "ja_JP.Extended_UNIX_Code_Packed_Format_for_Japanese@B",
+          "ja_JP.Extended_UNIX_Code_Packed_Format_for_Japanese@B", "ja_JP_B" }, /* POSIX ID */
+        // A fake long charset name below the limitation
+        { "ja_JP.1234567890123456789012345678901234567890123456789012345678901234@B",
+          "ja_JP.1234567890123456789012345678901234567890123456789012345678901234@B",
+          "ja_JP_B" }, /* POSIX ID */
+        // A fake long charset name one char above the limitation
+        { "ja_JP.12345678901234567890123456789012345678901234567890123456789012345@B",
+          "BOGUS",
+          "ja_JP_B" }, /* POSIX ID */
         // NOTE: uloc_getName() works on en-BOONT, but Locale() parser considers it BOGUS
         // TODO: unify this behavior
         { "en-BOONT", "en__BOONT", "en__BOONT" }, /* registered name */
@@ -5768,7 +5844,7 @@ public:
 };
 
 bool isKnownSourceForCLDR17099(const std::string& s) {
-    if (s.compare("qaa-Cyrl-CH") == 0) {
+    if (s == "qaa-Cyrl-CH") {
         return true;
     }
 
