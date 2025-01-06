@@ -392,7 +392,7 @@ ParagraphLayout::ParagraphLayout(const LEUnicode chars[], le_int32 count,
             fStyleRunInfo[run].font = nullptr;
             fStyleRunInfo[run].runBase = 0;
             fStyleRunInfo[run].runLimit = 0;
-            fStyleRunInfo[run].script = (UScriptCode)0;
+            fStyleRunInfo[run].script = static_cast<UScriptCode>(0);
             fStyleRunInfo[run].locale = nullptr;
             fStyleRunInfo[run].level = 0;
             fStyleRunInfo[run].glyphBase = 0;
@@ -408,9 +408,9 @@ ParagraphLayout::ParagraphLayout(const LEUnicode chars[], le_int32 count,
         fStyleRunInfo[run].font      = fFontRuns->getFont(styleIndices[0]);
         fStyleRunInfo[run].runBase   = runStart;
         fStyleRunInfo[run].runLimit  = fStyleRunLimits[run];
-        fStyleRunInfo[run].script    = (UScriptCode) fScriptRuns->getValue(styleIndices[2]);
+        fStyleRunInfo[run].script = static_cast<UScriptCode>(fScriptRuns->getValue(styleIndices[2]));
         fStyleRunInfo[run].locale    = fLocaleRuns->getLocale(styleIndices[3]);
-        fStyleRunInfo[run].level     = (UBiDiLevel) fLevelRuns->getValue(styleIndices[1]);
+        fStyleRunInfo[run].level = static_cast<UBiDiLevel>(fLevelRuns->getValue(styleIndices[1]));
         fStyleRunInfo[run].glyphBase = fGlyphCount;
 
         fStyleRunInfo[run].engine = LayoutEngine::layoutEngineFactory(fStyleRunInfo[run].font,
@@ -530,24 +530,24 @@ ParagraphLayout::ParagraphLayout(const LEUnicode chars[], le_int32 count,
 
 ParagraphLayout::~ParagraphLayout()
 {
-    delete (FontRuns *) fFontRuns;
+    delete const_cast<FontRuns*>(fFontRuns);
 
     if (! fClientLevels) {
-        delete (ValueRuns *) fLevelRuns;
+        delete const_cast<ValueRuns*>(fLevelRuns);
         fLevelRuns = nullptr;
 
         fClientLevels = true;
     }
 
     if (! fClientScripts) {
-        delete (ValueRuns *) fScriptRuns;
+        delete const_cast<ValueRuns*>(fScriptRuns);
         fScriptRuns = nullptr;
 
         fClientScripts = true;
     }
 
     if (! fClientLocales) {
-        delete (LocaleRuns *) fLocaleRuns;
+        delete const_cast<LocaleRuns*>(fLocaleRuns);
         fLocaleRuns = nullptr;
 
         fClientLocales = true;
@@ -638,7 +638,7 @@ le_bool ParagraphLayout::isComplex(const LEUnicode chars[], le_int32 count)
 le_int32 ParagraphLayout::getAscent() const
 {
     if (fAscent <= 0 && fCharCount > 0) {
-        ((ParagraphLayout *) this)->computeMetrics();
+        const_cast<ParagraphLayout*>(this)->computeMetrics();
     }
 
     return fAscent;
@@ -647,7 +647,7 @@ le_int32 ParagraphLayout::getAscent() const
 le_int32 ParagraphLayout::getDescent() const
 {
     if (fAscent <= 0 && fCharCount > 0) {
-        ((ParagraphLayout *) this)->computeMetrics();
+        const_cast<ParagraphLayout*>(this)->computeMetrics();
     }
 
     return fDescent;
@@ -656,7 +656,7 @@ le_int32 ParagraphLayout::getDescent() const
 le_int32 ParagraphLayout::getLeading() const
 {
     if (fAscent <= 0 && fCharCount > 0) {
-        ((ParagraphLayout *) this)->computeMetrics();
+        const_cast<ParagraphLayout*>(this)->computeMetrics();
     }
 
     return fLeading;
@@ -720,7 +720,7 @@ void ParagraphLayout::computeLevels(UBiDiLevel paragraphLevel)
         fEmbeddingLevels = LE_NEW_ARRAY(UBiDiLevel, fCharCount);
 
         for (ch = 0, run = 0; run < fLevelRuns->getCount(); run += 1) {
-            UBiDiLevel runLevel = (UBiDiLevel) fLevelRuns->getValue(run) | UBIDI_LEVEL_OVERRIDE;
+            UBiDiLevel runLevel = static_cast<UBiDiLevel>(fLevelRuns->getValue(run)) | UBIDI_LEVEL_OVERRIDE;
             le_int32   runLimit = fLevelRuns->getLimit(run);
 
             while (ch < runLimit) {
@@ -1176,7 +1176,7 @@ ParagraphLayout::Line::~Line()
 le_int32 ParagraphLayout::Line::getAscent() const
 {
     if (fAscent <= 0) {
-        ((ParagraphLayout::Line *)this)->computeMetrics();
+        const_cast<ParagraphLayout::Line*>(this)->computeMetrics();
     }
 
     return fAscent;
@@ -1185,7 +1185,7 @@ le_int32 ParagraphLayout::Line::getAscent() const
 le_int32 ParagraphLayout::Line::getDescent() const
 {
     if (fAscent <= 0) {
-        ((ParagraphLayout::Line *)this)->computeMetrics();
+        const_cast<ParagraphLayout::Line*>(this)->computeMetrics();
     }
 
     return fDescent;
@@ -1194,7 +1194,7 @@ le_int32 ParagraphLayout::Line::getDescent() const
 le_int32 ParagraphLayout::Line::getLeading() const
 {
     if (fAscent <= 0) {
-        ((ParagraphLayout::Line *)this)->computeMetrics();
+        const_cast<ParagraphLayout::Line*>(this)->computeMetrics();
     }
 
     return fLeading;
@@ -1211,7 +1211,7 @@ le_int32 ParagraphLayout::Line::getWidth() const
     le_int32 glyphCount = lastRun->getGlyphCount();
     const float *positions = lastRun->getPositions();
 
-    return (le_int32) positions[glyphCount * 2];
+    return static_cast<le_int32>(positions[glyphCount * 2]);
 }
 
 const ParagraphLayout::VisualRun *ParagraphLayout::Line::getVisualRun(le_int32 runIndex) const
@@ -1232,7 +1232,7 @@ void ParagraphLayout::Line::append(const LEFontInstance *font, UBiDiDirection di
             fRuns = LE_NEW_ARRAY(ParagraphLayout::VisualRun *, fRunCapacity);
         } else {
             fRunCapacity += (fRunCapacity < RUN_CAPACITY_GROW_LIMIT? fRunCapacity : RUN_CAPACITY_GROW_LIMIT);
-            fRuns = (ParagraphLayout::VisualRun **) LE_GROW_ARRAY(fRuns, fRunCapacity);
+            fRuns = static_cast<ParagraphLayout::VisualRun**>(LE_GROW_ARRAY(fRuns, fRunCapacity));
         }
     }
 

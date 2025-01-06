@@ -67,12 +67,12 @@ https://github.com/unicode-org/unicodetools/issues/492 adjust cldr/*BreakTest ge
 Markus:
 
 export UNIDATA_ROOT=~/unidata
-export UNICODE_DATA=$UNIDATA_ROOT/uni16/alpha
+export UNICODE_DATA=$UNIDATA_ROOT/uni16/beta
 export CLDR_SRC=~/cldr/uni/src
 export ICU_ROOT=~/icu/uni
 export ICU_SRC=$ICU_ROOT/src
 export ICU_OUT=$ICU_ROOT/dbg
-export ICUDT=icudt75b
+export ICUDT=icudt76b
 export ICU4C_DATA_IN=$ICU_SRC/icu4c/source/data/in
 export ICU4C_UNIDATA=$ICU_SRC/icu4c/source/data/unidata
 export LD_LIBRARY_PATH=$ICU_OUT/icu4c/lib
@@ -81,12 +81,12 @@ export UNICODE_TOOLS=~/unitools/mine/src
 Elango:
 
 export UNIDATA_ROOT=~/oss/unidata
-export UNICODE_DATA=$UNIDATA_ROOT/uni16/alpha
+export UNICODE_DATA=$UNIDATA_ROOT/uni16/beta
 export CLDR_SRC=~/oss/cldr/mine/src
 export ICU_ROOT=~/oss/icu
 export ICU_SRC=$ICU_ROOT
 export ICU_OUT=$ICU_ROOT
-export ICUDT=icudt75b
+export ICUDT=icudt76b
 export ICU4C_DATA_IN=$ICU_SRC/icu4c/source/data/in
 export ICU4C_UNIDATA=$ICU_SRC/icu4c/source/data/unidata
 export LD_LIBRARY_PATH=$ICU_OUT/icu4c/lib
@@ -275,8 +275,6 @@ copying that version number into the $ICU_SRC/.bazeliskrc config file.
 - generate data files, as above (generate.sh), now to pick up new collation data
 - rebuild ICU4C (make clean, make check, as usual)
 
-TODO
-
 * Unihan collators
     https://github.com/unicode-org/unicodetools/blob/main/docs/unihan.md
 - run Unicode Tools GenerateUnihanCollators & GenerateUnihanCollatorFiles,
@@ -326,25 +324,25 @@ TODO
   output:
     ...
     make[1]: Entering directory '/usr/local/google/home/mscherer/icu/uni/dbg/icu4c/data'
-    mkdir -p ./out/icu4j/com/ibm/icu/impl/data/icudt75b
-    mkdir -p ./out/icu4j/tzdata/com/ibm/icu/impl/data/icudt75b
-    LD_LIBRARY_PATH=../lib:../stubdata:../tools/ctestfw:$LD_LIBRARY_PATH  ../bin/icupkg ./out/tmp/icudt75l.dat ./out/icu4j/icudt75b.dat -s ./out/build/icudt75l -x '*' -tb -d ./out/icu4j/com/ibm/icu/impl/data/icudt75b
-    mv ./out/icu4j/"com/ibm/icu/impl/data/icudt75b/zoneinfo64.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt75b/metaZones.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt75b/timezoneTypes.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt75b/windowsZones.res" "./out/icu4j/tzdata/com/ibm/icu/impl/data/icudt75b"
-    jar cf ./out/icu4j/icudata.jar -C ./out/icu4j com/ibm/icu/impl/data/icudt75b/
+    mkdir -p ./out/icu4j/com/ibm/icu/impl/data/icudt76b
+    mkdir -p ./out/icu4j/tzdata/com/ibm/icu/impl/data/icudt76b
+    LD_LIBRARY_PATH=../lib:../stubdata:../tools/ctestfw:$LD_LIBRARY_PATH  ../bin/icupkg ./out/tmp/icudt76l.dat ./out/icu4j/icudt76b.dat -s ./out/build/icudt76l -x '*' -tb -d ./out/icu4j/com/ibm/icu/impl/data/icudt76b
+    mv ./out/icu4j/"com/ibm/icu/impl/data/icudt76b/zoneinfo64.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt76b/metaZones.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt76b/timezoneTypes.res" ./out/icu4j/"com/ibm/icu/impl/data/icudt76b/windowsZones.res" "./out/icu4j/tzdata/com/ibm/icu/impl/data/icudt76b"
+    jar cf ./out/icu4j/icudata.jar -C ./out/icu4j com/ibm/icu/impl/data/icudt76b/
     mkdir -p /tmp/icu4j/main/shared/data
     cp ./out/icu4j/icudata.jar /tmp/icu4j/main/shared/data
-    jar cf ./out/icu4j/icutzdata.jar -C ./out/icu4j/tzdata com/ibm/icu/impl/data/icudt75b/
+    jar cf ./out/icu4j/icutzdata.jar -C ./out/icu4j/tzdata com/ibm/icu/impl/data/icudt76b/
     mkdir -p /tmp/icu4j/main/shared/data
     cp ./out/icu4j/icutzdata.jar /tmp/icu4j/main/shared/data
     make[1]: Leaving directory '/usr/local/google/home/mscherer/icu/uni/dbg/icu4c/data'
 - copy the binary data files into the ICU4J tree
     cd $ICU_OUT/icu4c/data/out/icu4j
-    cp -v com/ibm/icu/impl/data/$ICUDT/coll/* $ICU_SRC/icu4j/main/collate/src/main/resources/com/ibm/icu/impl/data/$ICUDT/coll
-    cp -v com/ibm/icu/impl/data/$ICUDT/brkitr/* $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/$ICUDT/brkitr
-    cp -v com/ibm/icu/impl/data/$ICUDT/confusables.cfu $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/$ICUDT
-    cp -v com/ibm/icu/impl/data/$ICUDT/*.nrm $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/$ICUDT
-    cd com/ibm/icu/impl/data/$ICUDT/
-    ls *.icu | egrep -v "cnvalias.icu" | awk '{print "cp " $0 " $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/$ICUDT";}' | sh
+    cp -v com/ibm/icu/impl/data/icudata/coll/* $ICU_SRC/icu4j/main/collate/src/main/resources/com/ibm/icu/impl/data/icudata/coll
+    cp -v com/ibm/icu/impl/data/icudata/brkitr/* $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/icudata/brkitr
+    cp -v com/ibm/icu/impl/data/icudata/confusables.cfu $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/icudata
+    cp -v com/ibm/icu/impl/data/icudata/*.nrm $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/icudata
+    cd com/ibm/icu/impl/data/icudata/
+    ls *.icu | egrep -v "cnvalias.icu" | awk '{print "cp " $0 " $ICU_SRC/icu4j/main/core/src/main/resources/com/ibm/icu/impl/data/icudata";}' | sh
 - The procedure above is very conservative:
   It refreshes only the parts of the ICU4J data that we think are affected by a Unicode data update.
   It avoids dealing with any other discrepancies

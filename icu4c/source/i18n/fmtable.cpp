@@ -412,7 +412,7 @@ Formattable::getLong(UErrorCode& status) const
         
     switch (fType) {
     case Formattable::kLong: 
-        return (int32_t)fValue.fInt64;
+        return static_cast<int32_t>(fValue.fInt64);
     case Formattable::kInt64:
         if (fValue.fInt64 > INT32_MAX) {
             status = U_INVALID_FORMAT_ERROR;
@@ -421,7 +421,7 @@ Formattable::getLong(UErrorCode& status) const
             status = U_INVALID_FORMAT_ERROR;
             return INT32_MIN;
         } else {
-            return (int32_t)fValue.fInt64;
+            return static_cast<int32_t>(fValue.fInt64);
         }
     case Formattable::kDouble:
         if (fValue.fDouble > INT32_MAX) {
@@ -431,7 +431,7 @@ Formattable::getLong(UErrorCode& status) const
             status = U_INVALID_FORMAT_ERROR;
             return INT32_MIN;
         } else {
-            return (int32_t)fValue.fDouble; // loses fraction
+            return static_cast<int32_t>(fValue.fDouble); // loses fraction
         }
     case Formattable::kObject:
         if (fValue.fObject == nullptr) {
@@ -469,10 +469,10 @@ Formattable::getInt64(UErrorCode& status) const
     case Formattable::kInt64: 
         return fValue.fInt64;
     case Formattable::kDouble:
-        if (fValue.fDouble > (double)U_INT64_MAX) {
+        if (fValue.fDouble > static_cast<double>(U_INT64_MAX)) {
             status = U_INVALID_FORMAT_ERROR;
             return U_INT64_MAX;
-        } else if (fValue.fDouble < (double)U_INT64_MIN) {
+        } else if (fValue.fDouble < static_cast<double>(U_INT64_MIN)) {
             status = U_INVALID_FORMAT_ERROR;
             return U_INT64_MIN;
         } else if (fabs(fValue.fDouble) > U_DOUBLE_MAX_EXACT_INT && fDecimalQuantity != nullptr) {
@@ -484,7 +484,7 @@ Formattable::getInt64(UErrorCode& status) const
                 return fDecimalQuantity->isNegative() ? U_INT64_MIN : U_INT64_MAX;
             }
         } else {
-            return (int64_t)fValue.fDouble;
+            return static_cast<int64_t>(fValue.fDouble);
         } 
     case Formattable::kObject:
         if (fValue.fObject == nullptr) {
@@ -513,7 +513,7 @@ Formattable::getDouble(UErrorCode& status) const
     switch (fType) {
     case Formattable::kLong: 
     case Formattable::kInt64: // loses precision
-        return (double)fValue.fInt64;
+        return static_cast<double>(fValue.fInt64);
     case Formattable::kDouble:
         return fValue.fDouble;
     case Formattable::kObject:
@@ -701,7 +701,7 @@ Formattable::getArray(int32_t& count, UErrorCode& status) const
 UnicodeString*
 Formattable::getBogus() const 
 {
-    return (UnicodeString*)&fBogus; /* cast away const :-( */
+    return const_cast<UnicodeString*>(&fBogus); /* cast away const :-( */
 }
 
 

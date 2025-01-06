@@ -59,7 +59,7 @@ void RunArray::init(le_int32 capacity)
 
 void RunArray::grow(le_int32 newCapacity)
 {
-    fLimits = (le_int32 *) LE_GROW_ARRAY(fLimits, newCapacity);
+    fLimits = static_cast<le_int32*>(LE_GROW_ARRAY(fLimits, newCapacity));
 }
 
 le_int32 RunArray::add(le_int32 limit)
@@ -69,7 +69,7 @@ le_int32 RunArray::add(le_int32 limit)
     }
 
     le_int32  index  = ensureCapacity();
-    le_int32 *limits = (le_int32 *) fLimits;
+    le_int32* limits = const_cast<le_int32*>(fLimits);
 
     limits[index] = limit;
 
@@ -103,7 +103,7 @@ void FontRuns::init(le_int32 capacity)
 void FontRuns::grow(le_int32 capacity)
 {
     RunArray::grow(capacity);
-    fFonts = (const LEFontInstance **) LE_GROW_ARRAY(fFonts, capacity);
+    fFonts = static_cast<const LEFontInstance**>(LE_GROW_ARRAY(fFonts, capacity));
 }
 
 le_int32 FontRuns::add(const LEFontInstance *font, le_int32 limit)
@@ -111,9 +111,9 @@ le_int32 FontRuns::add(const LEFontInstance *font, le_int32 limit)
     le_int32 index = RunArray::add(limit);
 
     if (index >= 0) {
-        LEFontInstance **fonts = (LEFontInstance **) fFonts;
+        LEFontInstance** fonts = const_cast<LEFontInstance**>(fFonts);
 
-        fonts[index] = (LEFontInstance *) font;
+        fonts[index] = const_cast<LEFontInstance*>(font);
     }
 
     return index;
@@ -155,7 +155,7 @@ void LocaleRuns::init(le_int32 capacity)
 void LocaleRuns::grow(le_int32 capacity)
 {
     RunArray::grow(capacity);
-    fLocales = (const Locale **) LE_GROW_ARRAY(fLocales, capacity);
+    fLocales = static_cast<const Locale**>(LE_GROW_ARRAY(fLocales, capacity));
 }
 
 le_int32 LocaleRuns::add(const Locale *locale, le_int32 limit)
@@ -163,9 +163,9 @@ le_int32 LocaleRuns::add(const Locale *locale, le_int32 limit)
     le_int32 index = RunArray::add(limit);
 
     if (index >= 0) {
-        Locale **locales = (Locale **) fLocales;
+        Locale** locales = const_cast<Locale**>(fLocales);
 
-        locales[index] = (Locale *) locale;
+        locales[index] = const_cast<Locale*>(locale);
     }
 
     return index;
@@ -207,7 +207,7 @@ void ValueRuns::init(le_int32 capacity)
 void ValueRuns::grow(le_int32 capacity)
 {
     RunArray::grow(capacity);
-    fValues = (const le_int32 *) LE_GROW_ARRAY(fValues, capacity);
+    fValues = static_cast<const le_int32*>(LE_GROW_ARRAY(fValues, capacity));
 }
 
 le_int32 ValueRuns::add(le_int32 value, le_int32 limit)
@@ -215,7 +215,7 @@ le_int32 ValueRuns::add(le_int32 value, le_int32 limit)
     le_int32 index = RunArray::add(limit);
 
     if (index >= 0) {
-        le_int32 *values = (le_int32 *) fValues;
+        le_int32* values = const_cast<le_int32*>(fValues);
 
         values[index] = value;
     }
