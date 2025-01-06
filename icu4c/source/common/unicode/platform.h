@@ -235,7 +235,7 @@
 /**
  * \def U_PLATFORM_USES_ONLY_WIN32_API
  * Defines whether the platform uses only the Win32 API.
- * Set to 1 for Windows/MSVC and MinGW but not Cygwin.
+ * Set to 1 for Windows/MSVC, ClangCL and MinGW but not Cygwin.
  * @internal
  */
 #ifdef U_PLATFORM_USES_ONLY_WIN32_API
@@ -250,7 +250,7 @@
 /**
  * \def U_PLATFORM_HAS_WIN32_API
  * Defines whether the Win32 API is available on the platform.
- * Set to 1 for Windows/MSVC, MinGW and Cygwin.
+ * Set to 1 for Windows/MSVC, ClangCL, MinGW and Cygwin.
  * @internal
  */
 #ifdef U_PLATFORM_HAS_WIN32_API
@@ -737,7 +737,9 @@
  * @{
  * \def U_DECLARE_UTF16
  * Do not use this macro because it is not defined on all platforms.
- * Use the UNICODE_STRING or U_STRING_DECL macros instead.
+ * In C++, use std::u16string_view literals, see the UNICODE_STRING docs.
+ * In C, use u"UTF-16 literals".
+ * See also the public U_STRING_DECL macro.
  * @internal
  */
 #ifdef U_DECLARE_UTF16

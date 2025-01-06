@@ -2,7 +2,7 @@
 // License & terms of use: http://www.unicode.org/copyright.html
 // Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
 units:table(nofallback){
-    cldrVersion{"45"}
+    cldrVersion{"46"}
     convertUnits{
         100-kilometer{
             factor{"100000"}
@@ -2014,6 +2014,16 @@ units:table(nofallback){
                         unit{"kilometer-per-hour"}
                     }
                 }
+                CN{
+                    {
+                        unit{"meter-per-second"}
+                    }
+                }
+                DK{
+                    {
+                        unit{"meter-per-second"}
+                    }
+                }
                 FI{
                     {
                         unit{"meter-per-second"}
@@ -2022,6 +2032,11 @@ units:table(nofallback){
                 GB{
                     {
                         unit{"mile-per-hour"}
+                    }
+                }
+                JP{
+                    {
+                        unit{"meter-per-second"}
                     }
                 }
                 KR{

@@ -47,7 +47,8 @@ void IntlTestDateTimePatternGeneratorAPI::runIndexedTest( int32_t index, UBool e
         TESTCASE(11, test_jConsistencyOddLocales);
         TESTCASE(12, testBestPattern);
         TESTCASE(13, testDateTimePatterns);
-        TESTCASE(14, testRegionOverride);
+        TESTCASE(14, testISO8601);
+        TESTCASE(15, testRegionOverride);
         default: name = ""; break;
     }
 }
@@ -164,9 +165,9 @@ void IntlTestDateTimePatternGeneratorAPI::testAPI(/*char *par*/)
         UnicodeString("1.1999"),                              // 00: yM (fixed expected result per ticket:6626:)
         UnicodeString("tammi 1999"),                          // 01: yMMM
         UnicodeString("13.1.1999"),                           // 02: yMd
-        UnicodeString("13. tammik. 1999"),                    // 03: yMMMd
+        UnicodeString("13.1.1999"),                           // 03: yMMMd
         UnicodeString("13.1."),                               // 04: Md
-        UnicodeString("13. tammik."),                         // 05: MMMd
+        UnicodeString("13.1."),                               // 05: MMMd
         UnicodeString("13. tammikuuta"),                      // 06: MMMMd
         UnicodeString("1. nelj. 1999"),                       // 07: yQQQ
         UnicodeString(u"11.58\u202Fip.", -1),                // 08: hhmm
@@ -174,7 +175,7 @@ void IntlTestDateTimePatternGeneratorAPI::testAPI(/*char *par*/)
         UnicodeString("23.58"),                               // 10: jjmm
         UnicodeString("58.59"),                               // 11: mmss
         UnicodeString("tammikuu 1999"),                       // 12: yyyyMMMM
-        UnicodeString("ke 13. tammik."),                      // 13: MMMEd -> EEE d. MMM
+        UnicodeString("ke 13.1."),                            // 13: MMMEd -> EEE d. MMM
         UnicodeString("ke 13."),                              // 14: Ed    -> ccc d.
         UnicodeString("23.58.59,123"),                        // 15: jmmssSSS -> "H.mm.ss,SSS"
         UnicodeString("23.58"),                               // 16: JJmm
@@ -1390,8 +1391,9 @@ void IntlTestDateTimePatternGeneratorAPI::testJjMapping() {
             continue;
         }
         // Now check that shortPattern and jPattern use the same hour cycle
-        if ((uprv_strncmp(localeID, "csw", 3) == 0 || uprv_strncmp(localeID, "kxv_", 4) == 0 || uprv_strncmp(localeID, "zh_Hans_MY", 10) == 0) 
-        		&& logKnownIssue("CLDR-17199", "Need timeFormats with h for csw, kxv_Xxxx, zh_Hans_MY")) {
+        if ((uprv_strncmp(localeID, "csw", 3) == 0 || uprv_strncmp(localeID, "kxv_", 4) == 0 || uprv_strncmp(localeID, "zh_Hans_MY", 10) == 0
+                || uprv_strncmp(localeID, "yue_Hant_CN", 11) == 0) 
+        		&& logKnownIssue("CLDR-17199", "Need timeFormats with h for csw, kxv_Xxxx, zh_Hans_MY, yue_Hant_CN")) {
             continue;
         }
         UnicodeString jPatSkeleton = DateTimePatternGenerator::staticGetSkeleton(jPattern, status);
@@ -1769,6 +1771,31 @@ void IntlTestDateTimePatternGeneratorAPI::testDateTimePatterns() {
                 errln("ERROR: getDateTimeFormat for en after second mod, style %d, expect \"%s\", get \"%s\"",
                         patStyle, bExpect, bGet);
             }
+        }
+    }
+}
+
+// Test for ICU-21839: Make sure ISO8601 patterns/symbols are inherited from Gregorian
+void IntlTestDateTimePatternGeneratorAPI::testISO8601() {
+    const char* localeIDs[] = {
+        "de-AT-u-ca-iso8601",
+        "de-CH-u-ca-iso8601",
+    };
+    const UChar* skeleton = u"jms";
+
+    for (int32_t i = 0; i < UPRV_LENGTHOF(localeIDs); i++) {
+        UErrorCode err = U_ZERO_ERROR;
+        LocalPointer<DateTimePatternGenerator> dtpg(DateTimePatternGenerator::createInstance(Locale::forLanguageTag(localeIDs[i], err), err));
+        UnicodeString pattern = dtpg->getBestPattern(skeleton, err);
+        if (pattern.indexOf(UnicodeString(u"├")) >= 0 || pattern.indexOf(UnicodeString(u"Minute")) >= 0) {
+            errln(UnicodeString("ERROR: locale ") + localeIDs[i] + UnicodeString(", skeleton ") + skeleton + UnicodeString(", bad pattern: ") + pattern);
+        }
+
+        LocalPointer<DateFormat> df(DateFormat::createTimeInstance(DateFormat::MEDIUM, Locale::forLanguageTag(localeIDs[i], err)));
+        UnicodeString format;
+        df->format(ucal_getNow(), format, err);
+        if (format.indexOf(UnicodeString(u"├")) >= 0 || format.indexOf(UnicodeString(u"Minute")) >= 0) {
+            errln(UnicodeString("ERROR: locale ") + localeIDs[i] + UnicodeString(", MEDIUM, bad format: ") + format);
         }
     }
 }

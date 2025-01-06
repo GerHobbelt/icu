@@ -131,15 +131,15 @@ U_EXPORT icu::CharString
 ulocimp_getVariant(const char* localeID, UErrorCode& status);
 
 U_EXPORT void
-ulocimp_setKeywordValue(const char* keywordName,
-                        const char* keywordValue,
+ulocimp_setKeywordValue(std::string_view keywordName,
+                        std::string_view keywordValue,
                         icu::CharString& localeID,
                         UErrorCode& status);
 
 U_EXPORT int32_t
-ulocimp_setKeywordValue(const char* keywords,
-                        const char* keywordName,
-                        const char* keywordValue,
+ulocimp_setKeywordValue(std::string_view keywords,
+                        std::string_view keywordName,
+                        std::string_view keywordValue,
                         icu::ByteSink& sink,
                         UErrorCode& status);
 
@@ -424,5 +424,20 @@ ulocimp_getKnownCanonicalizedLocaleForTest(int32_t& length);
 // Return true if the value is already canonicalized.
 U_EXPORT bool
 ulocimp_isCanonicalizedLocaleForTest(const char* localeName);
+
+#ifdef __cplusplus
+U_NAMESPACE_BEGIN
+class U_COMMON_API RegionValidateMap : public UObject {
+ public:
+  RegionValidateMap();
+  virtual ~RegionValidateMap();
+  bool isSet(const char* region) const;
+  bool equals(const RegionValidateMap& that) const;
+ protected:
+  int32_t value(const char* region) const;
+  uint32_t map[22]; // 26x26/32 = 22;
+};
+U_NAMESPACE_END
+#endif /* __cplusplus */
 
 #endif

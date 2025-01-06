@@ -2178,7 +2178,7 @@ public class CalendarRegressionTest extends CoreTestFmwk {
             {"en@calendar=islamic",     "gregorian"},
             {"zh_TW",       "gregorian", "roc", "chinese"},
             {"ar_IR",       "persian", "gregorian", "islamic", "islamic-civil", "islamic-tbla"},
-            {"th@rg=SAZZZZ", "islamic-umalqura", "gregorian", "islamic", "islamic-rgsa"},
+            {"th@rg=SAZZZZ", "gregorian", "islamic-umalqura", "islamic", "islamic-rgsa"},
 
             // tests for ICU-22364
             { "zh_CN@rg=TW",           "gregorian", "chinese" }, // invalid subdivision code
@@ -2190,7 +2190,6 @@ public class CalendarRegressionTest extends CoreTestFmwk {
             { "zh_TW@rg=IT53",         "gregorian" }, // two-digit subdivision code
             { "zh_TW@rg=AUnsw",        "gregorian" }, // three-letter subdivision code
             { "zh_TW@rg=EE130",        "gregorian" }, // three-digit subdivision code
-            { "zh_TW@rg=417zzzz",      "gregorian" }, // three-digit region code
         };
 
         String[] ALL = Calendar.getKeywordValuesForLocale("calendar", ULocale.getDefault(), false);
