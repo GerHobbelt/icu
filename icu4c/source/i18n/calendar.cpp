@@ -3656,7 +3656,10 @@ Calendar::getDefaultDayInMonth(int32_t /*eyear*/, int32_t /*month*/)
 
 int32_t Calendar::getLocalDOW(UErrorCode& status)
 {
-  // Get zero-based localized DOW, valid range 0..6.  This is the DOW
+    if (U_FAILURE(status)) {
+        return 0;
+    }
+    // Get zero-based localized DOW, valid range 0..6.  This is the DOW
     // we are looking for.
     int32_t dowLocal = 0;
     switch (resolveFields(kDOWPrecedence)) {

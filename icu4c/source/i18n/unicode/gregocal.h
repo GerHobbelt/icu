@@ -483,6 +483,7 @@ public:
      * @param useMonth if false, compute the day before the first day of
      * the given year, otherwise, compute the day before the first day of
      * the given month
+     * @param status Fill-in parameter which receives the status of this operation.
      * @return the Julian day number of the day before the first
      * day of the given month and year
      * @internal
@@ -522,6 +523,7 @@ public:
     /**
      * return the length of the given month.
      * @param month    the given month.
+     * @param status Fill-in parameter which receives the status of this operation.
      * @return    the length of the given month.
      * @internal
      */

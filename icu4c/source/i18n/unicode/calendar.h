@@ -1568,6 +1568,8 @@ protected:
      *
      * @param defaultValue a default value used if the UCAL_MONTH and
      *   UCAL_ORDINAL are both unset.
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @return       The value for the UCAL_MONTH.
      * @internal
      */
@@ -1660,6 +1662,8 @@ protected:
      * @param useMonth if false, compute the day before the first day of
      * the given year, otherwise, compute the day before the first day of
      * the given month
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @return the Julian day number of the day before the first
      * day of the given month and year
      * @internal
@@ -2022,9 +2026,11 @@ protected:
      * Called by computeJulianDay.  Returns the default month (0-based) for the year,
      * taking year and era into account.  Defaults to 0 for Gregorian, which doesn't care.
      * @param eyear The extended year
+     * @param status Output param set to failure code on function return
+     *          when this function fails.
      * @internal
      */
-    virtual int32_t getDefaultMonthInYear(int32_t eyear, UErrorCode& status) ;
+    virtual int32_t getDefaultMonthInYear(int32_t eyear, UErrorCode& status);
 
 
     /**

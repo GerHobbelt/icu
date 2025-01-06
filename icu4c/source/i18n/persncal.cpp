@@ -183,7 +183,7 @@ int64_t PersianCalendar::handleComputeMonthStart(int32_t eyear, int32_t month, U
         status = U_ILLEGAL_ARGUMENT_ERROR;
         return 0;
     }
-    int64_t julianDay = PERSIAN_EPOCH - 1 + 365LL * eyear + ClockMath::floorDivide(8LL * eyear + 21, 33);
+    int64_t julianDay = PERSIAN_EPOCH - 1LL + 365LL * eyear + ClockMath::floorDivide(8LL * eyear + 21, 33);
 
     if (month != 0) {
         julianDay += kPersianNumDays[month];
