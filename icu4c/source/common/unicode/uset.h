@@ -32,12 +32,13 @@
 #include "unicode/utypes.h"
 #include "unicode/uchar.h"
 
-#if U_SHOW_CPLUSPLUS_API
+#if U_SHOW_CPLUSPLUS_API || U_SHOW_CPLUSPLUS_HEADER_API
+#include <string>
 #include <string_view>
 #include "unicode/char16ptr.h"
 #include "unicode/localpointer.h"
-#include "unicode/unistr.h"
-#endif   // U_SHOW_CPLUSPLUS_API
+#include "unicode/utf16.h"
+#endif
 
 #ifndef USET_DEFINED
 
@@ -345,9 +346,9 @@ uset_openPatternOptions(const UChar* pattern, int32_t patternLength,
 U_CAPI void U_EXPORT2
 uset_close(USet* set);
 
-#if U_SHOW_CPLUSPLUS_API
+#if U_SHOW_CPLUSPLUS_API || U_SHOW_CPLUSPLUS_HEADER_API
 
-U_NAMESPACE_BEGIN
+namespace U_ICU_NAMESPACE_OR_INTERNAL {
 
 /**
  * \class LocalUSetPointer
@@ -360,7 +361,7 @@ U_NAMESPACE_BEGIN
  */
 U_DEFINE_LOCAL_OPEN_POINTER(LocalUSetPointer, USet, uset_close);
 
-U_NAMESPACE_END
+}  // U_ICU_NAMESPACE_OR_INTERNAL
 
 #endif
 
@@ -1657,7 +1658,7 @@ public:
             int32_t length;
             const UChar *uchars = uset_getString(uset, index, &length);
             // assert uchars != nullptr;
-            return {ConstChar16Ptr(uchars), static_cast<uint32_t>(length)};
+            return {uprv_char16PtrFromUChar(uchars), static_cast<size_t>(length)};
         }
         return {};
     }
@@ -1737,17 +1738,19 @@ private:
     const USet *uset;
     int32_t count;
 };
+#endif  // U_HIDE_DRAFT_API
 
+#ifndef U_HIDE_DRAFT_API
 /**
  * Iterator returned by USetElements.
- * @draft ICU 76
+ * @draft ICU 77
  */
 class USetElementIterator {
 public:
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     USetElementIterator(const USetElementIterator &other) = default;
 
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     bool operator==(const USetElementIterator &other) const {
         // No need to compare rangeCount & end given private constructor
         // and assuming we don't compare iterators across the set being modified.
@@ -1756,26 +1759,28 @@ public:
         return uset == other.uset && c == other.c && index == other.index;
     }
 
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     bool operator!=(const USetElementIterator &other) const { return !operator==(other); }
 
-    /** @draft ICU 76 */
-    UnicodeString operator*() const {
+    /** @draft ICU 77 */
+    std::u16string operator*() const {
         if (c >= 0) {
-            return UnicodeString(c);
+            return c <= 0xffff ?
+                std::u16string({static_cast<char16_t>(c)}) :
+                std::u16string({U16_LEAD(c), U16_TRAIL(c)});
         } else if (index < totalCount) {
             int32_t length;
             const UChar *uchars = uset_getString(uset, index - rangeCount, &length);
             // assert uchars != nullptr;
-            return UnicodeString(uchars, length);
+            return {uprv_char16PtrFromUChar(uchars), static_cast<size_t>(length)};
         } else {
-            return UnicodeString();
+            return {};
         }
     }
 
     /**
      * Pre-increment.
-     * @draft ICU 76
+     * @draft ICU 77
      */
     USetElementIterator &operator++() {
         if (c < end) {
@@ -1800,7 +1805,7 @@ public:
 
     /**
      * Post-increment.
-     * @draft ICU 76
+     * @draft ICU 77
      */
     USetElementIterator operator++(int) {
         USetElementIterator result(*this);
@@ -1840,7 +1845,7 @@ private:
 
 /**
  * A C++ "range" for iterating over all of the elements of a USet.
- * Convenient all-in one iteration, but creates a UnicodeString for each
+ * Convenient all-in one iteration, but creates a std::u16string for each
  * code point or string.
  *
  * Code points are returned first, then empty and multi-character strings.
@@ -1849,15 +1854,16 @@ private:
  * using U_HEADER_NESTED_NAMESPACE::USetElements;
  * LocalUSetPointer uset(uset_openPattern(u"[abcçカ🚴{}{abc}{de}]", -1, &errorCode));
  * for (auto el : USetElements(uset.getAlias())) {
+ *     UnicodeString us(el);
  *     std::string u8;
- *     printf("uset.string length %ld \"%s\"\n", (long)el.length(), el.toUTF8String(u8).c_str());
+ *     printf("uset.string length %ld \"%s\"\n", (long)us.length(), us.toUTF8String(u8).c_str());
  * }
  * \endcode
  *
  * C++ UnicodeSet has member functions for iteration, including begin() and end().
  *
  * @return an all-elements iterator.
- * @draft ICU 76
+ * @draft ICU 77
  * @see USetCodePoints
  * @see USetRanges
  * @see USetStrings
@@ -1866,21 +1872,21 @@ class USetElements {
 public:
     /**
      * Constructs a C++ "range" object over all of the elements of the USet.
-     * @draft ICU 76
+     * @draft ICU 77
      */
     USetElements(const USet *uset)
         : uset(uset), rangeCount(uset_getRangeCount(uset)),
             stringCount(uset_getStringCount(uset)) {}
 
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     USetElements(const USetElements &other) = default;
 
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     USetElementIterator begin() const {
         return USetElementIterator(uset, 0, rangeCount, rangeCount + stringCount);
     }
 
-    /** @draft ICU 76 */
+    /** @draft ICU 77 */
     USetElementIterator end() const {
         return USetElementIterator(uset, rangeCount + stringCount, rangeCount, rangeCount + stringCount);
     }
