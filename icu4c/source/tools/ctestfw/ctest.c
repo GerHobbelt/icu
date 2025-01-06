@@ -895,7 +895,9 @@ log_data_err(const char* pattern, ...)
  * Tracing functions.
  */
 static int traceFnNestingDepth = 0;
+
 U_CDECL_BEGIN
+
 static void U_CALLCONV TraceEntry(const void *context, int32_t fnNumber) {
     (void)context; // suppress compiler warnings about unused variable
     char buf[500];
@@ -1186,6 +1188,8 @@ runTestRequest(const TestNode* root,
     return errorCount; /* total error count */
 }
 
+U_CDECL_END
+
 /**
  * Display program invocation arguments
  */
@@ -1213,8 +1217,10 @@ static void help ( const char *argv0 )
     printf("    -r  Repeat tests after calling u_cleanup \n");
     printf("    -G  Write golden data files \n");
     printf("    [/subtest]  To run a subtest \n");
-    printf("    eg: to run just the utility tests type: cintltest /tsutil) \n");
+    printf("    e.g.: to run just the utility tests type: cintltest /tsutil) \n");
 }
+
+U_CDECL_BEGIN
 
 int32_t T_CTEST_EXPORT2
 getTestOption ( int32_t testOption ) {
