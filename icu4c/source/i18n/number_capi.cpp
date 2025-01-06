@@ -204,7 +204,7 @@ unumf_resultNextFieldPosition(const UFormattedNumber* uresult, UFieldPosition* u
     fp.setField(ufpos->field);
     fp.setBeginIndex(ufpos->beginIndex);
     fp.setEndIndex(ufpos->endIndex);
-    bool retval = result->fData.nextFieldPosition(fp, *ec);
+    bool retval = !!result->fData.nextFieldPosition(fp, *ec);
     ufpos->beginIndex = fp.getBeginIndex();
     ufpos->endIndex = fp.getEndIndex();
     // NOTE: MSVC sometimes complains when implicitly converting between bool and UBool

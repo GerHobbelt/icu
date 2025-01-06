@@ -49,7 +49,7 @@ isFileModTimeLater(const char *filePath, const char *checkAgainst, UBool isDir) 
         return false;
     }
 
-    if (isDir == true) {
+    if (isDir) {
 #if U_HAVE_DIRENT_H
         DIR *pDir = nullptr;
         if ((pDir= opendir(checkAgainst)) != nullptr) {

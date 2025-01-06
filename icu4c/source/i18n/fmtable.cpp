@@ -331,7 +331,7 @@ Formattable::operator==(const Formattable& that) const
         if (fValue.fObject == nullptr || that.fValue.fObject == nullptr) {
             equal = false;
         } else {
-            equal = objectEquals(fValue.fObject, that.fValue.fObject);
+            equal = !!objectEquals(fValue.fObject, that.fValue.fObject);
         }
         break;
     }

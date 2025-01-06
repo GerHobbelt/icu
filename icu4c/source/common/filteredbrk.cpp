@@ -151,8 +151,8 @@ public:
     }
     virtual ~SimpleFilteredSentenceBreakData();
 
-    bool hasForwardsPartialTrie() const { return fForwardsPartialTrie.isValid(); }
-    bool hasBackwardsTrie() const { return fBackwardsTrie.isValid(); }
+    bool hasForwardsPartialTrie() const { return !!fForwardsPartialTrie.isValid(); }
+    bool hasBackwardsTrie() const { return !!fBackwardsTrie.isValid(); }
 
     const UCharsTrie &getForwardsPartialTrie() const { return *fForwardsPartialTrie; }
     const UCharsTrie &getBackwardsTrie() const { return *fBackwardsTrie; }

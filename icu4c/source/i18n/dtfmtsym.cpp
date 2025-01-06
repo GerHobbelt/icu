@@ -667,7 +667,7 @@ DateFormatSymbols::operator==(const DateFormatSymbols& other) const
                     && fZoneStringsColCount == other.fZoneStringsColCount) {
                     bool cmpres = true;
                     for (int32_t i = 0; (i < fZoneStringsRowCount) && cmpres; i++) {
-                        cmpres = arrayCompare(fZoneStrings[i], other.fZoneStrings[i], fZoneStringsColCount);
+                        cmpres = !!arrayCompare(fZoneStrings[i], other.fZoneStrings[i], fZoneStringsColCount);
                     }
                     return cmpres;
                 }

@@ -213,7 +213,7 @@ static bool getParentLocaleID(char *name, const char *origName, UResOpenType ope
     // early out if the locale ID has a variant code or ends with _
     size_t nameLen = uprv_strlen(name);
     if (!nameLen || name[nameLen - 1] == '_' || hasVariant(name)) {
-        return chopLocale(name);
+        return !!chopLocale(name);
     }
     
     UErrorCode err = U_ZERO_ERROR;
@@ -224,7 +224,7 @@ static bool getParentLocaleID(char *name, const char *origName, UResOpenType ope
 
     if (U_FAILURE(err)) {
         // hopefully this never happens...
-        return chopLocale(name);
+        return !!chopLocale(name);
     }
     
     // if the open type is URES_OPEN_LOCALE_DEFAULT_ROOT, first look the locale ID up in the parent locale table;

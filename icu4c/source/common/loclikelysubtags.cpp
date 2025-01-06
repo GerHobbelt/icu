@@ -637,7 +637,7 @@ bool LikelySubtags::isMacroregion(StringPiece& region, UErrorCode& errorCode) co
     umtx_initOnce(gInitOnce, &LikelySubtags::initLikelySubtags, errorCode);
     if (U_FAILURE(errorCode)) { return false; }
     UnicodeString str(UnicodeString::fromUTF8(region));
-    return gMacroregions->contains((void *)&str);
+    return !!gMacroregions->contains((void *)&str);
 }
 
 LSR LikelySubtags::maximize(StringPiece language, StringPiece script, StringPiece region,

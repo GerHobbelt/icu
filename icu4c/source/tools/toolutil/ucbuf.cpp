@@ -234,7 +234,7 @@ ucbuf_fillucbuf( UCHARBUF* buf,UErrorCode* error){
             /* use erro1 to preserve the error code */
             UErrorCode error1 =U_ZERO_ERROR;
             
-            if( buf->showWarning==true){
+            if( buf->showWarning){
                 fprintf(stderr,"\n###WARNING: Encountered abnormal bytes while"
                                " converting input stream to target encoding: %s\n",
                                u_errorName(*error));
@@ -263,7 +263,7 @@ ucbuf_fillucbuf( UCHARBUF* buf,UErrorCode* error){
             /* null terminate the buffer */
             postContext[stop-start] = 0;
 
-            if(buf->showWarning ==true){
+            if(buf->showWarning){
                 /* print out the context */
                 fprintf(stderr,"\tPre-context: %s\n",preContext);
                 fprintf(stderr,"\tContext: %s\n",context);
@@ -495,7 +495,7 @@ ucbuf_open(const char* fileName,const char** cp,UBool showWarning, UBool buffere
             return nullptr;
         }
         
-        if((buf->conv==nullptr) && (buf->showWarning==true)){
+        if((buf->conv==nullptr) && (buf->showWarning)){
             fprintf(stderr,"###WARNING: No converter defined. Using codepage of system.\n");
         }
         buf->remaining=fileSize-buf->signatureLength;

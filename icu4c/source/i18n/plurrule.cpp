@@ -1914,15 +1914,15 @@ double FixedDecimal::getPluralOperand(PluralOperand operand) const {
 }
 
 bool FixedDecimal::isNaN() const {
-    return _isNaN;
+    return !!_isNaN;
 }
 
 bool FixedDecimal::isInfinite() const {
-    return _isInfinite;
+    return !!_isInfinite;
 }
 
 bool FixedDecimal::hasIntegerValue() const {
-    return _hasIntegerValue;
+    return !!_hasIntegerValue;
 }
 
 bool FixedDecimal::isNanOrInfinity() const {

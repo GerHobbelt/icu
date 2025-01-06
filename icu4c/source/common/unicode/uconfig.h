@@ -51,7 +51,7 @@
 
 #define U_CHARSET_IS_UTF8        1
 
-#define U_DO_NOT_USE_LAYOUT_ENGINE 
+#define U_DO_NOT_USE_LAYOUT_ENGINE    // https://github.com/unicode-org/icu/blob/main/docs/userguide/layoutengine/index.md -- obsoleted; use HarfBuzz instead.
 #define U_COMBINED_IMPLEMENTATION 
 #define U_COMMON_IMPLEMENTATION 
 #define U_I18N_IMPLEMENTATION 

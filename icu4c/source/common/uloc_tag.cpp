@@ -2568,7 +2568,7 @@ uloc_toLanguageTag(const char* localeID,
     return icu::ByteSinkUtil::viaByteSinkToTerminatedChars(
         langtag, langtagCapacity,
         [&](icu::ByteSink& sink, UErrorCode& status) {
-            ulocimp_toLanguageTag(localeID, sink, strict, status);
+            ulocimp_toLanguageTag(localeID, sink, !!strict, status);
         },
         *status);
 }

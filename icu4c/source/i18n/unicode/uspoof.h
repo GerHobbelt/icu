@@ -614,7 +614,7 @@ typedef enum USpoofChecks {
          * <ul>
          *   <li>Latin + Han + Bopomofo (or equivalently: Latn + Hanb)</li>
          *   <li>Latin + Han + Hiragana + Katakana (or equivalently: Latn + Jpan)</li>
-         *   <li>Latin + Han + Hangul (or equivalently: Latn +Kore)</li>
+         *   <li>Latin + Han + Hangul (or equivalently: Latn + Kore)</li>
          * </ul>
          * This is the default restriction in ICU.
          *

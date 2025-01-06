@@ -100,6 +100,8 @@ public:
 
     virtual void parse(const UnicodeString& text, Formattable& result, ParsePosition& parsePosition) const;
 
+    using NumberFormat::parse;
+
     /**
      * Sets the maximum number of digits allowed in the fraction portion of a
      * number. maximumFractionDigits must be >= minimumFractionDigits.  If the

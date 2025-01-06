@@ -89,7 +89,7 @@ bool StringSegment::startsWith(const UnicodeSet& uniset) const {
     if (cp == -1) {
         return false;
     }
-    return uniset.contains(cp);
+    return !!uniset.contains(cp);
 }
 
 bool StringSegment::startsWith(const UnicodeString& other) const {

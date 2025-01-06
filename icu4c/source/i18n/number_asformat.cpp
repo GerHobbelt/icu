@@ -62,7 +62,7 @@ UnicodeString& LocalizedNumberFormatterAsFormat::format(const Formattable& obj, 
     // always return first occurrence:
     pos.setBeginIndex(0);
     pos.setEndIndex(0);
-    bool found = data.nextFieldPosition(pos, status);
+    bool found = !!data.nextFieldPosition(pos, status);
     if (found && appendTo.length() != 0) {
         pos.setBeginIndex(pos.getBeginIndex() + appendTo.length());
         pos.setEndIndex(pos.getEndIndex() + appendTo.length());

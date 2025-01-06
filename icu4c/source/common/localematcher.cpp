@@ -564,7 +564,7 @@ public:
     }
 
     bool hasNext() const {
-        return locales.hasNext();
+        return !!locales.hasNext();
     }
 
     LSR next(UErrorCode &errorCode) {

@@ -302,7 +302,7 @@ bool    RegexPattern::operator ==(const RegexPattern &other) const {
         } else if (other.fPattern != nullptr) {
             UTEXT_SETNATIVEINDEX(this->fPattern, 0);
             UTEXT_SETNATIVEINDEX(other.fPattern, 0);
-            return utext_equals(this->fPattern, other.fPattern);
+            return !!utext_equals(this->fPattern, other.fPattern);
         }
     }
     return false;

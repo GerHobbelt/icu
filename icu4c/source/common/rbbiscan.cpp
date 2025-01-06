@@ -845,7 +845,7 @@ UnicodeString RBBIRuleScanner::stripRules(const UnicodeString &rules) {
 
     for (int32_t idx=0; idx<rulesLength; idx = rules.moveIndex32(idx, 1)) {
         UChar32 cp = rules.char32At(idx);
-        bool whiteSpace = u_hasBinaryProperty(cp, UCHAR_PATTERN_WHITE_SPACE);
+        bool whiteSpace = !!u_hasBinaryProperty(cp, UCHAR_PATTERN_WHITE_SPACE);
         if (whiteSpace) {
             continue;
         }

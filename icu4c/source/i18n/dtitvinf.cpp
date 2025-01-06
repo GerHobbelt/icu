@@ -172,7 +172,7 @@ DateIntervalInfo::operator==(const DateIntervalInfo& other) const {
       fFirstDateInPtnIsLaterDate == other.fFirstDateInPtnIsLaterDate );
 
     if ( equal ) {
-        equal = fIntervalPatterns->equals(*(other.fIntervalPatterns));
+        equal = !!fIntervalPatterns->equals(*(other.fIntervalPatterns));
     }
 
     return equal;

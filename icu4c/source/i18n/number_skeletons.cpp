@@ -515,7 +515,7 @@ MacroProps skeleton::parseSkeleton(
     // Primary skeleton parse loop:
     while (offset < segment.length()) {
         UChar32 cp = segment.codePointAt(offset);
-        bool isTokenSeparator = PatternProps::isWhiteSpace(cp);
+        bool isTokenSeparator = !!PatternProps::isWhiteSpace(cp);
         bool isOptionSeparator = (cp == u'/');
 
         if (!isTokenSeparator && !isOptionSeparator) {

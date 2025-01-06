@@ -748,11 +748,11 @@ processFile(const char *filename, const char *cp,
                 filename, u_errorName(status));
         return;
     }
-    if(write_java== true){
+    if(write_java){
         bundle_write_java(data.getAlias(), outputDir, outputEnc,
                           outputFileName, sizeof(outputFileName),
                           options[JAVA_PACKAGE].value, options[BUNDLE_NAME].value, &status);
-    }else if(write_xliff ==true){
+    }else if(write_xliff){
         bundle_write_xml(data.getAlias(), outputDir, outputEnc,
                          filename, outputFileName, sizeof(outputFileName),
                          language, xliffOutputFileName, &status);

@@ -374,7 +374,7 @@ void DecimalFormat::setGroupingUsed(UBool enabled) {
     }
     if (UBOOL_TO_BOOL(enabled) == fields->properties.groupingUsed) { return; }
     NumberFormat::setGroupingUsed(enabled); // to set field for compatibility
-    fields->properties.groupingUsed = enabled;
+    fields->properties.groupingUsed = !!enabled;
     touchNoError();
 }
 
@@ -384,7 +384,7 @@ void DecimalFormat::setParseIntegerOnly(UBool value) {
     }
     if (UBOOL_TO_BOOL(value) == fields->properties.parseIntegerOnly) { return; }
     NumberFormat::setParseIntegerOnly(value); // to set field for compatibility
-    fields->properties.parseIntegerOnly = value;
+    fields->properties.parseIntegerOnly = !!value;
     touchNoError();
 }
 
@@ -953,7 +953,7 @@ UBool DecimalFormat::isSignAlwaysShown() const {
 void DecimalFormat::setSignAlwaysShown(UBool value) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(value) == fields->properties.signAlwaysShown) { return; }
-    fields->properties.signAlwaysShown = value;
+    fields->properties.signAlwaysShown = !!value;
     touchNoError();
 }
 
@@ -1162,7 +1162,7 @@ UBool DecimalFormat::isExponentSignAlwaysShown() const {
 void DecimalFormat::setExponentSignAlwaysShown(UBool expSignAlways) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(expSignAlways) == fields->properties.exponentSignAlwaysShown) { return; }
-    fields->properties.exponentSignAlwaysShown = expSignAlways;
+    fields->properties.exponentSignAlwaysShown = !!expSignAlways;
     touchNoError();
 }
 
@@ -1238,7 +1238,7 @@ UBool DecimalFormat::isDecimalSeparatorAlwaysShown() const {
 void DecimalFormat::setDecimalSeparatorAlwaysShown(UBool newValue) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(newValue) == fields->properties.decimalSeparatorAlwaysShown) { return; }
-    fields->properties.decimalSeparatorAlwaysShown = newValue;
+    fields->properties.decimalSeparatorAlwaysShown = !!newValue;
     touchNoError();
 }
 
@@ -1254,7 +1254,7 @@ UBool DecimalFormat::isDecimalPatternMatchRequired() const {
 void DecimalFormat::setDecimalPatternMatchRequired(UBool newValue) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(newValue) == fields->properties.decimalPatternMatchRequired) { return; }
-    fields->properties.decimalPatternMatchRequired = newValue;
+    fields->properties.decimalPatternMatchRequired = !!newValue;
     touchNoError();
 }
 
@@ -1270,7 +1270,7 @@ UBool DecimalFormat::isParseNoExponent() const {
 void DecimalFormat::setParseNoExponent(UBool value) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(value) == fields->properties.parseNoExponent) { return; }
-    fields->properties.parseNoExponent = value;
+    fields->properties.parseNoExponent = !!value;
     touchNoError();
 }
 
@@ -1286,7 +1286,7 @@ UBool DecimalFormat::isParseCaseSensitive() const {
 void DecimalFormat::setParseCaseSensitive(UBool value) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(value) == fields->properties.parseCaseSensitive) { return; }
-    fields->properties.parseCaseSensitive = value;
+    fields->properties.parseCaseSensitive = !!value;
     touchNoError();
 }
 
@@ -1302,7 +1302,7 @@ UBool DecimalFormat::isFormatFailIfMoreThanMaxDigits() const {
 void DecimalFormat::setFormatFailIfMoreThanMaxDigits(UBool value) {
     if (fields == nullptr) { return; }
     if (UBOOL_TO_BOOL(value) == fields->properties.formatFailIfMoreThanMaxDigits) { return; }
-    fields->properties.formatFailIfMoreThanMaxDigits = value;
+    fields->properties.formatFailIfMoreThanMaxDigits = !!value;
     touchNoError();
 }
 
@@ -1741,7 +1741,7 @@ DecimalFormat::fieldPositionHelper(
     // always return first occurrence:
     fieldPosition.setBeginIndex(0);
     fieldPosition.setEndIndex(0);
-    bool found = formatted.nextFieldPosition(fieldPosition, status);
+    bool found = !!formatted.nextFieldPosition(fieldPosition, status);
     if (found && offset != 0) {
         FieldPositionOnlyHandler fpoh(fieldPosition);
         fpoh.shiftLast(offset);

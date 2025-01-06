@@ -766,7 +766,7 @@ bool HebrewCalendar::inTemporalLeapYear(UErrorCode& status) const {
     if (U_FAILURE(status)) return false;
     int32_t eyear = get(UCAL_EXTENDED_YEAR, status);
     if (U_FAILURE(status)) return false;
-    return isLeapYear(eyear);
+    return !!isLeapYear(eyear);
 }
 
 static const char * const gTemporalMonthCodesForHebrew[] = {

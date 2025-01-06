@@ -269,7 +269,7 @@ UBool UPerfTest::run(){
     for (int i = 1; i < _remainingArgc; ++i) {
         if (_argv[i][0] != '-') {
             char* name = (char*) _argv[i];
-            if(verbose==true){
+            if(verbose){
                 //fprintf(stdout, "\n=== Handling test: %s: ===\n", name);
                 //fprintf(stdout, "\n%s:\n", name);
             }
@@ -377,7 +377,7 @@ UBool UPerfTest::runTestLoop( char* testname, char* par )
             if(iterations == 0) {
                 n = time;
                 // Run for specified duration in seconds
-                if(verbose==true){
+                if(verbose){
                     fprintf(stdout,"= %s calibrating %i seconds \n", name, (int)n);
                 }
 
@@ -412,7 +412,7 @@ UBool UPerfTest::runTestLoop( char* testname, char* par )
             long events = -1;
 
             for(int32_t ps =0; ps < passes; ps++){
-                if(verbose==true){
+                if(verbose){
                     fprintf(stdout,"= %s begin " ,name);
                     if(iterations > 0) {
                         fprintf(stdout, "%i\n", (int)loops);
@@ -431,7 +431,7 @@ UBool UPerfTest::runTestLoop( char* testname, char* par )
                 }
                 events = testFunction->getEventsPerIteration();
                 //print info only in verbose mode
-                if(verbose==true){
+                if(verbose){
                     if(events == -1){
                         fprintf(stdout, "= %s end: %f loops: %i operations: %li \n", name, t, (int)loops, ops);
                     }else{

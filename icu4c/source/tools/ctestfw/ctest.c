@@ -1142,7 +1142,7 @@ runTestRequest(const TestNode* root,
 
             ON_LINE=false; /* just in case */
 
-            if( doList == true)
+            if( doList )
                 showTests(toRun);
             else
                 runTests(toRun);
@@ -1163,7 +1163,7 @@ runTestRequest(const TestNode* root,
     if( subtreeOptionSeen == false) /* no other subtree given, run the default */
     {
         ON_LINE=false; /* just in case */
-        if( doList == true)
+        if( doList )
             showTests(toRun);
         else
             runTests(toRun);

@@ -996,7 +996,7 @@ void SRBRoot::write(const char *outputDir, const char *outputPkg,
     uprv_memcpy(dataInfo.formatVersion, gFormatVersions + formatVersion, sizeof(UVersionInfo));
 
     mem = udata_create(outputDir, "res", dataName,
-                       &dataInfo, (gIncludeCopyright==true)? U_COPYRIGHT_STRING:nullptr, &errorCode);
+                       &dataInfo, (gIncludeCopyright)? U_COPYRIGHT_STRING:nullptr, &errorCode);
     if(U_FAILURE(errorCode)){
         return;
     }

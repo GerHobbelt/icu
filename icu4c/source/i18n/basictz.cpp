@@ -334,7 +334,7 @@ BasicTimeZone::getTimeZoneRulesAfter(UDate start, InitialTimeZoneRule*& initial,
         }
     }
 
-    avail = getPreviousTransition(start, true, tzt);
+    avail = !!getPreviousTransition(start, true, tzt);
     if (!avail) {
         // No need to filter out rules only applicable to time before the start
         initial = orgini->clone();
@@ -368,13 +368,13 @@ BasicTimeZone::getTimeZoneRulesAfter(UDate start, InitialTimeZoneRule*& initial,
     // Mark rules which does not need to be processed
     for (i = 0; i < ruleCount; i++) {
         r = (TimeZoneRule*)orgRules->elementAt(i);
-        avail = r->getNextStart(start, res_initial->getRawOffset(), res_initial->getDSTSavings(), false, time);
+        avail = !!r->getNextStart(start, res_initial->getRawOffset(), res_initial->getDSTSavings(), false, time);
         done[i] = !avail;
     }
 
     time = start;
     while (!bFinalStd || !bFinalDst) {
-        avail = getNextTransition(time, false, tzt);
+        avail = !!getNextTransition(time, false, tzt);
         if (!avail) {
             break;
         }
@@ -410,7 +410,7 @@ BasicTimeZone::getTimeZoneRulesAfter(UDate start, InitialTimeZoneRule*& initial,
             TimeZoneTransition tzt0;
             t = start;
             while (true) {
-                avail = getNextTransition(t, false, tzt0);
+                avail = !!getNextTransition(t, false, tzt0);
                 if (!avail) {
                     break;
                 }

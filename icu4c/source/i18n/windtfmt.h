@@ -58,6 +58,8 @@ public:
 
     void parse(const UnicodeString& text, Calendar& cal, ParsePosition& pos) const;
 
+    using DateFormat::parse;
+
     /**
      * Set the calendar to be used by this date format. Initially, the default
      * calendar for the specified or default locale is used.  The caller should
