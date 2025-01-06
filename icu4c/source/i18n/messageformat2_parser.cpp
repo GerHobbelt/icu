@@ -3,6 +3,8 @@
 
 #include "unicode/utypes.h"
 
+#if !UCONFIG_NO_NORMALIZATION
+
 #if !UCONFIG_NO_FORMATTING
 
 #if !UCONFIG_NO_MF2
@@ -121,8 +123,8 @@ static bool isContentChar(UChar32 c) {
            || inRange(c, 0x002F, 0x003F) // Omit '@'
            || inRange(c, 0x0041, 0x005B) // Omit '\'
            || inRange(c, 0x005D, 0x007A) // Omit { | }
-           || inRange(c, 0x007E, 0xD7FF) // Omit surrogates
-           || inRange(c, 0xE000, 0x10FFFF);
+           || inRange(c, 0x007E, 0x2FFF) // Omit IDEOGRAPHIC_SPACE
+           || inRange(c, 0x3001, 0x10FFFF); // Allowing surrogates is intentional
 }
 
 // See `s` in the MessageFormat 2 grammar
@@ -1926,3 +1928,4 @@ U_NAMESPACE_END
 
 #endif /* #if !UCONFIG_NO_FORMATTING */
 
+#endif /* #if !UCONFIG_NO_NORMALIZATION */
