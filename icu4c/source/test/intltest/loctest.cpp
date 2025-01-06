@@ -4181,7 +4181,7 @@ LocaleTest::TestAddLikelyAndMinimizeSubtags() {
         const char* const org = item.from;
         const char* const exp = item.add;
         if (uprv_strcmp(org,"und_Hant_CN") == 0 &&
-                logKnownIssue("CLDR-17908", "und_Hant_CN changed expected result for Likely Subtags")) {
+                logKnownIssue("CLDR-17981", "und_Hant_CN changed expected result for Likely Subtags")) {
             continue;
         }
         Locale res(org);
@@ -4201,7 +4201,7 @@ LocaleTest::TestAddLikelyAndMinimizeSubtags() {
         const char* const org = item.from;
         const char* const exp = item.remove;
         if (uprv_strcmp(org,"und_Hant_CN") == 0 &&
-            	logKnownIssue("CLDR-17908", "und_Hant_CN changed expected result for Likely Subtags")) {
+            	logKnownIssue("CLDR-17981", "und_Hant_CN changed expected result for Likely Subtags")) {
             continue;
         }
         Locale res(org);
@@ -5836,7 +5836,7 @@ void LocaleTest::TestIsRightToLeft() {
     assertFalse("fil LTR", Locale("fil").isRightToLeft());
     assertFalse("he-Zyxw LTR", Locale("he-Zyxw").isRightToLeft());
 
-    if (logKnownIssue("CLDR-17908", "und_Hant_CN changed expected result for Likely Subtags")) {
+    if (logKnownIssue("CLDR-17981", "und_Hant_CN changed expected result for Likely Subtags")) {
             return;
     }   
 }
@@ -6045,7 +6045,7 @@ testLikelySubtagsLineFn(void *context,
     
      if ( (uprv_strcmp(source.c_str(), "und-Latn-MU") == 0 || uprv_strcmp(source.c_str(), "und-Latn-RS") == 0 || uprv_strcmp(source.c_str(), "und-Latn-SL") == 0
             || uprv_strcmp(source.c_str(), "und-Latn-TK") == 0 || uprv_strcmp(source.c_str(), "und-Latn-ZM") == 0 )
-                 && THIS->logKnownIssue("CLDR-17908", "und_Hant_CN changed expected result for Likely Subtags")) {
+                 && THIS->logKnownIssue("CLDR-17981", "und_Hant_CN changed expected result for Likely Subtags")) {
              return;
      }    
     
