@@ -340,37 +340,37 @@ const UnicodeSet* get(Key key) {
 */
 
 bool Parser::isContentChar(UChar32 c) const {
-    return contentChars->contains(c);
+    return !!contentChars->contains(c);
 }
 
 // See `bidi` in the MF2 grammar
 bool Parser::isBidiControl(UChar32 c) const {
-    return bidiControlChars->contains(c);
+    return !!bidiControlChars->contains(c);
 }
 
 // See `ws` in the MessageFormat 2 grammar
 bool Parser::isWhitespace(UChar32 c) const {
-    return whitespaceChars->contains(c);
+    return !!whitespaceChars->contains(c);
 }
 
 bool Parser::isTextChar(UChar32 c) const {
-    return textChars->contains(c);
+    return !!textChars->contains(c);
 }
 
 bool Parser::isAlpha(UChar32 c) const {
-    return alphaChars->contains(c);
+    return !!alphaChars->contains(c);
 }
 
 bool Parser::isDigit(UChar32 c) const {
-    return digitChars->contains(c);
+    return !!digitChars->contains(c);
 }
 
 bool Parser::isNameStart(UChar32 c) const {
-    return nameStartChars->contains(c);
+    return !!nameStartChars->contains(c);
 }
 
 bool Parser::isNameChar(UChar32 c) const {
-    return nameChars->contains(c);
+    return !!nameChars->contains(c);
 }
 
 bool Parser::isUnquotedStart(UChar32 c) const {
@@ -378,11 +378,11 @@ bool Parser::isUnquotedStart(UChar32 c) const {
 }
 
 bool Parser::isQuotedChar(UChar32 c) const {
-    return quotedChars->contains(c);
+    return !!quotedChars->contains(c);
 }
 
 bool Parser::isEscapableChar(UChar32 c) const {
-    return escapableChars->contains(c);
+    return !!escapableChars->contains(c);
 }
 
 // Returns true iff `c` can begin a `function` nonterminal

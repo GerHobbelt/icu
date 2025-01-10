@@ -283,7 +283,7 @@ namespace message2 {
     bool MessageFormatter::getDefaultFormatterNameByType(const UnicodeString& type, FunctionName& name) const {
         U_ASSERT(hasCustomMFFunctionRegistry());
         const MFFunctionRegistry& reg = getCustomMFFunctionRegistry();
-        return reg.getDefaultFormatterNameByType(type, name);
+        return !!reg.getDefaultFormatterNameByType(type, name);
     }
 
     // ---------------------------------------------------

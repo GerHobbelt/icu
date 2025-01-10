@@ -116,7 +116,7 @@ namespace message2 {
              * @internal ICU 75 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Literal(UBool q, const UnicodeString& s) : thisIsQuoted(q), contents(s) {}
+            Literal(UBool q, const UnicodeString& s) : thisIsQuoted(!!q), contents(s) {}
             /**
              * Copy constructor.
              *

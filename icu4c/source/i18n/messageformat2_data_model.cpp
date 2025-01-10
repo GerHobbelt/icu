@@ -186,7 +186,7 @@ bool Key::operator<(const Key& other) const {
 
 bool Key::operator==(const Key& other) const {
     if (isWildcard()) {
-        return other.isWildcard();
+        return !!other.isWildcard();
     }
     if (other.isWildcard()) {
         return false;
@@ -625,7 +625,7 @@ const Expression& Binding::getValue() const {
             errorCode = U_INVALID_STATE_ERROR;
         } else {
             const Operator* rator = rhs.getOperator(errorCode);
-            bool hasOperator = U_SUCCESS(errorCode);
+            bool hasOperator = !!U_SUCCESS(errorCode);
             // Clear error code -- the "error" from the absent operator
             // is handled
             errorCode = U_ZERO_ERROR;

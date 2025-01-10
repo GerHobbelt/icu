@@ -55,7 +55,7 @@ TypeEnvironment::TypeEnvironment(UErrorCode& status) {
 }
 
  static bool has(const UVector& v, const VariableName& var) {
-     return v.contains(const_cast<void*>(static_cast<const void*>(&var)));
+     return !!v.contains(const_cast<void*>(static_cast<const void*>(&var)));
  }
 
 // Returns true if `var` was either previously used (implicit declaration),

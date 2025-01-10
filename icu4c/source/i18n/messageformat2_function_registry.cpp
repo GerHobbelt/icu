@@ -966,9 +966,9 @@ FormattedPlaceholder StandardFunctions::DateTime::format(FormattedPlaceholder&& 
     UnicodeString timeStyleName("timeStyle");
     UnicodeString styleName("style");
 
-    bool hasDateStyleOption = opts.getFunctionOption(dateStyleName, opt);
-    bool hasTimeStyleOption = opts.getFunctionOption(timeStyleName, opt);
-    bool noOptions = opts.optionsCount() == 0;
+    bool hasDateStyleOption = !!opts.getFunctionOption(dateStyleName, opt);
+    bool hasTimeStyleOption = !!opts.getFunctionOption(timeStyleName, opt);
+    bool noOptions = (opts.optionsCount() == 0);
 
     bool useStyle = (type == DateTimeFactory::DateTimeType::DateTime
                      && (hasDateStyleOption || hasTimeStyleOption
