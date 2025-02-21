@@ -10,6 +10,7 @@ on:
     branches:
       - main
       - 'maint/maint*'
+      - release-icu4c-ubuntu.yml
     paths:
       - 'icu4c/**'
       - 'testdata/**'
@@ -938,3 +939,4 @@ jobs:
           gh release upload ${{ inputs.gitReleaseTag }} icuexportdata_*.zip --clobber
         env:
           GH_TOKEN: ${{ github.token }}
+
