@@ -83,3 +83,4 @@ jobs:
         gh release upload ${{ inputs.gitReleaseTag }} ${RELEASE_FOLDER}/* --clobber --repo=${{ github.repository }}
       env:
         GH_TOKEN: ${{ github.token }}
+
