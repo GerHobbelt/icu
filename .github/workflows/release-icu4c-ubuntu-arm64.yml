@@ -1,6 +1,22 @@
 name: Release - ICU4C artifacts on Ubuntu/ARM64
 
 on:
+  push:
+    branches:
+      - main
+      - 'maint/maint*'
+      - release-icu4c-ubuntu.yml
+    paths:
+      - 'icu4c/**'
+      - 'testdata/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: '**'
+    paths:
+      - 'icu4c/**'
+      - 'testdata/**'
+      - '.github/workflows/**'
+
   workflow_dispatch:
     inputs:
       runTests:
