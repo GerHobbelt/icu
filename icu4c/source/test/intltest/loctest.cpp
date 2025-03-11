@@ -2581,12 +2581,12 @@ static const struct {
             "bn_IN"
         }, {
             "und_CD",
-            "sw_Latn_CD",
-            "sw_CD"
+            "fr_Latn_CD",
+            "fr_CD"
         }, {
             "und_CF",
-            "fr_Latn_CF",
-            "fr_CF"
+            "sg_Latn_CF",
+            "sg"
         }, {
             "und_CG",
             "fr_Latn_CG",
@@ -2649,8 +2649,8 @@ static const struct {
             "de"
         }, {
             "und_DJ",
-            "aa_Latn_DJ",
-            "aa_DJ"
+            "fr_Latn_DJ",
+            "fr_DJ"
         }, {
             "und_DK",
             "da_Latn_DK",
@@ -3193,8 +3193,8 @@ static const struct {
             "it_SM"
         }, {
             "und_SN",
-            "fr_Latn_SN",
-            "fr_SN"
+            "wo_Latn_SN",
+            "wo"
         }, {
             "und_SO",
             "so_Latn_SO",
@@ -3225,8 +3225,8 @@ static const struct {
             "syr"
         }, {
             "und_TD",
-            "fr_Latn_TD",
-            "fr_TD"
+            "ar_Arab_TD",
+            "ar_TD"
         }, {
             "und_TG",
             "fr_Latn_TG",
