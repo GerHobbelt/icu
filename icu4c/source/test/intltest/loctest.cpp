@@ -2569,8 +2569,8 @@ static const struct {
             "dz"
         }, {
             "und_BY",
-            "be_Cyrl_BY",
-            "be"
+            "ru_Cyrl_BY",
+            "ru_BY"
         }, {
             "und_Beng",
             "bn_Beng_BD",
