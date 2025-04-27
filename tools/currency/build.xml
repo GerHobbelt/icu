@@ -44,7 +44,7 @@
     <echo message="Downloading ISO 4217 XML data files"/>
     <mkdir dir="${xml.dir}"/>
     <get src="${base.url}${current.xml}" dest="${xml.dir}">
-        <header name="Accept" value="appication/xml"/>
+        <header name="Accept" value="application/xml"/>
     </get>
     <get src="${base.url}${historic.xml}" dest="${xml.dir}">
         <header name="Accept" value="application/xml"/>
