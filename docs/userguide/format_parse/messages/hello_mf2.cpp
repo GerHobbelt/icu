@@ -11,7 +11,7 @@
 
 using namespace icu;
 
-int main() {
+int main(void) {
     ErrorCode errorCode;
     UParseError parseError;
 
