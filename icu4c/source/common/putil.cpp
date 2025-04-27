@@ -2444,9 +2444,11 @@ uprv_dlsym_func(void *lib, const char* sym, UErrorCode *status) {
 
   if(U_FAILURE(*status) || lib==nullptr) return nullptr;
 
-  addr = (UVoidFunction*)GetProcAddress(handle, sym);
+  // fix warning C4191 : 'type cast' : unsafe conversion from 'FARPROC' to 'UVoidFunction (__cdecl *)'
+  auto proc_addr = GetProcAddress(handle, sym);
+  memcpy(&addr, &proc_addr, sizeof(addr));
 
-  if(addr==nullptr) {
+  if (addr == nullptr) {
     DWORD lastError = GetLastError();
     if(lastError == ERROR_PROC_NOT_FOUND) {
       *status = U_MISSING_RESOURCE_ERROR;
