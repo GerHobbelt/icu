@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 cs{
     Countries{
         001{"svět"}
@@ -298,6 +298,9 @@ cs{
         ZW{"Zimbabwe"}
         ZZ{"neznámá oblast"}
     }
+    Countries%chagos{
+        IO{"Čagoské ostrovy"}
+    }
     Countries%short{
         GB{"GB"}
         HK{"Hongkong"}
@@ -312,6 +315,7 @@ cs{
         CI{"Côte d’Ivoire"}
         CZ{"Česká republika"}
         FK{"Falklandské ostrovy (Malvíny)"}
+        NZ{"Aotearoa – Nový Zéland"}
         SZ{"Svazijsko"}
         TL{"Timor-Leste"}
     }

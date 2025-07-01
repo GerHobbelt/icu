@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 sr_Latn_BA{
     zoneStrings{
         "America:Indiana:Vevay"{
@@ -94,6 +94,7 @@ sr_Latn_BA{
         }
         "meta:Alaska"{
             ld{"Aljaska, ljetnje vrijeme"}
+            lg{"Aljaska"}
             ls{"Aljaska, standardno vrijeme"}
         }
         "meta:Amazon"{
@@ -223,11 +224,6 @@ sr_Latn_BA{
             lg{"Kina vrijeme"}
             ls{"Kinesko standardno vrijeme"}
         }
-        "meta:Choibalsan"{
-            ld{"Čojbalsan, ljetnje vrijeme"}
-            lg{"Čojbalsan vrijeme"}
-            ls{"Čojbalsan, standardno vrijeme"}
-        }
         "meta:Christmas"{
             ls{"Božićno ostrvo vrijeme"}
         }
@@ -246,6 +242,7 @@ sr_Latn_BA{
         }
         "meta:Cuba"{
             ld{"Kuba, ljetnje vrijeme"}
+            lg{"Kuba"}
             ls{"Kuba, standardno vrijeme"}
         }
         "meta:Davis"{
@@ -315,10 +312,12 @@ sr_Latn_BA{
         }
         "meta:Greenland_Eastern"{
             ld{"Istočni Grenland, ljetnje vrijeme"}
+            lg{"Istočni Grenland"}
             ls{"Istočni Grenland, standardno vrijeme"}
         }
         "meta:Greenland_Western"{
             ld{"Zapadni Grenland, ljetnje vrijeme"}
+            lg{"Zapadni Grenland"}
             ls{"Zapadni Grenland, standardno vrijeme"}
         }
         "meta:Gulf"{
@@ -380,6 +379,9 @@ sr_Latn_BA{
             lg{"Japansko vrijeme"}
             ls{"Japansko standardno vrijeme"}
         }
+        "meta:Kazakhstan"{
+            ls{"Kazahstansko vrijeme"}
+        }
         "meta:Kazakhstan_Eastern"{
             ls{"Istočno-kazahstansko vrijeme"}
         }
@@ -410,9 +412,6 @@ sr_Latn_BA{
             lg{"Lord Hov vrijeme"}
             ls{"Lord Hov, standardno vrijeme"}
         }
-        "meta:Macquarie"{
-            ls{"ostrvo Makvori vrijeme"}
-        }
         "meta:Magadan"{
             ld{"Magadan, ljetnje vrijeme"}
             lg{"Magadan vrijeme"}
@@ -438,13 +437,9 @@ sr_Latn_BA{
         "meta:Mawson"{
             ls{"Moson vrijeme"}
         }
-        "meta:Mexico_Northwest"{
-            ld{"Sjeverozapadni Meksiko, letnje vrijeme"}
-            lg{"Sjeverozapadni Meksiko"}
-            ls{"Sjeverozapadni Meksiko, standardno vrijeme"}
-        }
         "meta:Mexico_Pacific"{
             ld{"Meksički Pacifik, ljetnje vrijeme"}
+            lg{"Meksički Pacifik"}
             ls{"Meksički Pacifik, standardno vrijeme"}
         }
         "meta:Mongolia"{
@@ -478,6 +473,7 @@ sr_Latn_BA{
         }
         "meta:Newfoundland"{
             ld{"Njufaundlend, ljetnje vrijeme"}
+            lg{"Njufaundlend"}
             ls{"Njufaundlend, standardno vrijeme"}
         }
         "meta:Niue"{
@@ -534,6 +530,7 @@ sr_Latn_BA{
         }
         "meta:Pierre_Miquelon"{
             ld{"Sen Pjer i Mikelon, ljetnje vrijeme"}
+            lg{"Sen Pjer i Mikelon"}
             ls{"Sen Pjer i Mikelon, standardno vrijeme"}
         }
         "meta:Pitcairn"{

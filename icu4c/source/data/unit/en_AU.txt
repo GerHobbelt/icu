@@ -1,13 +1,8 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 en_AU{
     %%Parent{"en_001"}
-    durationUnits{
-        hm{"h:mm"}
-        hms{"h:mm:ss"}
-        ms{"m:ss"}
-    }
     units{
         concentr{
             permille{
@@ -27,15 +22,6 @@ en_AU{
             kilometer{
                 dnam{"kilometre"}
             }
-            micrometer{
-                dnam{"micrometres"}
-            }
-        }
-        mass{
-            metric-ton{
-                one{"tonne"}
-                other{"{0} tonnes"}
-            }
         }
         pressure{
             pound-force-per-square-inch{
@@ -46,21 +32,19 @@ en_AU{
         }
         temperature{
             generic{
-                dnam{"degrees"}
+                one{"{0} degree"}
+                other{"{0} degrees"}
             }
         }
         volume{
-            fluid-ounce{
-                dnam{"fluid ounces"}
-                one{"{0} fluid ounce"}
-                other{"{0} fluid ounces"}
+            fluid-ounce-imperial{
+                dnam{"Imp. fluid ounces"}
+                one{"{0} Imp. fluid ounce"}
+                other{"{0} Imp. fluid ounces"}
             }
         }
     }
     unitsNarrow{
-        compound{
-            per{"{0}/{1}"}
-        }
         concentr{
             milligram-ofglucose-per-deciliter{
                 dnam{"mg/dL"}
@@ -87,40 +71,15 @@ en_AU{
         }
         duration{
             century{
-                dnam{"C."}
-                one{"{0}C."}
-                other{"{0}C."}
-            }
-            microsecond{
-                dnam{"μsec."}
-            }
-            millisecond{
-                dnam{"msec."}
-            }
-            minute{
-                dnam{"min."}
-                one{"{0}min."}
-                other{"{0}min."}
-            }
-            second{
-                dnam{"sec."}
-                one{"{0}s."}
-                other{"{0}s."}
+                dnam{"C"}
+                one{"{0}C"}
+                other{"{0}C"}
             }
         }
         speed{
             kilometer-per-hour{
                 one{"{0} km/h"}
                 other{"{0} km/h"}
-            }
-        }
-        temperature{
-            celsius{
-                one{"{0}°C"}
-                other{"{0}°C"}
-            }
-            generic{
-                dnam{"°"}
             }
         }
         volume{
@@ -144,18 +103,19 @@ en_AU{
                 other{"{0}dsp US"}
             }
             dessert-spoon-imperial{
-                dnam{"dsp Imp."}
-                one{"{0}dsp-Imp."}
-                other{"{0}dsp-Imp."}
+                dnam{"dsp Imp"}
+                one{"{0}dsp-Imp"}
+                other{"{0}dsp-Imp"}
             }
             fluid-ounce-imperial{
-                dnam{"Imp. fl oz"}
+                dnam{"Imp fl oz"}
+                one{"{0}fl oz Im"}
+                other{"{0}fl oz Im"}
             }
             gallon{
-                dnam{"gal. US"}
-                one{"{0}gal. US"}
-                other{"{0}gal. US"}
-                per{"{0}/gal. US"}
+                dnam{"gal US"}
+                one{"{0} gal US"}
+                other{"{0} gal US"}
             }
             gallon-imperial{
                 dnam{"gal."}
@@ -188,9 +148,6 @@ en_AU{
                 one{"{0}qt US"}
                 other{"{0}qt US"}
             }
-            quart-imperial{
-                dnam{"qt Imp."}
-            }
         }
     }
     unitsShort{
@@ -204,10 +161,6 @@ en_AU{
                 dnam{"arcsec."}
                 one{"{0} arcsec."}
                 other{"{0} arcsec."}
-            }
-            degree{
-                one{"{0} deg."}
-                other{"{0} deg."}
             }
         }
         concentr{
@@ -247,30 +200,9 @@ en_AU{
         }
         duration{
             century{
-                dnam{"C."}
-                one{"{0} C."}
-                other{"{0} C."}
-            }
-            microsecond{
-                dnam{"μsec."}
-            }
-            millisecond{
-                dnam{"millisec."}
-            }
-            minute{
-                dnam{"min."}
-                one{"{0} min."}
-                other{"{0} mins"}
-                per{"{0}/min."}
-            }
-            nanosecond{
-                dnam{"nanosec."}
-            }
-            second{
-                dnam{"sec."}
-                one{"{0} sec."}
-                other{"{0} secs"}
-                per{"{0} ps."}
+                dnam{"C"}
+                one{"{0} C"}
+                other{"{0} C"}
             }
         }
         energy{
@@ -288,10 +220,6 @@ en_AU{
                 dnam{"AU"}
                 one{"{0} AU"}
                 other{"{0} AU"}
-            }
-            light-year{
-                one{"{0} l.y."}
-                other{"{0} l.y."}
             }
         }
         mass{
@@ -323,10 +251,14 @@ en_AU{
             }
         }
         temperature{
+            celsius{
+                dnam{"deg C"}
+            }
+            fahrenheit{
+                dnam{"deg F"}
+            }
             generic{
                 dnam{"deg."}
-                one{"{0}°"}
-                other{"{0}°"}
             }
         }
         volume{
@@ -344,16 +276,16 @@ en_AU{
                 one{"{0} dL"}
                 other{"{0} dL"}
             }
-            fluid-ounce{
-                dnam{"fl oz"}
-                one{"{0} fl oz"}
-                other{"{0} fl oz"}
+            fluid-ounce-imperial{
+                dnam{"Imp. fl oz"}
+                one{"{0} fl oz Imp."}
+                other{"{0} fl oz Imp."}
             }
             gallon{
-                dnam{"US gal."}
-                one{"{0} gal. US"}
-                other{"{0} gal. US"}
-                per{"{0}/gal. US"}
+                dnam{"gal US"}
+                one{"{0} gal US"}
+                other{"{0} gal US"}
+                per{"{0}/gal US"}
             }
             gallon-imperial{
                 dnam{"gal."}

@@ -37,11 +37,9 @@ italic styles.
 ICU provides multiple text access interfaces which were added over time. If
 simple strings cannot be used, then consider the following:
 
-1.  [UText](utext.md): Added in ICU4C 3.4 as a technology preview. Intended to
-    be the strategic text access API for use with ICU. C API, high performance,
-    writable, supports native indexes for efficient non-UTF-16 text storage. So
-    far (3.4) only supported in BreakIterator. Some API changes are anticipated
-    for ICU 3.6.
+1.  [UText](utext.md): Intended to be the strategic text access API for use
+    with ICU. C API, high performance, writable, supports native indexes for
+    efficient non-UTF-16 text storage.
 
 2.  Replaceable (Java & C++) and UReplaceable (C): Writable, designed for use
     with Transliterator.
@@ -445,7 +443,7 @@ when it is constructed from a NULL `UChar *` pointer, then the UnicodeString
 object becomes "bogus". This can be tested with the isBogus() function. A
 UnicodeString can be put into the "bogus" state explicitly with the setToBogus()
 function. This is different from an empty string (although a "bogus" string also
-returns TRUE from isEmpty()) and may be used equivalently to NULL in `UChar *` C
+returns true from isEmpty()) and may be used equivalently to NULL in `UChar *` C
 APIs (or null references in Java, or NULL values in SQL). A string remains
 "bogus" until a non-bogus string value is assigned to it. For complete details
 of the behavior of "bogus" strings see the description of the setToBogus()
@@ -457,6 +455,76 @@ abstract class. It defines a simple interface for random access and text
 modification and is useful for operations on text that may have associated
 meta-data (e.g., styled text), especially in the Transliterator API.
 UnicodeString implements Replaceable.
+
+UnicodeString can be used together with standard library algorithms and containers:
+
+```c++
+#include <unicode/locid.h>
+#include <unicode/stringoptions.h>
+#include <unicode/unistr.h>
+#include <unicode/ustream.h>
+
+#include <algorithm>
+#include <cstdlib>
+#include <functional>
+#include <iostream>
+#include <ostream>
+#include <unordered_set>
+#include <vector>
+
+// Output all strings in this container to this stream.
+template <template <typename...> typename C, typename... Args>
+std::ostream& operator<<(std::ostream& stream, const C<Args...>& c) {
+    for (const icu::UnicodeString& s : c) {
+        stream << s << std::endl;
+    }
+    return stream;
+}
+
+int main(int argc, char* argv[]) {
+    // Create a set of icu::UnicodeString objects.
+    const auto hasher = std::mem_fn(&icu::UnicodeString::hashCode);
+    std::unordered_set<icu::UnicodeString, decltype(hasher)> set(
+        {u"aaa", u"bbb", u"ccc"}, 0, hasher);
+
+    std::cout << "-1-" << std::endl << set;
+
+    // Create a vector from the strings in the set.
+    std::vector<icu::UnicodeString> vector(set.begin(), set.end());
+
+    std::cout << "-2-" << std::endl << vector;
+
+    // For each string in the set, append it to the vector, then uppercase it.
+    for (const icu::UnicodeString& s : set) {
+        vector.emplace_back(s).toUpper(icu::Locale::getEnglish());
+    }
+
+    std::cout << "-3-" << std::endl << vector;
+
+    // Sort the strings in ascending order (the default).
+    std::sort(vector.begin(), vector.end());
+
+    std::cout << "-4-" << std::endl << vector;
+
+    // Sort the strings in descending order.
+    std::sort(vector.begin(), vector.end(), std::greater());
+
+    std::cout << "-5-" << std::endl << vector;
+
+    // Sort the strings in ascending order, case-insensitively.
+    std::sort(vector.begin(), vector.end(),
+              [](const icu::UnicodeString& lhs, const icu::UnicodeString& rhs) {
+                  return lhs.caseCompare(rhs, U_FOLD_CASE_DEFAULT) < 0;
+              });
+
+    std::cout << "-6-" << std::endl << vector;
+
+    return EXIT_SUCCESS;
+}
+```
+
+See the [Collation API](../collation/api.md) for how to use a collator to sort
+strings in natural language ordering for humans.
 
 ### C++ Unicode String Literals
 

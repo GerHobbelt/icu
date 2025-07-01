@@ -43,8 +43,9 @@ _ucd_version = "?"
 
 # Script codes from ISO 15924 http://www.unicode.org/iso15924/codechanges.html
 # that are not yet in the UCD.
+# Alias/subset/superset codes like Latf/Jamo/Jpan will never be in the UCD.
 _scripts_only_in_iso15924 = (
-    "Afak", "Blis", "Cirt", "Cyrs",
+    "Afak", "Aran", "Blis", "Cirt", "Cyrs",
     "Egyd", "Egyh", "Geok",
     "Hanb", "Hans", "Hant",
     "Inds", "Jamo", "Jpan", "Jurc", "Kore", "Kpel", "Latf", "Latg", "Loma",
@@ -204,6 +205,12 @@ def GetShortPropertyValueName(prop, vname):
 
 
 def NormalizePropertyValue(prop, vname):
+  if prop[1][1] == "Identifier_Type":
+    # We list values as if this was an Enumerated property, but
+    # each code point actually maps to a *set* of those values,
+    # and we just pass them through to ppucd.txt.
+    # By contrast, Script_Extensions does not list its own values;
+    return vname
   if prop[2]:  # Binary/Catalog/Enumerated property.
     value = GetShortPropertyValueName(prop, vname)
     if prop[0] == "Binary":
@@ -353,7 +360,10 @@ def SetPropertyValue(pname, vname, start, end):
 
 _stripped_cp_re = re.compile("([0-9a-fA-F]+)$")
 _stripped_range_re = re.compile("([0-9a-fA-F]+)\.\.([0-9a-fA-F]+)$")
+# Default value for all of Unicode.
 _missing_re = re.compile("# *@missing: *0000\.\.10FFFF *; *(.+)$")
+# Default value for some range.
+_missing2_re = re.compile("# *@missing: *(.+)$")
 
 def ReadUCDLines(in_file, want_ranges=True, want_other=False,
                  want_comments=False, want_missing=False):
@@ -365,6 +375,7 @@ def ReadUCDLines(in_file, want_ranges=True, want_other=False,
     line = line.strip()
     if not line: continue
     if line.startswith("#"):  # whole-line comment
+      parse_data = False
       if want_missing:
         match = _missing_re.match(line)
         if match:
@@ -372,8 +383,15 @@ def ReadUCDLines(in_file, want_ranges=True, want_other=False,
           for i in range(len(fields)): fields[i] = fields[i].strip()
           yield ("missing", line, fields)
           continue
-      if want_comments: yield ("comment", line)
-      continue
+        match = _missing2_re.match(line)
+        if match:
+          # Strip the "missing" comment prefix and fall through to
+          # parse the remainder of the line like regular data.
+          parse_data = True
+          line = match.group(1)
+      if not parse_data:
+        if want_comments: yield ("comment", line)
+        continue
     comment_start = line.find("#")  # inline comment
     if comment_start >= 0:
       line = line[:comment_start].rstrip()
@@ -399,14 +417,18 @@ def ReadUCDLines(in_file, want_ranges=True, want_other=False,
       raise SyntaxError("unable to parse line\n  %s\n" % line)
 
 
-def AddBinaryProperty(short_name, long_name):
-  _null_values[short_name] = False
-  bin_prop = _properties["Math"]
-  prop = ("Binary", [short_name, long_name], bin_prop[2], bin_prop[3])
+def AddProperty(short_name, long_name, null_value, prop):
+  _null_values[short_name] = null_value
   _properties[short_name] = prop
   _properties[long_name] = prop
   _properties[NormPropName(short_name)] = prop
   _properties[NormPropName(long_name)] = prop
+
+
+def AddBinaryProperty(short_name, long_name):
+  bin_prop = _properties["Math"]
+  prop = ("Binary", [short_name, long_name], bin_prop[2], bin_prop[3])
+  AddProperty(short_name, long_name, False, prop)
 
 
 def AddSingleNameBinaryProperty(name):
@@ -427,6 +449,23 @@ def AddPOSIXBinaryProperty(name):
   _properties[NormPropName(name)] = prop
   # This is to match UProperty UCHAR_POSIX_ALNUM etc.
   _properties["posix" + NormPropName(name)] = prop
+
+
+def AddEnumeratedValue(prop, aliases):
+  if isinstance(aliases, str):
+    short_name = aliases
+    aliases = [short_name, short_name]
+  else:
+    short_name = aliases[0]
+    if len(aliases) == 1:
+      # long name = short name
+      aliases.append(short_name)
+  prop[2].add(short_name)
+  values = prop[3]
+  for alias in aliases:
+    if alias:
+      values[alias] = aliases
+      values[NormPropName(alias)] = aliases
 
 
 # Match a comment line like
@@ -552,6 +591,39 @@ def ParsePropertyAliases(in_file):
   AddPOSIXBinaryProperty("graph")
   AddPOSIXBinaryProperty("print")
   AddPOSIXBinaryProperty("xdigit")
+  # https://www.unicode.org/reports/tr39/#Identifier_Status_and_Type
+  # Property definition:
+  # https://www.unicode.org/Public/security/latest/IdentifierStatus.txt
+  short_name = "ID_Status"
+  long_name = "Identifier_Status"
+  prop = ("Enumerated", [short_name, long_name], set(), {})
+  AddProperty(short_name, long_name,
+              "??",  # Must be specified in an @missing line.
+              prop)
+  AddEnumeratedValue(prop, "Allowed")
+  AddEnumeratedValue(prop, "Restricted")
+  # Property definition:
+  # https://www.unicode.org/Public/security/latest/IdentifierType.txt
+  # "Miscellaneous" like Script_Extensions:
+  # Each code point maps to a *set* of one or more of the listed values.
+  short_name = "ID_Type"
+  long_name = "Identifier_Type"
+  prop = ("Miscellaneous", [short_name, long_name], set(), {})
+  AddProperty(short_name, long_name,
+              "??",  # Must be specified in an @missing line.
+              prop)
+  AddEnumeratedValue(prop, "Not_Character")
+  AddEnumeratedValue(prop, "Deprecated")
+  AddEnumeratedValue(prop, "Default_Ignorable")
+  AddEnumeratedValue(prop, "Not_NFKC")
+  AddEnumeratedValue(prop, "Not_XID")
+  AddEnumeratedValue(prop, "Exclusion")
+  AddEnumeratedValue(prop, "Obsolete")
+  AddEnumeratedValue(prop, "Technical")
+  AddEnumeratedValue(prop, "Uncommon_Use")
+  AddEnumeratedValue(prop, "Limited_Use")
+  AddEnumeratedValue(prop, "Inclusion")
+  AddEnumeratedValue(prop, "Recommended")
 
 
 def ParsePropertyValueAliases(in_file):
@@ -821,6 +893,8 @@ def ParseDerivedJoiningGroup(in_file): ParseOneProperty(in_file, "jg")
 def ParseDerivedJoiningType(in_file): ParseOneProperty(in_file, "jt")
 def ParseEastAsianWidth(in_file): ParseOneProperty(in_file, "ea")
 def ParseGraphemeBreakProperty(in_file): ParseOneProperty(in_file, "GCB")
+def ParseIdentifierStatus(in_file): ParseOneProperty(in_file, "Identifier_Status")
+def ParseIdentifierType(in_file): ParseOneProperty(in_file, "Identifier_Type")
 def ParseIndicPositionalCategory(in_file): ParseOneProperty(in_file, "InPC")
 def ParseIndicSyllabicCategory(in_file): ParseOneProperty(in_file, "InSC")
 def ParseLineBreak(in_file): ParseOneProperty(in_file, "lb")
@@ -1384,21 +1458,38 @@ def WriteNorm2NFKCTextFile(path):
                          (start, dm))
 
 
-def WriteNorm2NFKC_CFTextFile(path):
+def WriteNorm2NFKC_CFTextFile(path, filename, prop_name):
   global _data_file_copyright
-  with open(os.path.join(path, "nfkc_cf.txt"), "w") as out_file:
+  with open(os.path.join(path, filename), "w") as out_file:
     out_file.write(
-        _data_file_copyright + """# file name: nfkc_cf.txt
+        _data_file_copyright + """# file name: %s
 #
 # machine-generated by ICU preparseucd.py
 #
-# This file contains the Unicode NFKC_CF mappings,
+# This file contains the Unicode %s mappings,
 # extracted from the UCD file DerivedNormalizationProps.txt,
 # and reformatted into syntax for the gennorm2 Normalizer2 data generator tool.
 # Use this file as the third gennorm2 input file after nfc.txt and nfkc.txt.
 
-""")
+""" %
+        (filename, prop_name))
     out_file.write("* Unicode " + _ucd_version + "\n\n")
+    if prop_name == "NFKC_SCF":
+      # Hack: Override the NFC round-trip mapping for U+0130 and
+      # 36 Greek small letters that decompose to xxxx 0345. See PAG issue #182.
+      out_file.write("""# Each of these maps to itself.
+0130-
+1F80..1F87-
+1F90..1F97-
+1FA0..1FA7-
+1FB2..1FB4-
+1FB7-
+1FC2..1FC4-
+1FC7-
+1FF2..1FF4-
+1FF7-
+
+""")
     prev_start = 0
     prev_end = 0
     prev_nfkc_cf = None
@@ -1406,7 +1497,7 @@ def WriteNorm2NFKC_CFTextFile(path):
       start = _starts[i]
       end = _starts[i + 1] - 1
       props = _props[i]
-      nfkc_cf = props.get("NFKC_CF")
+      nfkc_cf = props.get(prop_name)
       # Merge with the previous range if possible,
       # or remember this range for merging.
       if nfkc_cf == prev_nfkc_cf and (prev_end + 1) == start:
@@ -1426,7 +1517,8 @@ def WriteNorm2NFKC_CFTextFile(path):
 def WriteNorm2(path):
   WriteNorm2NFCTextFile(path)
   WriteNorm2NFKCTextFile(path)
-  WriteNorm2NFKC_CFTextFile(path)
+  WriteNorm2NFKC_CFTextFile(path, "nfkc_cf.txt", "NFKC_CF")
+  WriteNorm2NFKC_CFTextFile(path, "nfkc_scf.txt", "NFKC_SCF")
 
 # UTS #46 Normalizer2 input file ------------------------------------------- ***
 
@@ -1630,6 +1722,8 @@ _files = {
   "emoji-zwj-sequences.txt": (CopyOnly,),
   "GraphemeBreakProperty.txt": (DontCopy, ParseGraphemeBreakProperty),
   "GraphemeBreakTest-cldr.txt": (CopyOnly, "testdata"),
+  "IdentifierStatus.txt": (DontCopy, ParseIdentifierStatus),
+  "IdentifierType.txt": (DontCopy, ParseIdentifierType),
   "IdnaTestV2.txt": (CopyOnly, "testdata"),
   "IndicPositionalCategory.txt": (DontCopy, ParseIndicPositionalCategory),
   "IndicSyllabicCategory.txt": (DontCopy, ParseIndicSyllabicCategory),
@@ -1652,7 +1746,9 @@ _files = {
   "WordBreakProperty.txt": (DontCopy, ParseWordBreak),
   "WordBreakTest.txt": (CopyOnly, "testdata"),
   # From www.unicode.org/Public/idna/<version>/
-  "IdnaMappingTable.txt": (IdnaToUTS46TextFile, "norm2")
+  "IdnaMappingTable.txt": (IdnaToUTS46TextFile, "norm2"),
+  # From www.unicode.org/Public/security/<version>/
+  "confusables.txt": (CopyOnly, "unidata")
 }
 
 # List of lists of files to be parsed in order.
@@ -1916,7 +2012,7 @@ _ublock_re = re.compile(" *(UBLOCK_[0-9A-Z_]+) *= *[0-9]+,")
 # Sample line to match:
 #    U_EA_AMBIGUOUS,
 _prop_and_value_re = re.compile(
-    " *(U_(BPT|DT|EA|GCB|HST|INPC|INSC|LB|JG|JT|NT|SB|VO|WB)_([0-9A-Z_]+))")
+    " *(U_(BPT|DT|EA|GCB|HST|ID_STATUS|ID_TYPE|INCB|INPC|INSC|LB|JG|JT|NT|SB|VO|WB)_([0-9A-Z_]+))")
 
 # Sample line to match if it has matched _prop_and_value_re
 # (we want to exclude aliases):
@@ -2004,7 +2100,12 @@ def ParseUCharHeader(icu4c_src_root):
         (prop_enum, vname) = match.group(1, 3)
         if vname == "COUNT" or _prop_and_alias_re.match(line):
           continue
-        pname = GetShortPropertyName(match.group(2))
+        pabbreviation = match.group(2)
+        if pabbreviation == "ID_STATUS":
+          pabbreviation = "Identifier_Status"
+        elif pabbreviation == "ID_TYPE":
+          pabbreviation = "Identifier_Type"
+        pname = GetShortPropertyName(pabbreviation)
         prop = _properties[pname]
         vname = GetShortPropertyValueName(prop, vname)
         icu_values = _pname_to_icu_prop[pname][2]
@@ -2076,6 +2177,53 @@ def CheckPNamesData():
     #       (ICU's gcm property has all of the UCD gc property values.)
     if vnames and not (prop[0] == "Binary" or pname in ("age", "gc")):
       missing_enums.append((pname, vnames))
+      # Print new API constants.
+      if pname == "blk":
+        block_starts = {}
+        for (start, _, props) in _blocks:
+          block_name = props["blk"]
+          if block_name in vnames:
+            block_starts[block_name] = start
+        print("# New Block constants: C")
+        print("    // New blocks in Unicode " + _ucd_version)
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          print("    UBLOCK_%s = nnn, /*[%04lX]*/" %
+                (long_name.upper(), block_starts[vname]))
+        print("# New Block constants: Java numeric")
+        print("        // New blocks in Unicode " + _ucd_version)
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          print("        public static final int %s_ID = nnn; /*[%04lX]*/" %
+                (long_name.upper(), block_starts[vname]))
+        print("# New Block constants: Java objects")
+        print("        // New blocks in Unicode " + _ucd_version)
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1].upper()
+          print(("        public static final UnicodeBlock %s ="
+                 " new UnicodeBlock(\"%s\", %s_ID);") %
+                (long_name, long_name, long_name))
+      if pname == "sc":
+        print("# New Script constants: C")
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          pad = " " * (29 - len(long_name))
+          print("      USCRIPT_%s%s = nnn, /* %s */" %
+                (long_name.upper(), pad, vname))
+        print("# New Script constants: Java")
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          print("    public static final int %s = nnn; /* %s */" %
+                (long_name.upper(), vname))
+      if pname == "InSC":
+        print("# New Indic_Syllabic_Category constants: C")
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          print("    U_INSC_%s," % long_name.upper())
+        print("# New Indic_Syllabic_Category constants: Java")
+        for vname in sorted(vnames):
+          long_name = prop[3][vname][1]
+          print("        public static final int %s = nnn;" % long_name.upper())
   if missing_enums:
     raise ValueError(
         "missing uchar.h enum constants for some property values: %s" %
@@ -2184,6 +2332,8 @@ def main():
   for root, dirs, files in os.walk(ucd_root):
     for file in files:
       source_files.append(os.path.join(root, file))
+  if not source_files:
+    raise Exception("no files found to process; bad path? %s" % ucd_root)
   PreprocessFiles(source_files, icu4c_src_root)
   # Parse the processed files in a particular order.
   for files in _files_to_parse:

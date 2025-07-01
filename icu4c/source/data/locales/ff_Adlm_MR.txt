@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 ff_Adlm_MR{
     calendar{
         gregorian{
@@ -14,8 +14,8 @@ ff_Adlm_MR{
                 "d MMM⹁ y",
                 "d-M-y",
                 "{1} {0}",
-                "{1} 𞤉 {0}",
-                "{1} 𞤉 {0}",
+                "{1} {0}",
+                "{1} {0}",
                 "{1} {0}",
                 "{1} {0}",
             }

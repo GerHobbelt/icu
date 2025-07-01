@@ -37,7 +37,6 @@
     <ClCompile>
       <AdditionalIncludeDirectories>..\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>STUBDATA_BUILD;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <DisableLanguageExtensions>true</DisableLanguageExtensions>
       <WarningLevel>Level3</WarningLevel>
       <CompileAs>Default</CompileAs>
       <PrecompiledHeaderOutputFile>$(OutDir)/icudt.pch</PrecompiledHeaderOutputFile>
@@ -56,7 +55,7 @@
       <SetChecksum>true</SetChecksum>
       <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
       <!-- Note: stubdata is somewhat odd in that it doesn't suffix the Debug output DLL/LIB with a "d" like common/i18n/etc. -->
-      <OutputFile>..\..\$(IcuBinOutputDir)\icudt70.dll</OutputFile>
+      <OutputFile>..\..\$(IcuBinOutputDir)\icudt$(IcuMajorVersion).dll</OutputFile>
       <ProgramDatabaseFile>.\..\..\$(IcuLibOutputDir)\icudt.pdb</ProgramDatabaseFile>
       <ImportLibrary>..\..\$(IcuLibOutputDir)\icudt.lib</ImportLibrary>
     </Link>

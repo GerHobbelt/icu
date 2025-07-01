@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 hu{
     Countries{
         001{"Világ"}
@@ -85,6 +85,7 @@ hu{
         CN{"Kína"}
         CO{"Kolumbia"}
         CP{"Clipperton-sziget"}
+        CQ{"Sark"}
         CR{"Costa Rica"}
         CU{"Kuba"}
         CV{"Zöld-foki Köztársaság"}
@@ -298,6 +299,9 @@ hu{
         ZW{"Zimbabwe"}
         ZZ{"Ismeretlen körzet"}
     }
+    Countries%chagos{
+        IO{"Chagos-szigetcsoport"}
+    }
     Countries%short{
         GB{"UK"}
         HK{"Hongkong"}
@@ -311,6 +315,7 @@ hu{
         CG{"Kongó (Köztársaság)"}
         CZ{"Cseh Köztársaság"}
         FK{"Falkland-szigetek (Malvin-szigetek)"}
+        NZ{"Aotearoa (Új-Zéland)"}
         SZ{"Eswatini"}
         TL{"Timor-Leste"}
     }

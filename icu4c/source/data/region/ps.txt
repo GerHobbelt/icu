@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 ps{
     Countries{
         001{"نړۍ"}
@@ -310,7 +310,9 @@ ps{
         CI{"ایوري ساحل"}
         CZ{"جمهوريه چيک"}
         FK{"فاکلينډ ټاپوګان (آيزلز مالويناس)"}
+        NZ{"اوټیاروا نیوزی لینډ"}
         SZ{"سوازيلېنډ"}
         TL{"ختيځ تيمور"}
+        TR{"ترکیه"}
     }
 }

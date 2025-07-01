@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 se_FI{
     Languages{
         ace{"ačehgiella"}
@@ -32,11 +32,6 @@ se_FI{
         th{"thaigiella"}
         vi{"vietnamagiella"}
         zh_Hans{"álkes kiinnágiella"}
-        zh_Hant{"árbevirolaš kiinnágiella"}
-    }
-    Languages%short{
-        en_GB{"brihttalaš eaŋgalsgiella"}
-        en_US{"amerihkálaš eaŋgalsgiella"}
     }
     Scripts{
         Arab{"arábalaš"}

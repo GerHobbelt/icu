@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 sw{
     Countries{
         001{"Dunia"}
@@ -310,6 +310,7 @@ sw{
         CI{"Ivory Coast"}
         CZ{"Jamhuri ya Cheki"}
         FK{"Visiwa vya Falkland (Islas Malvinas)"}
+        NZ{"Aotearoa Nyuzilandi"}
         SZ{"Uswazi"}
         TL{"Timor ya Mashariki"}
     }

@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 he{
     zoneStrings{
         "Africa:Abidjan"{
@@ -94,7 +94,7 @@ he{
             ec{"קינשסה"}
         }
         "Africa:Lagos"{
-            ec{"לגוס"}
+            ec{"לאגוס"}
         }
         "Africa:Libreville"{
             ec{"ליברוויל"}
@@ -257,6 +257,9 @@ he{
         }
         "America:Chihuahua"{
             ec{"צ׳יוואווה"}
+        }
+        "America:Ciudad_Juarez"{
+            ec{"סיודד חוארס"}
         }
         "America:Coral_Harbour"{
             ec{"אטיקוקן"}
@@ -462,9 +465,6 @@ he{
         "America:New_York"{
             ec{"ניו יורק"}
         }
-        "America:Nipigon"{
-            ec{"ניפיגון"}
-        }
         "America:Nome"{
             ec{"נום"}
         }
@@ -472,22 +472,19 @@ he{
             ec{"נורוניה"}
         }
         "America:North_Dakota:Beulah"{
-            ec{"ביולה, צפון דקוטה"}
+            ec{"ביולה, דקוטה הצפונית"}
         }
         "America:North_Dakota:Center"{
-            ec{"סנטר, צפון דקוטה"}
+            ec{"סנטר, דקוטה הצפונית"}
         }
         "America:North_Dakota:New_Salem"{
-            ec{"ניו סיילם, צפון דקוטה"}
+            ec{"ניו סיילם, דקוטה הצפונית"}
         }
         "America:Ojinaga"{
             ec{"אוג׳ינאגה"}
         }
         "America:Panama"{
             ec{"פנמה"}
-        }
-        "America:Pangnirtung"{
-            ec{"פנגנירטונג"}
         }
         "America:Paramaribo"{
             ec{"פרמריבו"}
@@ -510,9 +507,6 @@ he{
         "America:Punta_Arenas"{
             ec{"פונטה ארנס"}
         }
-        "America:Rainy_River"{
-            ec{"רייני ריבר"}
-        }
         "America:Rankin_Inlet"{
             ec{"רנקין אינלט"}
         }
@@ -527,9 +521,6 @@ he{
         }
         "America:Rio_Branco"{
             ec{"ריו ברנקו"}
-        }
-        "America:Santa_Isabel"{
-            ec{"סנטה איזבל"}
         }
         "America:Santarem"{
             ec{"סנטרם"}
@@ -576,9 +567,6 @@ he{
         "America:Thule"{
             ec{"תולה"}
         }
-        "America:Thunder_Bay"{
-            ec{"ת׳אנדר ביי"}
-        }
         "America:Tijuana"{
             ec{"טיחואנה"}
         }
@@ -600,11 +588,8 @@ he{
         "America:Yakutat"{
             ec{"יקוטאט"}
         }
-        "America:Yellowknife"{
-            ec{"ילונייף"}
-        }
         "Antarctica:Casey"{
-            ec{"קאסיי"}
+            ec{"קייסי"}
         }
         "Antarctica:Davis"{
             ec{"דיוויס"}
@@ -692,9 +677,6 @@ he{
         }
         "Asia:Chita"{
             ec{"צ׳יטה"}
-        }
-        "Asia:Choibalsan"{
-            ec{"צ׳ויבלסן"}
         }
         "Asia:Colombo"{
             ec{"קולומבו"}
@@ -927,9 +909,6 @@ he{
         "Australia:Broken_Hill"{
             ec{"ברוקן היל"}
         }
-        "Australia:Currie"{
-            ec{"קרי"}
-        }
         "Australia:Darwin"{
             ec{"דרווין"}
         }
@@ -1112,9 +1091,6 @@ he{
         "Europe:Ulyanovsk"{
             ec{"אוליאנובסק"}
         }
-        "Europe:Uzhgorod"{
-            ec{"אוז׳הורוד"}
-        }
         "Europe:Vaduz"{
             ec{"ואדוץ"}
         }
@@ -1135,9 +1111,6 @@ he{
         }
         "Europe:Zagreb"{
             ec{"זאגרב"}
-        }
-        "Europe:Zaporozhye"{
-            ec{"זפורוז׳יה"}
         }
         "Europe:Zurich"{
             ec{"ציריך"}
@@ -1220,8 +1193,8 @@ he{
         "Pacific:Honolulu"{
             ec{"הונולולו"}
         }
-        "Pacific:Johnston"{
-            ec{"ג׳ונסטון"}
+        "Pacific:Kanton"{
+            ec{"קנטון"}
         }
         "Pacific:Kiritimati"{
             ec{"קיריטימאטי"}
@@ -1461,11 +1434,6 @@ he{
             lg{"שעון סין"}
             ls{"שעון סין (חורף)"}
         }
-        "meta:Choibalsan"{
-            ld{"שעון צ׳ויבלסן (קיץ)"}
-            lg{"שעון צ׳ויבלסן"}
-            ls{"שעון צ׳ויבלסן (חורף)"}
-        }
         "meta:Christmas"{
             ls{"שעון האי כריסטמס"}
         }
@@ -1632,6 +1600,9 @@ he{
             lg{"שעון פטרופבלובסק-קמצ׳טסקי"}
             ls{"שעון רגיל פטרופבלובסק-קמצ׳טסקי"}
         }
+        "meta:Kazakhstan"{
+            ls{"שעון קזחסטן"}
+        }
         "meta:Kazakhstan_Eastern"{
             ls{"שעון מזרח קזחסטן"}
         }
@@ -1667,9 +1638,6 @@ he{
             lg{"שעון מקאו"}
             ls{"שעון חורף מקאו"}
         }
-        "meta:Macquarie"{
-            ls{"שעון מקווארי"}
-        }
         "meta:Magadan"{
             ld{"שעון מגדן (קיץ)"}
             lg{"שעון מגדן"}
@@ -1694,11 +1662,6 @@ he{
         }
         "meta:Mawson"{
             ls{"שעון מאוסון"}
-        }
-        "meta:Mexico_Northwest"{
-            ld{"שעון צפון-מערב מקסיקו (קיץ)"}
-            lg{"שעון צפון-מערב מקסיקו"}
-            ls{"שעון צפון-מערב מקסיקו (חורף)"}
         }
         "meta:Mexico_Pacific"{
             ld{"שעון מערב מקסיקו (קיץ)"}
@@ -1932,9 +1895,7 @@ he{
         "meta:Yukon"{
             ls{"שעון יוקון"}
         }
-        fallbackFormat{"{1} ({0})"}
         gmtFormat{"GMT{0}‎"}
-        gmtZeroFormat{"GMT"}
         hourFormat{"‎+HH:mm;-HH:mm‎"}
         regionFormat{"שעון {0}"}
         regionFormatDaylight{"שעון {0} (קיץ)"}

@@ -53,10 +53,13 @@ void NumberRangeFormatterTest::runIndexedTest(int32_t index, UBool exec, const c
         TESTCASE_AUTO(testFieldPositions);
         TESTCASE_AUTO(testCopyMove);
         TESTCASE_AUTO(toObject);
+        TESTCASE_AUTO(locale);
         TESTCASE_AUTO(testGetDecimalNumbers);
         TESTCASE_AUTO(test21684_Performance);
         TESTCASE_AUTO(test21358_SignPosition);
         TESTCASE_AUTO(test21683_StateLeak);
+        TESTCASE_AUTO(testCreateLNRFFromNumberingSystemInSkeleton);
+        TESTCASE_AUTO(test22288_DifferentStartEndSettings);
     TESTCASE_AUTO_END;
 }
 
@@ -811,6 +814,28 @@ void NumberRangeFormatterTest::testFieldPositions() {
             expectedFieldPositions,
             UPRV_LENGTHOF(expectedFieldPositions));
     }
+
+    {
+        const char16_t* message = u"Field position with approximately sign";
+        const char16_t* expectedString = u"~-100";
+        FormattedNumberRange result = assertFormattedRangeEquals(
+            message,
+            NumberRangeFormatter::withLocale("en-us"),
+            -100,
+            -100,
+            expectedString);
+        static const UFieldPositionWithCategory expectedFieldPositions[] = {
+            // category, field, begin index, end index
+            {UFIELD_CATEGORY_NUMBER, UNUM_APPROXIMATELY_SIGN_FIELD, 0, 1},
+            {UFIELD_CATEGORY_NUMBER, UNUM_SIGN_FIELD, 1, 2},
+            {UFIELD_CATEGORY_NUMBER, UNUM_INTEGER_FIELD, 2, 5}};
+        checkMixedFormattedValue(
+            message,
+            result,
+            expectedString,
+            expectedFieldPositions,
+            UPRV_LENGTHOF(expectedFieldPositions));
+    }
 }
 
 void NumberRangeFormatterTest::testCopyMove() {
@@ -894,6 +919,23 @@ void NumberRangeFormatterTest::toObject() {
     }
 }
 
+void NumberRangeFormatterTest::locale() {
+    IcuTestErrorCode status(*this, "locale");
+
+    LocalizedNumberRangeFormatter lnf = NumberRangeFormatter::withLocale("en")
+        .identityFallback(UNUM_IDENTITY_FALLBACK_RANGE);
+    UnlocalizedNumberRangeFormatter unf1 = lnf.withoutLocale();
+    UnlocalizedNumberRangeFormatter unf2 = NumberRangeFormatter::with()
+        .identityFallback(UNUM_IDENTITY_FALLBACK_RANGE)
+        .locale("ar-EG")
+        .withoutLocale();
+
+    FormattedNumberRange res1 = unf1.locale("bn").formatFormattableRange(5, 5, status);
+    assertEquals(u"res1", u"\u09EB\u2013\u09EB", res1.toTempString(status));
+    FormattedNumberRange res2 = unf2.locale("ja-JP").formatFormattableRange(5, 5, status);
+    assertEquals(u"res2", u"5\uFF5E5", res2.toTempString(status));
+}
+
 void NumberRangeFormatterTest::testGetDecimalNumbers() {
     IcuTestErrorCode status(*this, "testGetDecimalNumbers");
 
@@ -964,7 +1006,7 @@ void NumberRangeFormatterTest::test21358_SignPosition() {
         u"CHF≈5’000.00",
         u"CHF 5’000.00–5’000’000.00");
 
-    // TODO(CLDR-13044): Move the sign to the inside of the number
+    // TODO(ICU-21420): Move the sign to the inside of the number
     assertFormatRange(
         u"Approximately sign position with currency spacing",
         NumberRangeFormatter::with()
@@ -995,7 +1037,6 @@ void NumberRangeFormatterTest::test21358_SignPosition() {
     }
 
     {
-        // TODO(CLDR-14111): Add spacing between range separator and sign
         LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("de-CH");
         UnicodeString actual = lnrf.formatFormattableRange(2, -3, status).toString(status);
         assertEquals("Positive to negative range", u"2–-3", actual);
@@ -1006,6 +1047,51 @@ void NumberRangeFormatterTest::test21358_SignPosition() {
             .numberFormatterBoth(NumberFormatter::forSkeleton(u"%", status));
         UnicodeString actual = lnrf.formatFormattableRange(2, -3, status).toString(status);
         assertEquals("Positive to negative percent", u"2% – -3%", actual);
+    }
+}
+
+void NumberRangeFormatterTest::testCreateLNRFFromNumberingSystemInSkeleton() {
+    IcuTestErrorCode status(*this, "testCreateLNRFFromNumberingSystemInSkeleton");
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("en")
+            .numberFormatterBoth(NumberFormatter::forSkeleton(
+                u".### rounding-mode-half-up", status));
+        UnicodeString actual = lnrf.formatFormattableRange(1, 234, status).toString(status);
+        assertEquals("default numbering system", u"1–234", actual);
+        status.errIfFailureAndReset("default numbering system");
+    }
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("th")
+            .numberFormatterBoth(NumberFormatter::forSkeleton(
+                u".### rounding-mode-half-up numbering-system/thai", status));
+        UnicodeString actual = lnrf.formatFormattableRange(1, 234, status).toString(status);
+        assertEquals("Thai numbering system", u"๑-๒๓๔", actual);
+        status.errIfFailureAndReset("thai numbering system");
+    }
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("en")
+            .numberFormatterBoth(NumberFormatter::forSkeleton(
+                u".### rounding-mode-half-up numbering-system/arab", status));
+        UnicodeString actual = lnrf.formatFormattableRange(1, 234, status).toString(status);
+        assertEquals("Arabic numbering system", u"١–٢٣٤", actual);
+        status.errIfFailureAndReset("arab numbering system");
+    }
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("en")
+            .numberFormatterFirst(NumberFormatter::forSkeleton(u"numbering-system/arab", status))
+            .numberFormatterSecond(NumberFormatter::forSkeleton(u"numbering-system/arab", status));
+        UnicodeString actual = lnrf.formatFormattableRange(1, 234, status).toString(status);
+        assertEquals("Double Arabic numbering system", u"١–٢٣٤", actual);
+        status.errIfFailureAndReset("double arab numbering system");
+    }
+    {
+        LocalizedNumberRangeFormatter lnrf = NumberRangeFormatter::withLocale("en")
+            .numberFormatterFirst(NumberFormatter::forSkeleton(u"numbering-system/arab", status))
+            .numberFormatterSecond(NumberFormatter::forSkeleton(u"numbering-system/latn", status));
+        // Note: The error is not set until `formatFormattableRange` because this is where the
+        // formatter object gets built.
+        lnrf.formatFormattableRange(1, 234, status);
+        status.expectErrorAndReset(U_ILLEGAL_ARGUMENT_ERROR);
     }
 }
 
@@ -1042,7 +1128,7 @@ void NumberRangeFormatterTest::test21683_StateLeak() {
         unumrf_formatDoubleRange(nrf, range.start, range.end, result, status);
         if (status.errIfFailureAndReset("unumrf_formatDoubleRange")) { goto cleanup; }
 
-        auto* formattedValue = unumrf_resultAsValue(result, status);
+        const auto* formattedValue = unumrf_resultAsValue(result, status);
         if (status.errIfFailureAndReset("unumrf_resultAsValue")) { goto cleanup; }
 
         int32_t utf16Length;
@@ -1071,6 +1157,27 @@ cleanup:
     unumrf_close(nrf);
     unumrf_closeResult(result);
     ucfpos_close(fpos);
+}
+
+void NumberRangeFormatterTest::test22288_DifferentStartEndSettings() {
+    IcuTestErrorCode status(*this, "test22288_DifferentStartEndSettings");
+    LocalizedNumberRangeFormatter lnrf(NumberRangeFormatter
+            ::withLocale("en")
+            .collapse(UNUM_RANGE_COLLAPSE_UNIT)
+            .numberFormatterFirst(
+                NumberFormatter::with()
+                    .unit(CurrencyUnit("USD", status))
+                    .unitWidth(UNUM_UNIT_WIDTH_FULL_NAME)
+                    .precision(Precision::integer())
+                    .roundingMode(UNUM_ROUND_FLOOR))
+            .numberFormatterSecond(
+                NumberFormatter::with()
+                    .unit(CurrencyUnit("USD", status))
+                    .unitWidth(UNUM_UNIT_WIDTH_FULL_NAME)
+                    .precision(Precision::integer())
+                    .roundingMode(UNUM_ROUND_CEILING)));
+        FormattedNumberRange result = lnrf.formatFormattableRange(2.5, 2.5, status);
+        assertEquals("Should format successfully", u"2–3 US dollars", result.toString(status));
 }
 
 void  NumberRangeFormatterTest::assertFormatRange(

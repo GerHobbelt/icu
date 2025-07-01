@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 fr_CA{
     units{
         acceleration{
@@ -55,7 +55,6 @@ fr_CA{
             square-mile{
                 one{"{0} mille carré"}
                 other{"{0} milles carrés"}
-                per{"{0} par mille carré"}
             }
             square-yard{
                 dnam{"verges carrées"}
@@ -64,10 +63,6 @@ fr_CA{
             }
         }
         concentr{
-            item{
-                one{"{0} item"}
-                other{"{0} items"}
-            }
             permille{
                 one{"{0} pour mille"}
                 other{"{0} pour mille"}
@@ -76,6 +71,11 @@ fr_CA{
                 dnam{"parties par million"}
                 one{"{0} partie par million"}
                 other{"{0} parties par million"}
+            }
+            portion-per-1e9{
+                dnam{"parties par milliard"}
+                one{"{0} partie par milliard"}
+                other{"{0} parties par milliard"}
             }
         }
         consumption{
@@ -175,10 +175,6 @@ fr_CA{
                 one{"{0} semaine"}
                 other{"{0} semaines"}
             }
-            year{
-                one{"{0} an"}
-                other{"{0} ans"}
-            }
         }
         electric{
             ampere{
@@ -200,7 +196,7 @@ fr_CA{
         }
         energy{
             british-thermal-unit{
-                dnam{"Unités thermiques britanniques"}
+                dnam{"unités thermiques britanniques"}
                 one{"{0} unité thermique britannique"}
                 other{"{0} unités thermiques britanniques"}
             }
@@ -225,6 +221,7 @@ fr_CA{
                 other{"{0} kilojoules"}
             }
             kilowatt-hour{
+                dnam{"kilowattheures"}
                 one{"{0} kilowattheure"}
                 other{"{0} kilowattheures"}
             }
@@ -250,6 +247,11 @@ fr_CA{
             megahertz{
                 one{"{0} mégahertz"}
                 other{"{0} mégahertz"}
+            }
+        }
+        graphics{
+            dot{
+                dnam{"point"}
             }
         }
         length{
@@ -322,9 +324,6 @@ fr_CA{
             }
         }
         light{
-            candela{
-                dnam{"candela"}
-            }
             lux{
                 one{"{0} lux"}
                 other{"{0} lux"}
@@ -345,11 +344,6 @@ fr_CA{
             kilogram{
                 one{"{0} kilogramme"}
                 other{"{0} kilogrammes"}
-                per{"{0} par kilogramme"}
-            }
-            metric-ton{
-                one{"{0} tonne"}
-                other{"{0} tonnes"}
             }
             milligram{
                 one{"{0} milligramme"}
@@ -481,6 +475,12 @@ fr_CA{
                 one{"{0} verge cube"}
                 other{"{0} verges cubes"}
             }
+            dessert-spoon{
+                dnam{"cuillère à dessert"}
+            }
+            drop{
+                dnam{"goutte"}
+            }
             gallon-imperial{
                 dnam{"gallon impérial"}
             }
@@ -490,8 +490,6 @@ fr_CA{
             }
             jigger{
                 dnam{"gobelet doseur"}
-                one{"{0} gobelet doseur"}
-                other{"{0} gobelets doseurs"}
             }
             liter{
                 one{"{0} litre"}
@@ -500,6 +498,9 @@ fr_CA{
             megaliter{
                 one{"{0} mégalitre"}
                 other{"{0} mégalitres"}
+            }
+            pinch{
+                dnam{"pincée"}
             }
             pint{
                 dnam{"chopine"}
@@ -534,22 +535,36 @@ fr_CA{
         }
         area{
             square-yard{
-                dnam{"vg²"}
                 one{"{0}vg²"}
                 other{"{0}vg²"}
             }
         }
         concentr{
-            percent{
-                one{"{0} %"}
-                other{"{0} %"}
+            portion-per-1e9{
+                dnam{"p.p. 10⁹"}
+                one{"{0}pp10⁹"}
+                other{"{0}pp10⁹"}
+            }
+        }
+        digital{
+            gigabit{
+                one{"{0}Gb"}
+                other{"{0}Gb"}
+            }
+            kilobit{
+                one{"{0}kb"}
+                other{"{0}kb"}
+            }
+            megabit{
+                one{"{0}Mb"}
+                other{"{0}Mb"}
+            }
+            terabit{
+                one{"{0}Tb"}
+                other{"{0}Tb"}
             }
         }
         duration{
-            century{
-                one{"´{0}s."}
-                other{"´{0}s."}
-            }
             decade{
                 dnam{"déc"}
                 one{"{0}déc"}
@@ -563,7 +578,6 @@ fr_CA{
             month{
                 one{"{0}m"}
                 other{"{0}m"}
-                per{"{0}/m"}
             }
             week{
                 dnam{"sem"}
@@ -580,16 +594,6 @@ fr_CA{
             therm-us{
                 one{"{0}therm US"}
                 other{"{0}therm US"}
-            }
-        }
-        graphics{
-            dot-per-centimeter{
-                one{"{0}ppcm"}
-                other{"{0}ppcm"}
-            }
-            dot-per-inch{
-                one{"{0}ppp"}
-                other{"{0}ppp"}
             }
         }
         length{
@@ -634,7 +638,6 @@ fr_CA{
                 other{"{0}nm"}
             }
             nautical-mile{
-                dnam{"NM"}
                 one{"{0}NM"}
                 other{"{0}NM"}
             }
@@ -647,7 +650,6 @@ fr_CA{
                 other{"{0}pt"}
             }
             yard{
-                dnam{"vg"}
                 one{"{0}vg"}
                 other{"{0}vg"}
             }
@@ -658,7 +660,6 @@ fr_CA{
                 other{"{0}st"}
             }
             ton{
-                dnam{"tc"}
                 one{"{0}tc"}
                 other{"{0}tc"}
             }
@@ -674,12 +675,16 @@ fr_CA{
                 other{"{0}mmHg"}
             }
             pound-force-per-square-inch{
-                dnam{"psi"}
                 one{"{0}psi"}
                 other{"{0}psi"}
             }
         }
         speed{
+            beaufort{
+                dnam{"Bf"}
+                one{"{0} Bf"}
+                other{"{0} Bf"}
+            }
             knot{
                 one{"{0}nd"}
                 other{"{0}nd"}
@@ -693,7 +698,6 @@ fr_CA{
         }
         torque{
             pound-force-foot{
-                dnam{"lb-pi"}
                 one{"{0}lb-pi"}
                 other{"{0}lb-pi"}
             }
@@ -705,7 +709,6 @@ fr_CA{
                 other{"{0}ac pi"}
             }
             cubic-yard{
-                dnam{"vg³"}
                 one{"{0}vg³"}
                 other{"{0}vg³"}
             }
@@ -730,12 +733,10 @@ fr_CA{
                 other{"{0}gtt."}
             }
             fluid-ounce{
-                dnam{"oz liq."}
                 one{"{0}oz liq."}
                 other{"{0}oz liq."}
             }
             fluid-ounce-imperial{
-                dnam{"oz liq imp."}
                 one{"{0}oz liq imp."}
                 other{"{0}oz liq imp."}
             }
@@ -755,12 +756,10 @@ fr_CA{
                 other{"{0}pincées"}
             }
             pint{
-                dnam{"chop"}
                 one{"{0}chop"}
                 other{"{0}chop"}
             }
             quart{
-                dnam{"pte"}
                 one{"{0}pte"}
                 other{"{0}pte"}
             }
@@ -853,17 +852,23 @@ fr_CA{
                 one{"{0} ‰"}
                 other{"{0} ‰"}
             }
+            portion-per-1e9{
+                dnam{"p.p. 10⁹"}
+                one{"{0} p.p. 10⁹"}
+                other{"{0} p.p. 10⁹"}
+            }
         }
         consumption{
             mile-per-gallon{
                 one{"{0} mi/gal"}
                 other{"{0} mi/gal"}
             }
-            mile-per-gallon-imperial{
-                dnam{"mi/gal Imp"}
-                one{"{0} mi/gal Imp"}
-                other{"{0} mi/gal Imp"}
-            }
+        }
+        coordinate{
+            east{"{0} E."}
+            north{"{0} N."}
+            south{"{0} S."}
+            west{"{0} O."}
         }
         digital{
             bit{
@@ -912,9 +917,6 @@ fr_CA{
             }
         }
         duration{
-            century{
-                dnam{"s."}
-            }
             day{
                 one{"{0} j"}
                 other{"{0} j"}
@@ -983,10 +985,6 @@ fr_CA{
                 one{"{0} cal"}
                 other{"{0} cal"}
             }
-            foodcalorie{
-                one{"{0} kcal"}
-                other{"{0} kcal"}
-            }
             joule{
                 one{"{0} J"}
                 other{"{0} J"}
@@ -1023,20 +1021,9 @@ fr_CA{
             }
         }
         graphics{
-            dot{
-                dnam{"p"}
-                one{"{0} p"}
-                other{"{0} p"}
-            }
             dot-per-centimeter{
-                dnam{"ppcm"}
-                one{"{0} ppcm"}
-                other{"{0} ppcm"}
-            }
-            dot-per-inch{
-                dnam{"ppp"}
-                one{"{0} ppp"}
-                other{"{0} ppp"}
+                one{"{0} pt/cm"}
+                other{"{0} pt/cm"}
             }
         }
         length{
@@ -1130,10 +1117,6 @@ fr_CA{
                 one{"{0} kg"}
                 other{"{0} kg"}
             }
-            metric-ton{
-                one{"{0} t"}
-                other{"{0} t"}
-            }
             microgram{
                 one{"{0} μg"}
                 other{"{0} μg"}
@@ -1158,6 +1141,10 @@ fr_CA{
                 dnam{"tc"}
                 one{"{0} tc"}
                 other{"{0} tc"}
+            }
+            tonne{
+                one{"{0} t"}
+                other{"{0} t"}
             }
         }
         power{
@@ -1212,6 +1199,10 @@ fr_CA{
             }
         }
         speed{
+            beaufort{
+                one{"{0} Bf"}
+                other{"{0} Bf"}
+            }
             kilometer-per-hour{
                 one{"{0} km/h"}
                 other{"{0} km/h"}

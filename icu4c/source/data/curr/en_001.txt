@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 en_001{
     Currencies{
         BMD{
@@ -26,10 +26,6 @@ en_001{
         LVR{
             "LVR",
             "Latvian Rouble",
-        }
-        PHP{
-            "₱",
-            "Philippine Peso",
         }
         RUB{
             "RUB",
@@ -88,10 +84,6 @@ en_001{
         }
         MVR{
             other{"Maldivian rufiyaa"}
-        }
-        PHP{
-            one{"Philippine peso"}
-            other{"Philippine pesos"}
         }
         RUB{
             one{"Russian rouble"}

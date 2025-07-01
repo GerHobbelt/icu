@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 et{
     Keys{
         calendar{"kalender"}
@@ -12,7 +12,7 @@ et{
         colNormalization{"normaliseeritud järjestus"}
         colNumeric{"numbrite järjestus"}
         colStrength{"järjestuskaalud"}
-        collation{"sortimisjärjestus"}
+        collation{"järjestus"}
         currency{"vääring"}
         hc{"12 või 24 tunni süsteem"}
         lb{"reavahetuse laad"}
@@ -44,7 +44,9 @@ et{
         am{"amhara"}
         an{"aragoni"}
         ang{"vanainglise"}
+        ann{"obolo"}
         anp{"angika"}
+        apc{"Levandi araabia"}
         ar{"araabia"}
         ar_001{"tänapäeva araabia kirjakeel"}
         arc{"aramea"}
@@ -52,6 +54,7 @@ et{
         aro{"araona"}
         arp{"arapaho"}
         arq{"Alžeeria araabia"}
+        ars{"Najdi araabia"}
         arw{"aravaki"}
         ary{"Maroko araabia"}
         arz{"Egiptuse araabia"}
@@ -59,6 +62,7 @@ et{
         asa{"asu"}
         ase{"Ameerika viipekeel"}
         ast{"astuuria"}
+        atj{"atikameki"}
         av{"avaari"}
         awa{"avadhi"}
         ay{"aimara"}
@@ -79,6 +83,7 @@ et{
         bfd{"bafuti"}
         bfq{"badaga"}
         bg{"bulgaaria"}
+        bgc{"harjaanvi"}
         bgn{"läänebelutši"}
         bho{"bhodžpuri"}
         bi{"bislama"}
@@ -87,6 +92,8 @@ et{
         bjn{"bandžari"}
         bkm{"komi (Aafrika)"}
         bla{"mustjalaindiaani"}
+        blo{"anii"}
+        blt{"tai-dami"}
         bm{"bambara"}
         bn{"bengali"}
         bo{"tiibeti"}
@@ -122,15 +129,24 @@ et{
         chp{"tšipevai"}
         chr{"tšerokii"}
         chy{"šaieeni"}
+        cic{"tšikasoo"}
         ckb{"sorani"}
+        clc{"tšilkotini"}
         co{"korsika"}
         cop{"kopti"}
         cps{"kapisnoni"}
         cr{"krii"}
+        crg{"michifi"}
         crh{"krimmitatari"}
+        crj{"lõuna-idakrii"}
+        crk{"tasandikukrii"}
+        crl{"põhja-idakrii"}
+        crm{"põdrakrii"}
+        crr{"Carolina algonkini"}
         crs{"seišelli"}
         cs{"tšehhi"}
         csb{"kašuubi"}
+        csw{"sookrii"}
         cu{"kirikuslaavi"}
         cv{"tšuvaši"}
         cy{"kõmri"}
@@ -231,6 +247,7 @@ et{
         hai{"haida"}
         hak{"hakka"}
         haw{"havai"}
+        hax{"lõunahaida"}
         he{"heebrea"}
         hi{"hindi"}
         hif{"Fidži hindi"}
@@ -244,6 +261,7 @@ et{
         ht{"haiti"}
         hu{"ungari"}
         hup{"hupa"}
+        hur{"halkomelemi"}
         hy{"armeenia"}
         hz{"herero"}
         ia{"interlingua"}
@@ -254,6 +272,7 @@ et{
         ig{"ibo"}
         ii{"nuosu"}
         ik{"injupiaki"}
+        ikt{"Lääne-Kanada inuktituti"}
         ilo{"iloko"}
         inh{"inguši"}
         io{"ido"}
@@ -319,6 +338,8 @@ et{
         kut{"kutenai"}
         kv{"komi"}
         kw{"korni"}
+        kwk{"kvakvala"}
+        kxv{"kuvi"}
         ky{"kirgiisi"}
         la{"ladina"}
         lad{"ladiino"}
@@ -330,8 +351,10 @@ et{
         lg{"ganda"}
         li{"limburgi"}
         lij{"liguuri"}
+        lil{"lillueti"}
         liv{"liivi"}
         lkt{"lakota"}
+        lld{"ladiini"}
         lmo{"lombardi"}
         ln{"lingala"}
         lo{"lao"}
@@ -339,13 +362,13 @@ et{
         lou{"Louisiana kreoolkeel"}
         loz{"lozi"}
         lrc{"põhjaluri"}
+        lsm{"samia"}
         lt{"leedu"}
         ltg{"latgali"}
         lu{"Katanga luba"}
         lua{"lulua"}
         lui{"luisenjo"}
         lun{"lunda"}
-        luo{"luo"}
         lus{"lušei"}
         luy{"luhja"}
         lv{"läti"}
@@ -369,6 +392,7 @@ et{
         mgh{"makhuwa-meetto"}
         mgo{"meta"}
         mh{"maršalli"}
+        mhn{"mohheni"}
         mi{"maoori"}
         mic{"mikmaki"}
         min{"minangkabau"}
@@ -377,6 +401,7 @@ et{
         mn{"mongoli"}
         mnc{"mandžu"}
         mni{"manipuri"}
+        moe{"innu"}
         moh{"mohoogi"}
         mos{"more"}
         mr{"marathi"}
@@ -429,6 +454,11 @@ et{
         nzi{"nzima"}
         oc{"oksitaani"}
         oj{"odžibvei"}
+        ojb{"loodeodžibvei"}
+        ojc{"keskodžibvei"}
+        ojs{"Severni odžibvei"}
+        ojw{"lääneodžibvei"}
+        oka{"okanagani"}
         om{"oromo"}
         or{"oria"}
         os{"osseedi"}
@@ -448,10 +478,12 @@ et{
         pfl{"Pfalzi"}
         phn{"foiniikia"}
         pi{"paali"}
+        pis{"pijini"}
         pl{"poola"}
         pms{"piemonte"}
         pnt{"pontose"}
         pon{"poonpei"}
+        pqm{"passamakodi"}
         prg{"preisi"}
         pro{"vanaprovansi"}
         ps{"puštu"}
@@ -510,7 +542,9 @@ et{
         si{"singali"}
         sid{"sidamo"}
         sk{"slovaki"}
+        skr{"seraiki"}
         sl{"sloveeni"}
+        slh{"Lõuna-Puget-Soundi sališi"}
         sli{"alamsileesia"}
         sly{"selajari"}
         sm{"samoa"}
@@ -530,6 +564,7 @@ et{
         ssy{"saho"}
         st{"lõunasotho"}
         stq{"saterfriisi"}
+        str{"väinasališi"}
         su{"sunda"}
         suk{"sukuma"}
         sus{"susu"}
@@ -542,6 +577,7 @@ et{
         syr{"süüria"}
         szl{"sileesia"}
         ta{"tamili"}
+        tce{"lõunatutšoni"}
         tcy{"tulu"}
         te{"telugu"}
         tem{"temne"}
@@ -549,7 +585,9 @@ et{
         ter{"tereno"}
         tet{"tetumi"}
         tg{"tadžiki"}
+        tgx{"tagishi"}
         th{"tai"}
+        tht{"tahltani"}
         ti{"tigrinja"}
         tig{"tigree"}
         tiv{"tivi"}
@@ -564,14 +602,17 @@ et{
         tn{"tsvana"}
         to{"tonga"}
         tog{"tšitonga"}
+        tok{"toki pona"}
         tpi{"uusmelaneesia"}
         tr{"türgi"}
         tru{"turojo"}
         trv{"taroko"}
+        trw{"torvali"}
         ts{"tsonga"}
         tsd{"tsakoonia"}
         tsi{"tsimši"}
         tt{"tatari"}
+        ttm{"põhjatutšoni"}
         ttt{"lõunataadi"}
         tum{"tumbuka"}
         tvl{"tuvalu"}
@@ -588,13 +629,13 @@ et{
         und{"määramata keel"}
         ur{"urdu"}
         uz{"usbeki"}
-        vai{"vai"}
         ve{"venda"}
         vec{"veneti"}
         vep{"vepsa"}
         vi{"vietnami"}
         vls{"lääneflaami"}
         vmf{"Maini frangi"}
+        vmw{"makua"}
         vo{"volapüki"}
         vot{"vadja"}
         vro{"võru"}
@@ -610,6 +651,7 @@ et{
         xal{"kalmõki"}
         xh{"koosa"}
         xmf{"megreli"}
+        xnr{"kangri"}
         xog{"soga"}
         yao{"jao"}
         yap{"japi"}
@@ -644,13 +686,14 @@ et{
     }
     Languages%short{
         az{"aseri"}
-        en_GB{"Briti inglise"}
         en_US{"USA inglise"}
     }
     Languages%variant{
         ckb{"keskkurdi"}
+        hi_Latn{"hinglishi"}
     }
     Scripts{
+        Adlm{"adlami"}
         Afak{"afaka"}
         Aghb{"albaani"}
         Ahom{"ahomi"}
@@ -690,7 +733,9 @@ et{
         Egyh{"egiptuse hieraatiline"}
         Egyp{"egiptuse hieroglüüfkiri"}
         Elba{"Elbasani"}
+        Elym{"elümi"}
         Ethi{"etioopia"}
+        Gara{"garai"}
         Geok{"hutsuri"}
         Geor{"gruusia"}
         Glag{"glagoolitsa"}
@@ -722,6 +767,7 @@ et{
         Jurc{"tšurtšeni"}
         Kali{"kaja-lii"}
         Kana{"katakana"}
+        Kawi{"kaavi"}
         Khar{"kharoshthi"}
         Khmr{"khmeeri"}
         Khoj{"hodžki"}
@@ -759,6 +805,7 @@ et{
         Mtei{"meitei"}
         Mult{"Multani"}
         Mymr{"birma"}
+        Nagm{"Nagi mundari"}
         Narb{"Põhja-Araabia"}
         Nbat{"Nabatea"}
         Newa{"nevari"}
@@ -800,6 +847,7 @@ et{
         Sora{"sora"}
         Soyo{"sojombo"}
         Sund{"sunda"}
+        Sunu{"sunvari"}
         Sylo{"siloti"}
         Syrc{"süüria"}
         Syre{"süüria estrangelo"}
@@ -831,6 +879,7 @@ et{
         Wole{"voleai"}
         Xpeo{"vanapärsia"}
         Xsux{"sumeri-akadi kiilkiri"}
+        Yezi{"jeziidi"}
         Yiii{"jii"}
         Zanb{"Dzanabadzari ruutkiri"}
         Zinh{"päritud"}
@@ -859,11 +908,11 @@ et{
             gregorian{"Gregoriuse kalender"}
             hebrew{"juudi kalender"}
             indian{"India rahvuslik kalender"}
-            islamic{"islamikalender"}
-            islamic-civil{"islami ilmalik kalender"}
-            islamic-rgsa{"islamikalender (Saudi Araabia, vaatluspõhine)"}
-            islamic-tbla{"islamikalender (tabulaarne, astronoomiline ajastu)"}
-            islamic-umalqura{"islamikalender (Umm al-Qura)"}
+            islamic{"hidžra kalender"}
+            islamic-civil{"hidžra kalender (tabelkalender, ilmalik)"}
+            islamic-rgsa{"hidžra kalender (Saudi Araabia, vaatluspõhine)"}
+            islamic-tbla{"hidžra kalender (tabelkalender, astronoomiline ajastu)"}
+            islamic-umalqura{"hidžra kalender (Umm al-Qurá)"}
             iso8601{"ISO-8601 kalender"}
             japanese{"Jaapani kalender"}
             persian{"Pärsia kalender"}
@@ -909,17 +958,16 @@ et{
             big5han{"hiina traditsiooniline sortimisjärjestus (Big5)"}
             compat{"varasem sortimisjärjestus (ühilduvuse jaoks)"}
             dictionary{"sõnastiku sortimisjärjestus"}
-            ducet{"Unicode’i sortimise vaikejärjestus"}
+            ducet{"Unicode’i vaikejärjestus"}
             emoji{"emoji sortimisjärjestus"}
             eor{"Euroopa järjestusreeglid"}
             gb2312han{"hiina lihtsustatud sortimisjärjestus (GB2312)"}
             phonebook{"telefoniraamatu sortimisjärjestus"}
             phonetic{"foneetiline sortimisjärjestus"}
             pinyin{"pinyin’i sortimisjärjestus"}
-            reformed{"reformitud sortimisjärjestus"}
             search{"üldeesmärgiline otsing"}
             searchjl{"otsing korea alguskonsonandi järgi"}
-            standard{"standardne sortimisjärjestus"}
+            standard{"standardne järjestus"}
             stroke{"kriipsude sortimisjärjestus"}
             traditional{"traditsiooniline sortimisjärjestus"}
             unihan{"võtmete-kriipsude sortimisjärjestus"}
@@ -985,6 +1033,7 @@ et{
             jpan{"jaapani numbrid"}
             jpanfin{"jaapani finantsnumbrid"}
             kali{"kaja-lii numbrid"}
+            kawi{"kaavi numbrid"}
             khmr{"khmeeri numbrid"}
             knda{"kannada numbrid"}
             lana{"tai tham hora numbrid"}
@@ -1001,6 +1050,7 @@ et{
             mymr{"birma numbrid"}
             mymrshan{"myanmari shan numbrid"}
             mymrtlng{"myanmari tai laing numbrid"}
+            nagm{"Nagi mundari numbrid"}
             native{"kohalikud numbrid"}
             nkoo{"nkoo numbrid"}
             olck{"santali numbrid"}
@@ -1023,6 +1073,7 @@ et{
             thai{"tai numbrid"}
             tibt{"tiibeti numbrid"}
             tirh{"tirhuta numbrid"}
+            tnsa{"tase numbrid"}
             traditional{"traditsioonilised numbrid"}
             vaii{"vai numbrid"}
             wara{"hoo numbrid"}
@@ -1071,10 +1122,11 @@ et{
     }
     characterLabelPattern{
         all{"{0} – kõik"}
-        category-list{"{0}: {1}"}
         compatibility{"{0} – ühilduvus"}
         enclosed{"{0} – suletud"}
         extended{"{0} – laiendatud"}
+        facing-left{"{0} suunaga vasakule"}
+        facing-right{"{0} suunaga paremale"}
         historic{"{0} – ajalooline"}
         miscellaneous{"{0} – mitmesugust"}
         other{"{0} – muu"}
@@ -1090,10 +1142,5 @@ et{
         language{"Keel: {0}"}
         script{"Kiri: {0}"}
         territory{"Piirkond: {0}"}
-    }
-    localeDisplayPattern{
-        keyTypePattern{"{0}: {1}"}
-        pattern{"{0} ({1})"}
-        separator{"{0}, {1}"}
     }
 }

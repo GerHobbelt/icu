@@ -31,7 +31,7 @@ class ListFormatterTest : public IntlTestWithFieldPosition {
     ListFormatterTest();
     virtual ~ListFormatterTest() {}
 
-    void runIndexedTest(int32_t index, UBool exec, const char *&name, char *par=0) override;
+    void runIndexedTest(int32_t index, UBool exec, const char*& name, char* par = nullptr) override;
 
     void TestRoot();
     void TestBogus();
@@ -56,6 +56,7 @@ class ListFormatterTest : public IntlTestWithFieldPosition {
     void TestContextual();
     void TestNextPosition();
     void TestInt32Overflow();
+    void Test21871();
 
   private:
     void CheckFormatting(
@@ -114,7 +115,7 @@ class ListFormatterTest : public IntlTestWithFieldPosition {
         UListFormatterType type,
         UListFormatterWidth width,
         const char* expected,
-        IcuTestErrorCode status);
+        IcuTestErrorCode& status);
 
   private:
     // Reused test data.

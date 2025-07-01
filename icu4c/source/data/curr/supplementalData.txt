@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 supplementalData:table(nofallback){
     CurrencyMap{
         AC{
@@ -1159,6 +1159,10 @@ supplementalData:table(nofallback){
                     1468155904,
                 }
                 id{"CUC"}
+                to:intvector{
+                    374,
+                    -1067136001,
+                }
             }
             {
                 from:intvector{
@@ -1195,10 +1199,21 @@ supplementalData:table(nofallback){
         CW{
             {
                 from:intvector{
+                    405,
+                    -363122176,
+                }
+                id{"XCG"}
+            }
+            {
+                from:intvector{
                     299,
                     -1821388800,
                 }
                 id{"ANG"}
+                to:intvector{
+                    407,
+                    -1004256769,
+                }
             }
         }
         CX{
@@ -1941,10 +1956,21 @@ supplementalData:table(nofallback){
         HR{
             {
                 from:intvector{
+                    389,
+                    1785321856,
+                }
+                id{"EUR"}
+            }
+            {
+                from:intvector{
                     179,
                     1456854016,
                 }
                 id{"HRK"}
+                to:intvector{
+                    389,
+                    -1300045441,
+                }
             }
             {
                 from:intvector{
@@ -3761,10 +3787,21 @@ supplementalData:table(nofallback){
         SL{
             {
                 from:intvector{
+                    385,
+                    -1223776256,
+                }
+                id{"SLE"}
+            }
+            {
+                from:intvector{
                     -40,
                     1072291840,
                 }
                 id{"SLL"}
+                to:intvector{
+                    396,
+                    -1034816513,
+                }
             }
             {
                 from:intvector{
@@ -3923,10 +3960,21 @@ supplementalData:table(nofallback){
         SX{
             {
                 from:intvector{
+                    405,
+                    -363122176,
+                }
+                id{"XCG"}
+            }
+            {
+                from:intvector{
                     299,
                     -1821388800,
                 }
                 id{"ANG"}
+                to:intvector{
+                    407,
+                    -1004256769,
+                }
             }
         }
         SY{
@@ -4411,6 +4459,10 @@ supplementalData:table(nofallback){
                     -605344769,
                 }
             }
+            {
+                id{"VED"}
+                tender{"false"}
+            }
         }
         VG{
             {
@@ -4675,6 +4727,13 @@ supplementalData:table(nofallback){
         ZW{
             {
                 from:intvector{
+                    400,
+                    1286681600,
+                }
+                id{"ZWG"}
+            }
+            {
+                from:intvector{
                     288,
                     -1751148544,
                 }
@@ -4687,8 +4746,8 @@ supplementalData:table(nofallback){
                 }
                 id{"ZWL"}
                 to:intvector{
-                    288,
-                    -1664748545,
+                    401,
+                    -1428052993,
                 }
             }
             {
@@ -5107,6 +5166,12 @@ supplementalData:table(nofallback){
             2,
             0,
             0,
+            0,
+        }
+        SLE:intvector{
+            2,
+            0,
+            2,
             0,
         }
         SLL:intvector{

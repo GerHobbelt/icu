@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright (C) 2016 and later: Unicode, Inc. and others. License & terms of use: http://www.unicode.org/copyright.html -->
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- The following import will set the ICU Major Version number. -->
+  <Import Project="Build.Windows.IcuVersion.props" />
   <!-- This file is used to set common configuration options for all *_uwp projects. -->
   <PropertyGroup>
     <MinimumVisualStudioVersion>14.0</MinimumVisualStudioVersion>
@@ -43,6 +45,9 @@
         %(PreprocessorDefinitions);
         U_PLATFORM_HAS_WINUWP_API=1;
       </PreprocessorDefinitions>
+      <!-- Set the C/C++ versions supported. -->
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>

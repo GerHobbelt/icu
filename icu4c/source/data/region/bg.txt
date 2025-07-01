@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 bg{
     Countries{
         001{"свят"}
@@ -298,6 +298,9 @@ bg{
         ZW{"Зимбабве"}
         ZZ{"непознат регион"}
     }
+    Countries%chagos{
+        IO{"архипелаг Чагос"}
+    }
     Countries%short{
         HK{"Хонконг"}
         MO{"Макао"}
@@ -309,6 +312,7 @@ bg{
         CG{"Конго (Република)"}
         CZ{"Чешка република"}
         FK{"Фолкландски острови (Малвински острови)"}
+        NZ{"Аотеароа Нова Зеландия"}
         SZ{"Свазиленд"}
         TL{"Източен Тимор"}
     }

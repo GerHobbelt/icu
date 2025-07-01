@@ -78,6 +78,12 @@ void IntlTestRBNF::runIndexedTest(int32_t index, UBool exec, const char* &name, 
         TESTCASE(26, TestParseFailure);
         TESTCASE(27, TestMinMaxIntegerDigitsIgnored);
         TESTCASE(28, TestNorwegianSpellout);
+        TESTCASE(29, TestNumberingSystem);
+        TESTCASE(30, TestDFRounding);
+        TESTCASE(31, TestMemoryLeak22899);
+        TESTCASE(32, TestParseRuleDescriptorOverflow23002);
+        TESTCASE(33, TestInfiniteRecursion);
+        TESTCASE(34, testOmissionReplacementWithPluralRules);
 #else
         TESTCASE(0, TestRBNFDisabled);
 #endif
@@ -92,7 +98,7 @@ void IntlTestRBNF::runIndexedTest(int32_t index, UBool exec, const char* &name, 
 void IntlTestRBNF::TestHebrewFraction() {
 
     // this is the expected output for 123.45, with no '<' in it.
-    UChar text1[] = { 
+    char16_t text1[] = {
         0x05de, 0x05d0, 0x05d4, 0x0020, 
         0x05e2, 0x05e9, 0x05e8, 0x05d9, 0x05dd, 0x0020,
         0x05d5, 0x05e9, 0x05dc, 0x05d5, 0x05e9, 0x0020, 
@@ -100,7 +106,7 @@ void IntlTestRBNF::TestHebrewFraction() {
         0x05d0, 0x05e8, 0x05d1, 0x05e2, 0x0020,
         0x05d7, 0x05de, 0x05e9, 0x0000,
     };
-    UChar text2[] = { 
+    char16_t text2[] = {
         0x05DE, 0x05D0, 0x05D4, 0x0020, 
         0x05E2, 0x05E9, 0x05E8, 0x05D9, 0x05DD, 0x0020, 
         0x05D5, 0x05E9, 0x05DC, 0x05D5, 0x05E9, 0x0020, 
@@ -124,7 +130,7 @@ void IntlTestRBNF::TestHebrewFraction() {
         UnicodeString expected(text1);
         formatter->format(123.45, result);
         if (result != expected) {
-            errln((UnicodeString)"expected '" + TestUtility::hex(expected) + "'\nbut got: '" + TestUtility::hex(result) + "'");
+            errln(UnicodeString("expected '") + TestUtility::hex(expected) + "'\nbut got: '" + TestUtility::hex(result) + "'");
         } else {
 //            formatter->parse(result, parseResult, pp);
 //            if (parseResult.getDouble() != 123.45) {
@@ -137,7 +143,7 @@ void IntlTestRBNF::TestHebrewFraction() {
         result.remove();
         formatter->format(123.0045, result);
         if (result != expected) {
-            errln((UnicodeString)"expected '" + TestUtility::hex(expected) + "'\nbut got: '" + TestUtility::hex(result) + "'");
+            errln(UnicodeString("expected '") + TestUtility::hex(expected) + "'\nbut got: '" + TestUtility::hex(result) + "'");
         } else {
             pp.setIndex(0);
 //            formatter->parse(result, parseResult, pp);
@@ -168,7 +174,7 @@ IntlTestRBNF::TestAPI() {
   {
     logln("Testing Clone");
     RuleBasedNumberFormat* rbnfClone = formatter->clone();
-    if(rbnfClone != NULL) {
+    if(rbnfClone != nullptr) {
       if(!(*rbnfClone == *formatter)) {
         errln("Clone should be semantically equivalent to the original!");
       }
@@ -197,18 +203,18 @@ IntlTestRBNF::TestAPI() {
     } else {
       int32_t ruleLen = 0;
       int32_t len = 0;
-      LocalUResourceBundlePointer rbnfRules(ures_getByKey(en.getAlias(), "RBNFRules", NULL, &status));
-      LocalUResourceBundlePointer ruleSets(ures_getByKey(rbnfRules.getAlias(), "SpelloutRules", NULL, &status));
+      LocalUResourceBundlePointer rbnfRules(ures_getByKey(en.getAlias(), "RBNFRules", nullptr, &status));
+      LocalUResourceBundlePointer ruleSets(ures_getByKey(rbnfRules.getAlias(), "SpelloutRules", nullptr, &status));
       UnicodeString desc;
       while (ures_hasNext(ruleSets.getAlias())) {
-           const UChar* currentString = ures_getNextString(ruleSets.getAlias(), &len, NULL, &status);
+           const char16_t* currentString = ures_getNextString(ruleSets.getAlias(), &len, nullptr, &status);
            ruleLen += len;
            desc.append(currentString);
       }
 
-      const UChar *spelloutRules = desc.getTerminatedBuffer();
+      const char16_t *spelloutRules = desc.getTerminatedBuffer();
 
-      if(U_FAILURE(status) || ruleLen == 0 || spelloutRules == NULL) {
+      if(U_FAILURE(status) || ruleLen == 0 || spelloutRules == nullptr) {
         errln("Unable to access the rules string!");
       } else {
         UParseError perror;
@@ -218,7 +224,7 @@ IntlTestRBNF::TestAPI() {
         }
         
         // Jitterbug 4452, for coverage
-        RuleBasedNumberFormat nf(spelloutRules, (UnicodeString)"", Locale::getUS(), perror, status);
+        RuleBasedNumberFormat nf(spelloutRules, UnicodeString(""), Locale::getUS(), perror, status);
         if(!(nf == *formatter)) {
           errln("Formatter constructed from the original rules should be semantically equivalent to the original!");
         }
@@ -277,17 +283,17 @@ IntlTestRBNF::TestAPI() {
       }
       logln(intFormatResult);
       logln(doubleFormatResult);
-      formatter->setLenient(TRUE);
+      formatter->setLenient(true);
       formatter->parse(intFormatResult, intParseResult, status);
       formatter->parse(doubleFormatResult, doubleParseResult, status);
 
-      logln("Parse results for lenient = TRUE, %i, %f", intParseResult.getLong(), doubleParseResult.getDouble());
+      logln("Parse results for lenient = true, %i, %f", intParseResult.getLong(), doubleParseResult.getDouble());
 
-      formatter->setLenient(FALSE);
+      formatter->setLenient(false);
       formatter->parse(intFormatResult, intParseResult, status);
       formatter->parse(doubleFormatResult, doubleParseResult, status);
 
-      logln("Parse results for lenient = FALSE, %i, %f", intParseResult.getLong(), doubleParseResult.getDouble());
+      logln("Parse results for lenient = false, %i, %f", intParseResult.getLong(), doubleParseResult.getDouble());
 
       if(U_FAILURE(status)) {
         errln("Error during parsing");
@@ -322,7 +328,7 @@ IntlTestRBNF::TestAPI() {
   }
   result.remove();
   expected = "four";
-  formatter->format((int32_t)4,result);
+  formatter->format(static_cast<int32_t>(4), result);
   if(result != expected) {
       errln("Formatted 4, expected " + expected + " got " + result);
   } else {
@@ -331,7 +337,7 @@ IntlTestRBNF::TestAPI() {
 
   result.remove();
   FieldPosition pos;
-  formatter->format((int64_t)4, result, pos, status = U_ZERO_ERROR);
+  formatter->format(static_cast<int64_t>(4), result, pos, status = U_ZERO_ERROR);
   if(result != expected) {
       errln("Formatted 4 int64_t, expected " + expected + " got " + result);
   } else {
@@ -341,7 +347,7 @@ IntlTestRBNF::TestAPI() {
   //Jitterbug 4452, for coverage
   result.remove();
   FieldPosition pos2;
-  formatter->format((int64_t)4, formatter->getRuleSetName(0), result, pos2, status = U_ZERO_ERROR);
+  formatter->format(static_cast<int64_t>(4), formatter->getRuleSetName(0), result, pos2, status = U_ZERO_ERROR);
   if(result != expected) {
       errln("Formatted 4 int64_t, expected " + expected + " got " + result);
   } else {
@@ -414,9 +420,9 @@ void IntlTestRBNF::TestMultiplePluralRules() {
         { "2.2", "two plurality two tenth" },
         { "0.01", "one 1hundredth" },
         { "0.02", "two hundredth" },
-        { NULL, NULL }
+        { nullptr, nullptr }
     };
-    doTest(&formatter, testData, TRUE);
+    doTest(&formatter, testData, true);
 }
 
 void IntlTestRBNF::TestFractionalRuleSet()
@@ -456,14 +462,14 @@ void IntlTestRBNF::TestFractionalRuleSet()
     int len = fracRules.length();
     int change = 2;
     for (int i = 0; i < len; ++i) {
-        UChar ch = fracRules.charAt(i);
+        char16_t ch = fracRules.charAt(i);
         if (ch == '\n') {
             change = 2; // change ok
         } else if (ch == ':') {
             change = 1; // change, but once we hit a non-space char, don't change
         } else if (ch == ' ') {
             if (change != 0) {
-                fracRules.setCharAt(i, (UChar)0x200e);
+                fracRules.setCharAt(i, static_cast<char16_t>(0x200e));
             }
         } else {
             if (change == 1) {
@@ -502,9 +508,9 @@ void IntlTestRBNF::TestFractionalRuleSet()
             { ".4444", "4/9" },
             { ".5555", "5/9" },
             { "1.2856", "1 2/7" },
-            { NULL, NULL }
+            { nullptr, nullptr }
         };
-        doTest(&formatter, testData, FALSE); // exact values aren't parsable from fractions
+        doTest(&formatter, testData, false); // exact values aren't parsable from fractions
     }
 }
 
@@ -1098,12 +1104,12 @@ void IntlTestRBNF::TestLLong()
 #endif
 
     // u_atoll
-    const UChar uempty[] = { 0 };
-    const UChar uzero[] = { 0x30, 0 };
-    const UChar uneg_one[] = { 0x2d, 0x31, 0 };
-    const UChar uneg_12345[] = { 0x2d, 0x31, 0x32, 0x33, 0x34, 0x35, 0 };
-    const UChar ubig1[] = { 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x30, 0 };
-    const UChar ubig2[] = { 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0 };
+    const char16_t uempty[] = { 0 };
+    const char16_t uzero[] = { 0x30, 0 };
+    const char16_t uneg_one[] = { 0x2d, 0x31, 0 };
+    const char16_t uneg_12345[] = { 0x2d, 0x31, 0x32, 0x33, 0x34, 0x35, 0 };
+    const char16_t ubig1[] = { 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x30, 0 };
+    const char16_t ubig2[] = { 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0x66, 0x46, 0 };
     LLAssert(llong::utoll(uempty) == llong(0, 0));
     LLAssert(llong::utoll(uzero) == llong(0, 0));
     LLAssert(llong::utoll(uneg_one) == llong(0xffffffff, 0xffffffff));
@@ -1126,7 +1132,7 @@ void IntlTestRBNF::TestLLong()
     logln("Testing u_lltoa");
     // u_lltoa
     {
-        UChar buf[64];
+        char16_t buf[64];
         LLAssert((llong(0, 0).lltou(buf, (uint32_t)sizeof(buf)) == 1) && (u_strcmp(buf, uzero) == 0));
         LLAssert((llong(0xffffffff, 0xffffffff).lltou(buf, (uint32_t)sizeof(buf)) == 2) && (u_strcmp(buf, uneg_one) == 0));
         LLAssert(((-llong(0, 12345)).lltou(buf, (uint32_t)sizeof(buf)) == 6) && (u_strcmp(buf, uneg_12345) == 0));
@@ -1167,13 +1173,13 @@ IntlTestRBNF::TestEnglishSpellout()
             { "2,345,678", "two million three hundred forty-five thousand six hundred seventy-eight" },
             { "-36", "minus thirty-six" },
             { "234.567", "two hundred thirty-four point five six seven" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
 
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
 
 #if !UCONFIG_NO_COLLATION
-        formatter->setLenient(TRUE);
+        formatter->setLenient(true);
         static const char* lpTestData[][2] = {
             { "fifty-7", "57" },
             { " fifty-7", "57" },
@@ -1181,7 +1187,7 @@ IntlTestRBNF::TestEnglishSpellout()
             { "2 thousand six    HUNDRED fifty-7", "2,657" },
             { "fifteen hundred and zero", "1,500" },
             { "FOurhundred     thiRTY six", "436" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         doLenientParseTest(formatter, lpTestData);
 #endif
@@ -1217,10 +1223,10 @@ IntlTestRBNF::TestOrdinalAbbreviations()
             { "102", "102nd" },
             { "312", "312th" },
             { "12,345", "12,345th" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, FALSE);
+        doTest(formatter, testData, false);
     }
     delete formatter;
 }
@@ -1247,21 +1253,103 @@ IntlTestRBNF::TestDurations()
             //            { "3,600", "1:00:00" },
             { "3,740", "1:02:20" },
             { "10,293", "2:51:33" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
+        doTest(formatter, testData, true);
         
-        doTest(formatter, testData, TRUE);
+        static const char* const fractionalTestData[][2] = {
+            { "1234", "20:34" },
+            { "1234.2", "20:34" },
+            { "1234.7", "20:35" },
+            { nullptr, nullptr }
+        };
+        doTest(formatter, fractionalTestData, false);
         
 #if !UCONFIG_NO_COLLATION
-        formatter->setLenient(TRUE);
+        formatter->setLenient(true);
         static const char* lpTestData[][2] = {
             { "2-51-33", "10,293" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         doLenientParseTest(formatter, lpTestData);
 #endif
     }
     delete formatter;
+}
+
+void IntlTestRBNF::TestDFRounding()
+{
+    // test for ICU-22611
+    UParseError parseError;
+    UErrorCode err = U_ZERO_ERROR;
+    
+    // no decimal places
+    LocalPointer<RuleBasedNumberFormat> nf0(new RuleBasedNumberFormat(u"1000/1000: <##K<;", Locale::getUS(), parseError, err));
+    if (U_FAILURE(err)) {
+        errcheckln(err, "FAIL: could not construct formatter - %s", u_errorName(err));
+    } else {
+        static const char* const integerTestData[][2] = {
+            { "-1400", "-1K" },
+            { "-1900", "-2K" },
+            { "1400",  "1K"  },
+            { "1900",  "2K"  },
+            { nullptr, nullptr }
+        };
+        doTest(nf0.getAlias(), integerTestData, false);
+    }
+    
+    // 1 decimal place
+    LocalPointer<RuleBasedNumberFormat> nf1(new RuleBasedNumberFormat(u"1000/1000: <##.0K<;", Locale::getUS(), parseError, err));
+    if (U_FAILURE(err)) {
+        errcheckln(err, "FAIL: could not construct formatter - %s", u_errorName(err));
+    } else {
+        static const char* const oneDecimalPlaceTestData[][2] = {
+            { "-1440", "-1.4K" },
+            { "1890",  "1.9K"  },
+            { nullptr, nullptr }
+        };
+        doTest(nf1.getAlias(), oneDecimalPlaceTestData, false);
+    }
+    
+    // with modulus substitution
+    LocalPointer<RuleBasedNumberFormat> nfMod(new RuleBasedNumberFormat(u"1000/1000: <##<K>##>; -x: ->>;", Locale::getUS(), parseError, err));
+    if (U_FAILURE(err)) {
+        errcheckln(err, "FAIL: could not construct formatter - %s", u_errorName(err));
+    } else {
+        static const char* const integerTestData[][2] = {
+            { "-1400", "-1K400" },
+            { "-1900", "-1K900" },
+            { "1400",  "1K400"  },
+            { "1900",  "1K900"  },
+            { nullptr, nullptr }
+        };
+        doTest(nfMod.getAlias(), integerTestData, false);
+    }
+
+    // no decimal places, but with rounding mode set to ROUND_FLOOR
+    LocalPointer<RuleBasedNumberFormat> nfFloor(new RuleBasedNumberFormat(u"1000/1000: <##K<;", Locale::getUS(), parseError, err));
+    nfFloor->setMaximumFractionDigits(0);
+    nfFloor->setRoundingMode(NumberFormat::kRoundFloor);
+    if (U_FAILURE(err)) {
+        errcheckln(err, "FAIL: could not construct formatter - %s", u_errorName(err));
+    } else {
+        static const char* const integerTestData[][2] = {
+            { "-1400", "-2K" },
+            { "-1900", "-2K" },
+            { "1400",  "1K"  },
+            { "1900",  "1K"  },
+            { nullptr, nullptr }
+        };
+        doTest(nfFloor.getAlias(), integerTestData, false);
+    }
+}
+
+void IntlTestRBNF::TestMemoryLeak22899()
+{
+    UErrorCode status = U_ZERO_ERROR;
+    UParseError perror;
+    icu::UnicodeString str(u"0,31,01,30,01,0,01,01,30,01,30,31,01,30,01,30,30,00,01,0:");
+    icu::RuleBasedNumberFormat rbfmt(str, icu::Locale::getEnglish(), perror, status);
 }
 
 void 
@@ -1296,10 +1384,10 @@ IntlTestRBNF::TestSpanishSpellout()
             { "2,345,678", "dos millones trescientos cuarenta y cinco mil seiscientos setenta y ocho"},
             { "-36", "menos treinta y seis" },
             { "234.567", "doscientos treinta y cuatro coma cinco seis siete" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
     }
     delete formatter;
 }
@@ -1341,17 +1429,17 @@ IntlTestRBNF::TestFrenchSpellout()
             { "2,345,678", "deux millions trois cent quarante-cinq mille six cent soixante-dix-huit" },
             { "-36", "moins trente-six" },
             { "234.567", "deux cent trente-quatre virgule cinq six sept" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
         
 #if !UCONFIG_NO_COLLATION
-        formatter->setLenient(TRUE);
+        formatter->setLenient(true);
         static const char* lpTestData[][2] = {
             { "trente-et-un", "31" },
             { "un cent quatre vingt dix huit", "198" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         doLenientParseTest(formatter, lpTestData);
 #endif
@@ -1386,7 +1474,7 @@ static const char* const swissFrenchTestData[][2] = {
     { "2,345,678", "deux millions trois cent quarante-cinq mille six cent septante-huit" },
     { "-36", "moins trente-six" },
     { "234.567", "deux cent trente-quatre virgule cinq six sept" },
-    { NULL, NULL}
+    { nullptr, nullptr}
 };
 
 void 
@@ -1399,7 +1487,7 @@ IntlTestRBNF::TestSwissFrenchSpellout()
     if (U_FAILURE(status)) {
         errcheckln(status, "FAIL: could not construct formatter - %s", u_errorName(status));
     } else {
-        doTest(formatter, swissFrenchTestData, TRUE);
+        doTest(formatter, swissFrenchTestData, true);
     }
     delete formatter;
 }
@@ -1434,7 +1522,7 @@ static const char* const belgianFrenchTestData[][2] = {
     { "2,345,678", "deux millions trois cent quarante-cinq mille six cent septante-huit" },
     { "-36", "moins trente-six" },
     { "234.567", "deux cent trente-quatre virgule cinq six sept" },
-    { NULL, NULL}
+    { nullptr, nullptr}
 };
 
 
@@ -1450,7 +1538,7 @@ IntlTestRBNF::TestBelgianFrenchSpellout()
         errcheckln(status, "FAIL: could not construct formatter - %s", u_errorName(status));
     } else {
         // Belgian french should match Swiss french.
-        doTest(formatter, belgianFrenchTestData, TRUE);
+        doTest(formatter, belgianFrenchTestData, true);
     }
     delete formatter;
 }
@@ -1488,10 +1576,10 @@ IntlTestRBNF::TestItalianSpellout()
             { "15,943", "quindici\\u00ADmila\\u00ADnove\\u00ADcento\\u00ADquaranta\\u00ADtr\\u00E9" },
             { "-36", "meno trenta\\u00ADsei" },
             { "234.567", "due\\u00ADcento\\u00ADtrenta\\u00ADquattro virgola cinque sei sette" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
     }
     delete formatter;
 }
@@ -1527,10 +1615,10 @@ IntlTestRBNF::TestPortugueseSpellout()
             { "15,943", "quinze mil novecentos e quarenta e tr\\u00EAs" },
             { "-36", "menos trinta e seis" },
             { "234.567", "duzentos e trinta e quatro v\\u00EDrgula cinco seis sete" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
     }
     delete formatter;
 }
@@ -1557,24 +1645,49 @@ IntlTestRBNF::TestGermanSpellout()
             { "200", "zwei\\u00ADhundert" },
             { "579", "f\\u00fcnf\\u00ADhundert\\u00ADneun\\u00ADund\\u00ADsiebzig" },
             { "1,000", "ein\\u00ADtausend" },
+            { "1,101", "ein\\u00adtausend\\u00adein\\u00adhundert\\u00adeins" },
             { "2,000", "zwei\\u00ADtausend" },
             { "3,004", "drei\\u00ADtausend\\u00ADvier" },
             { "4,567", "vier\\u00ADtausend\\u00ADf\\u00fcnf\\u00ADhundert\\u00ADsieben\\u00ADund\\u00ADsechzig" },
             { "15,943", "f\\u00fcnfzehn\\u00ADtausend\\u00ADneun\\u00ADhundert\\u00ADdrei\\u00ADund\\u00ADvierzig" },
             { "2,345,678", "zwei Millionen drei\\u00ADhundert\\u00ADf\\u00fcnf\\u00ADund\\u00ADvierzig\\u00ADtausend\\u00ADsechs\\u00ADhundert\\u00ADacht\\u00ADund\\u00ADsiebzig" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
         
 #if !UCONFIG_NO_COLLATION
-        formatter->setLenient(TRUE);
+        formatter->setLenient(true);
         static const char* lpTestData[][2] = {
             { "ein Tausend sechs Hundert fuenfunddreissig", "1,635" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         doLenientParseTest(formatter, lpTestData);
 #endif
+        
+        static const char* testDataYear[][2] = {
+            { "101", "ein\\u00adhundert\\u00adeins" },
+            { "900", "neun\\u00adhundert" },
+            { "1,001", "ein\\u00adtausend\\u00adeins" },
+            { "1,100", "elf\\u00adhundert" },
+            { "1,101", "elf\\u00adhundert\\u00adeins" },
+            { "1,234", "zw\\u00f6lf\\u00adhundert\\u00advier\\u00adund\\u00addrei\\u00dfig" },
+            { "2,001", "zwei\\u00adtausend\\u00adeins" },
+            { "10,001", "zehn\\u00adtausend\\u00adeins" },
+            { "-100", "minus ein\\u00adhundert" },
+            { "12.34", "12,3" },
+            { nullptr, nullptr }
+        };
+
+        status = U_ZERO_ERROR;
+        formatter->setDefaultRuleSet("%spellout-numbering-year", status);
+        if (U_SUCCESS(status)) {
+            logln("testing year rules");
+            doTest(formatter, testDataYear, false);
+        }
+        else {
+            errln("Can't test year rules");
+        }
     }
     delete formatter;
 }
@@ -1597,10 +1710,10 @@ IntlTestRBNF::TestThaiSpellout()
             { "21", "\\u0e22\\u0e35\\u0e48\\u200b\\u0e2a\\u0e34\\u0e1a\\u200b\\u0e40\\u0e2d\\u0e47\\u0e14" },
             { "101", "\\u0e2b\\u0e19\\u0e36\\u0e48\\u0e07\\u200b\\u0e23\\u0e49\\u0e2d\\u0e22\\u200b\\u0e2b\\u0e19\\u0e36\\u0e48\\u0e07" },
             { "1.234", "\\u0e2b\\u0e19\\u0e36\\u0e48\\u0e07\\u200b\\u0e08\\u0e38\\u0e14\\u200b\\u0e2a\\u0e2d\\u0e07\\u0e2a\\u0e32\\u0e21\\u0e2a\\u0e35\\u0e48" },
-            { NULL, NULL}
+            { nullptr, nullptr}
         };
         
-        doTest(formatter, testData, TRUE);
+        doTest(formatter, testData, true);
     }
     delete formatter;
 }
@@ -1628,10 +1741,10 @@ IntlTestRBNF::TestNorwegianSpellout()
             { "1,100", "tusen hundre" },
             { "6.789", "seks komma sju \\u00E5tte ni" },
             { "-5.678", "minus fem komma seks sju \\u00E5tte" },
-            { NULL, NULL }
+            { nullptr, nullptr }
         };
-        doTest(noFormatter, testDataDefault, TRUE);
-        doTest(nbFormatter, testDataDefault, TRUE);
+        doTest(noFormatter, testDataDefault, true);
+        doTest(nbFormatter, testDataDefault, true);
     }
     delete nbFormatter;
     delete noFormatter;
@@ -1667,9 +1780,9 @@ IntlTestRBNF::TestSwedishSpellout()
             { "12,345,678", "tolv miljoner tre\\u00adhundra\\u00adfyrtio\\u00adfem\\u00adtusen sex\\u00adhundra\\u00adsjuttio\\u00ad\\u00e5tta" },
             { "123,456.789", "ett\\u00adhundra\\u00adtjugo\\u00adtre\\u00adtusen fyra\\u00adhundra\\u00adfemtio\\u00adsex komma sju \\u00e5tta nio" },
             { "-12,345.678", "minus tolv\\u00adtusen tre\\u00adhundra\\u00adfyrtio\\u00adfem komma sex sju \\u00e5tta" },
-            { NULL, NULL }
+            { nullptr, nullptr }
         };
-        doTest(formatter, testDataDefault, TRUE);
+        doTest(formatter, testDataDefault, true);
 
           static const char* testDataNeutrum[][2] = {
               { "101", "ett\\u00adhundra\\u00adett" },
@@ -1677,13 +1790,13 @@ IntlTestRBNF::TestSwedishSpellout()
               { "1,101", "et\\u00adtusen ett\\u00adhundra\\u00adett" },
               { "10,001", "tio\\u00adtusen ett" },
               { "21,001", "tjugo\\u00adet\\u00adtusen ett" },
-              { NULL, NULL }
+              { nullptr, nullptr }
           };
   
           formatter->setDefaultRuleSet("%spellout-cardinal-neuter", status);
           if (U_SUCCESS(status)) {
           logln("        testing spellout-cardinal-neuter rules");
-          doTest(formatter, testDataNeutrum, TRUE);
+          doTest(formatter, testDataNeutrum, true);
           }
           else {
           errln("Can't test spellout-cardinal-neuter rules");
@@ -1698,14 +1811,14 @@ IntlTestRBNF::TestSwedishSpellout()
             { "1,234", "tolv\\u00adhundra\\u00adtrettio\\u00adfyra" },
             { "2,001", "tjugo\\u00adhundra\\u00adett" },
             { "10,001", "tio\\u00adtusen ett" },
-            { NULL, NULL }
+            { nullptr, nullptr }
         };
 
         status = U_ZERO_ERROR;
         formatter->setDefaultRuleSet("%spellout-numbering-year", status);
         if (U_SUCCESS(status)) {
             logln("testing year rules");
-            doTest(formatter, testDataYear, TRUE);
+            doTest(formatter, testDataYear, true);
         }
         else {
             errln("Can't test year rules");
@@ -1757,17 +1870,17 @@ IntlTestRBNF::TestSmallValues()
         { "123.321", "one hundred twenty-three point three two one" },
         { "0.0000000011754944", "zero point zero zero zero zero zero zero zero zero one one seven five four nine four four" },
         { "0.000001175494351", "zero point zero zero zero zero zero one one seven five four nine four three five one" },
-        { NULL, NULL }
+        { nullptr, nullptr }
         };
 
-        doTest(formatter, testDataDefault, TRUE);
+        doTest(formatter, testDataDefault, true);
 
         delete formatter;
     }
 }
 
 void 
-IntlTestRBNF::TestLocalizations(void)
+IntlTestRBNF::TestLocalizations()
 {
     int i;
     UnicodeString rules("%main:0:no;1:some;100:a lot;1000:tons;\n"
@@ -1785,9 +1898,9 @@ IntlTestRBNF::TestLocalizations(void)
                 { "5", "yah, some" },
                 { "423", "plenty" },
                 { "12345", "more'n you'll ever need" },
-                { NULL, NULL }
+                { nullptr, nullptr }
             };
-            doTest(&formatter, testData, FALSE);
+            doTest(&formatter, testData, false);
         }
 
         {
@@ -1797,13 +1910,13 @@ IntlTestRBNF::TestLocalizations(void)
                 { "5", "some" },
                 { "423", "a lot" },
                 { "12345", "tons" },
-                { NULL, NULL }
+                { nullptr, nullptr }
             };
             RuleBasedNumberFormat formatter0(rules, loc, perror, status);
             if (U_FAILURE(status)) {
                 errln("failed to build second formatter");
             } else {
-                doTest(&formatter0, testData, FALSE);
+                doTest(&formatter0, testData, false);
 
                 {
                 // exercise localization info
@@ -1920,7 +2033,7 @@ IntlTestRBNF::TestAllLocales()
 
         for (int j = 0; j < 2; ++j) {
             UErrorCode status = U_ZERO_ERROR;
-            RuleBasedNumberFormat* f = new RuleBasedNumberFormat((URBNFRuleSetTag)j, *loc, status);
+            RuleBasedNumberFormat* f = new RuleBasedNumberFormat(static_cast<URBNFRuleSetTag>(j), *loc, status);
 
             if (U_FAILURE(status)) {
                 errln(UnicodeString(loc->getName()) + names[j]
@@ -1952,7 +2065,7 @@ IntlTestRBNF::TestAllLocales()
 
                 // regular parse
                 status = U_ZERO_ERROR;
-                f->setLenient(FALSE);
+                f->setLenient(false);
                 f->parse(str, num, status);
                 if (U_FAILURE(status)) {
                     errln(UnicodeString(loc->getName()) + names[j]
@@ -1965,7 +2078,7 @@ IntlTestRBNF::TestAllLocales()
                             + UnicodeString("ERROR could not roundtrip ") + n
                             + UnicodeString(" -> ") + str + UnicodeString(" -> ") + num.getLong());
                     }
-                    else if (num.getType() == Formattable::kDouble && (int64_t)(num.getDouble() * 1000) != (int64_t)(n*1000)) {
+                    else if (num.getType() == Formattable::kDouble && static_cast<int64_t>(num.getDouble() * 1000) != static_cast<int64_t>(n * 1000)) {
                         // The epsilon difference is too high.
                         errln(UnicodeString(loc->getName()) + names[j]
                             + UnicodeString("ERROR could not roundtrip ") + n
@@ -1974,7 +2087,7 @@ IntlTestRBNF::TestAllLocales()
                 }
                 // lenient parse
                 status = U_ZERO_ERROR;
-                f->setLenient(TRUE);
+                f->setLenient(true);
                 f->parse(str, num, status);
                 if (U_FAILURE(status)) {
                     errln(UnicodeString(loc->getName()) + names[j]
@@ -1987,7 +2100,7 @@ IntlTestRBNF::TestAllLocales()
                             + UnicodeString("ERROR could not roundtrip ") + n
                             + UnicodeString(" -> ") + str + UnicodeString(" -> ") + num.getLong());
                     }
-                    else if (num.getType() == Formattable::kDouble && (int64_t)(num.getDouble() * 1000) != (int64_t)(n*1000)) {
+                    else if (num.getType() == Formattable::kDouble && static_cast<int64_t>(num.getDouble() * 1000) != static_cast<int64_t>(n * 1000)) {
                         // The epsilon difference is too high.
                         errln(UnicodeString(loc->getName()) + names[j]
                             + UnicodeString("ERROR could not roundtrip ") + n
@@ -2002,7 +2115,7 @@ IntlTestRBNF::TestAllLocales()
 }
 
 void 
-IntlTestRBNF::TestMultiplierSubstitution(void) {
+IntlTestRBNF::TestMultiplierSubstitution() {
     UnicodeString rules("=#,##0=;1,000,000: <##0.###< million;");
     UErrorCode status = U_ZERO_ERROR;
     UParseError parse_error;
@@ -2059,7 +2172,7 @@ IntlTestRBNF::TestSetDecimalFormatSymbols() {
     result.remove();
 
     /* Set new symbol for testing */
-    dfs.setSymbol(DecimalFormatSymbols::kGroupingSeparatorSymbol, UnicodeString("&"), TRUE);
+    dfs.setSymbol(DecimalFormatSymbols::kGroupingSeparatorSymbol, UnicodeString("&"), true);
     rbnf.setDecimalFormatSymbols(dfs);
 
     rbnf.format(number, result);
@@ -2090,10 +2203,10 @@ void IntlTestRBNF::TestPluralRules() {
             { "22", "22nd" },
             { "23", "23rd" },
             { "24", "24th" },
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
 
-    doTest(&enFormatter, enTestData, TRUE);
+    doTest(&enFormatter, enTestData, true);
 
     // This is trying to model the feminine form, but don't worry about the details too much.
     // We're trying to test the plural rules.
@@ -2151,18 +2264,18 @@ void IntlTestRBNF::TestPluralRules() {
             { "21,000", "twenty-one thousand" },
             { "22,000", "twenty-two thousands" },
             { "25,001", "twenty-five thousandss one" },
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
 
     if (U_FAILURE(status)) {
         errln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
         return;
     }
-    doTest(&ruFormatter, ruTestData, TRUE);
+    doTest(&ruFormatter, ruTestData, true);
 
     // Make sure there are no divide by 0 errors.
     UnicodeString result;
-    RuleBasedNumberFormat(ruRules, Locale("ru"), parseError, status).format((int32_t)21000, result);
+    RuleBasedNumberFormat(ruRules, Locale("ru"), parseError, status).format(static_cast<int32_t>(21000), result);
     if (result.compare(UNICODE_STRING_SIMPLE("twenty-one thousand")) != 0) {
         errln("Got " + result + " for 21000");
     }
@@ -2183,7 +2296,7 @@ void IntlTestRBNF::TestInfinityNaN() {
             {"\\u221E", "infinite"},
             {"-\\u221E", "minus infinite"},
             {"NaN", "not a number"},
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
     if (U_FAILURE(status)) {
         dataerrln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
@@ -2206,7 +2319,7 @@ void IntlTestRBNF::TestInfinityNaN() {
             {"\\u221E", "\\u221E"},
             {"-\\u221E", "-\\u221E"},
             {"NaN", "NaN"},
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
 
     doTest(&enFormatter2, enDefaultTestData, true);
@@ -2236,7 +2349,7 @@ void IntlTestRBNF::TestVariableDecimalPoint() {
             {"1.1", "one point one"},
             {"1.23", "one point two three"},
             {"0.4", "xpoint four"},
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
     if (U_FAILURE(status)) {
         dataerrln("Unable to create RuleBasedNumberFormat - " + UnicodeString(u_errorName(status)));
@@ -2251,7 +2364,7 @@ void IntlTestRBNF::TestVariableDecimalPoint() {
             {"1.1", "one comma one"},
             {"1.23", "one comma two three"},
             {"0.4", "xcomma four"},
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
     doTest(&enFormatter, enTestCommaData, true);
 }
@@ -2279,7 +2392,7 @@ void IntlTestRBNF::TestLargeNumbers() {
             {"9223372036854775806", "9,223,372,036,854,775,806"}, // Maximum 64-bit precision - 1
             {"9223372036854775807", "9,223,372,036,854,775,807"}, // Maximum 64-bit precision
             {"9223372036854775808", "9,223,372,036,854,775,808"}, // We've gone beyond 64-bit precision. This can only be represented with BigDecimal.
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
     doTest(&rbnf, enTestFullData, false);
 }
@@ -2314,7 +2427,7 @@ void IntlTestRBNF::TestCompactDecimalFormatStyle() {
             {"10000000000000000", "10.00 Q"},  // Number doesn't precisely fit into a double
             {"9223372036854775807", "9223.00 Q"}, // Maximum 64-bit precision
             {"9223372036854775808", "9,223,372,036,854,775,808"}, // We've gone beyond 64-bit precision. This can only be represented with BigDecimal.
-            { NULL, NULL }
+            { nullptr, nullptr }
     };
     doTest(&rbnf, enTestFullData, false);
 }
@@ -2322,7 +2435,7 @@ void IntlTestRBNF::TestCompactDecimalFormatStyle() {
 void IntlTestRBNF::TestParseFailure() {
     UErrorCode status = U_ZERO_ERROR;
     RuleBasedNumberFormat rbnf(URBNF_SPELLOUT, Locale::getJapanese(), status);
-    static const UChar* testData[] = {
+    static const char16_t* testData[] = {
         u"・・・・・・・・・・・・・・・・・・・・・・・・"
     };
     if (assertSuccess("", status, true, __FILE__, __LINE__)) {
@@ -2487,6 +2600,157 @@ IntlTestRBNF::doLenientParseTest(RuleBasedNumberFormat* formatter, const char* t
         }
         delete decFmt;
     }
+}
+
+void
+IntlTestRBNF::TestNumberingSystem() {
+    IcuTestErrorCode err(*this, "TestNumberingSystem");
+    RuleBasedNumberFormat rbnf(URBNF_NUMBERING_SYSTEM, Locale::getUS(), err);
+    
+    if (!err.errIfFailureAndReset("Failed to create RBNF with URBNF_NUMBERING_SYSTEM")) {
+        UnicodeString result;
+        assertEquals("Wrong result with default rule set", u"123", rbnf.format(123, result, err));
+        
+        result.remove();
+        rbnf.setDefaultRuleSet(u"%ethiopic", err);
+        assertEquals("Wrong result with Ethiopic rule set", u"፻፳፫", rbnf.format(123, result, err));
+    }
+}
+
+void
+IntlTestRBNF::TestParseRuleDescriptorOverflow23002() {
+    UParseError perror;
+    UErrorCode status = U_ZERO_ERROR;
+    // Test int64 overflow inside parseRuleDescriptor
+    UnicodeString testStr(u"0110110/300113001103000113001103000110i/3013033:");
+    icu::RuleBasedNumberFormat rbfmt(
+        testStr,
+        Locale("as"), perror, status);
+    assertEquals("number too large", U_PARSE_ERROR, status);
+}
+
+void
+IntlTestRBNF::TestInfiniteRecursion() {
+    UnicodeString badRules[] = {
+        ">>",
+        "<<",
+        "<<<",
+        ">>>",
+        "%foo: x=%foo=",
+        "%one: x>%two>; %two: y>%one>;"
+    };
+    
+    for (int32_t i = 0; i < UPRV_LENGTHOF(badRules); i++) {
+        UErrorCode err = U_ZERO_ERROR;
+        UParseError parseErr;
+        RuleBasedNumberFormat rbnf(badRules[i], parseErr, err);
+        
+        if (U_SUCCESS(err)) {
+            UnicodeString result;
+            rbnf.format(5, result);
+            // we don't actually care about the result and the function doesn't return an error code;
+            // we just want to make sure the function returns
+            
+            Formattable pResult;
+            rbnf.parse("foo", pResult, err);
+            assertTrue("rbnf.parse() didn't return U_INVALID_FORMAT_ERROR!", err == U_INVALID_FORMAT_ERROR);
+        } else {
+            // eventually it'd be nice to statically analyze the rules for (at least) the most common
+            // causes of infinite recursion, in which case we'd end up down here and need to check
+            // the error code.  But for now, we probably won't end up here and don't care if we do
+        }
+    }
+}
+
+/**
+ * This test is a little contrived for English, but the grammar is relevant for several languages, including:
+ * Latin, Germanic, Slavic and Indic.
+ * It's pretty common, especially for ordinals, to use different words as a magnitude unit and when it's the final word.
+ * Several languages need grammatical agreement between the final and non-final magnitude unit
+ * with the numerical quantity before the unit. This test is the equivalent seen in other languages.
+ */
+void
+IntlTestRBNF::testOmissionReplacementWithPluralRules() {
+    UnicodeString rules("%cardinal:\n"
+            "-x: minus >>;\n"
+            "x.x: << point >>;\n"
+            "Inf: infinite;\n"
+            "NaN: not a number;\n"
+            "zero; one; two; three; four; five; six; seven; eight; nine;\n"
+            "ten; eleven; twelve; thirteen; fourteen; fifteen; sixteen; seventeen; eighteen; nineteen;\n"
+            "20: twenty[->>];\n"
+            "30: thirty[->>];\n"
+            "40: forty[->>];\n"
+            "50: fifty[->>];\n"
+            "60: sixty[->>];\n"
+            "70: seventy[->>];\n"
+            "80: eighty[->>];\n"
+            "90: ninety[->>];\n"
+            "100: << hundred[ >>];\n"
+            "1000: << thousand[ >>];\n"
+            "1000000: << million[ >>];\n"
+            "1000000000: << billion[ >>];\n"
+            "1000000000000: << trillion[ >>];\n"
+            "1000000000000000: =#,##0=;\n"
+            "%ordinal:\n"
+            "-x: minus >>;\n"
+            "x.x: =#,##0.#=;\n"
+            "Inf: infinitieth;\n"
+            "zeroth; first; second; third; fourth; fifth; sixth; seventh; eighth; ninth;\n"
+            "tenth; eleventh; twelfth;\n"
+            "13: =%cardinal=th;\n"
+            "20: twent[y->>|ieth];\n"
+            "30: thirt[y->>|ieth];\n"
+            "40: fort[y->>|ieth];\n"
+            "50: fift[y->>|ieth];\n"
+            "60: sixt[y->>|ieth];\n"
+            "70: sevent[y->>|ieth];\n"
+            "80: eight[y->>|ieth];\n"
+            "90: ninet[y->>|ieth];\n"
+            "100: <%cardinal< [$(cardinal,one{hundred}other{hundreds})$ >>|$(cardinal,one{hundredth}other{hundredths})$];\n"
+            "1000: <%cardinal< [$(cardinal,one{thousand}other{thousands})$ >>|$(cardinal,one{thousandth}other{thousandths})$];\n"
+            "1000000: <%cardinal< [$(cardinal,one{million}other{millions})$ >>|$(cardinal,one{millionth}other{millionths})$];\n"
+            "1000000000: <%cardinal< [$(cardinal,one{billion}other{billions})$ >>|$(cardinal,one{billionth}other{billionths})$];\n"
+            "1000000000000: <%cardinal< [$(cardinal,one{trillion}other{trillions})$ >>|$(cardinal,one{trillionth}other{trillionths})$];\n"
+            "1000000000000000: =#,##0=$(ordinal,one{st}two{nd}few{rd}other{th})$;");
+    UErrorCode status = U_ZERO_ERROR;
+    UParseError perror;
+    icu::RuleBasedNumberFormat rbnf(rules, icu::Locale::getEnglish(), perror, status);
+
+    const char * const enTestFullData[][2] = {
+            {"20", "twentieth"},
+            {"21", "twenty-first"},
+            {"29", "twenty-ninth"},
+            {"30", "thirtieth"},
+            {"31", "thirty-first"},
+            {"39", "thirty-ninth"},
+            {"100", "one hundredth"},
+            {"101", "one hundred first"},
+            {"200", "two hundredths"},
+            {"201", "two hundreds first"},
+            {"300", "three hundredths"},
+            {"301", "three hundreds first"},
+            {"1000", "one thousandth"},
+            {"1001", "one thousand first"},
+            {"1100", "one thousand one hundredth"},
+            {"1101", "one thousand one hundred first"},
+            {"1200", "one thousand two hundredths"},
+            {"1201", "one thousand two hundreds first"},
+            {"2000", "two thousandths"},
+            {"2001", "two thousands first"},
+            {"2100", "two thousands one hundredth"},
+            {"2101", "two thousands one hundred first"},
+            {"8000", "eight thousandths"},
+            {"8001", "eight thousands first"},
+            {"888000", "eight hundred eighty-eight thousandths"},
+            {"888001", "eight hundred eighty-eight thousands first"},
+            {"888100", "eight hundred eighty-eight thousands one hundredth"},
+            {"999101", "nine hundred ninety-nine thousands one hundred first"},
+            {"999200", "nine hundred ninety-nine thousands two hundredths"},
+            {"999201", "nine hundred ninety-nine thousands two hundreds first"},
+            { nullptr, nullptr }
+    };
+    doTest(&rbnf, enTestFullData, false);
 }
 
 /* U_HAVE_RBNF */
