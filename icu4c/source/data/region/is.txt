@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 is{
     Countries{
         001{"Heimurinn"}
@@ -15,7 +15,7 @@ is{
         017{"Mið-Afríka"}
         018{"Suðurhluti Afríku"}
         019{"Ameríka"}
-        021{"Ameríka norðan Mexikó"}
+        021{"Ameríka norðan Mexíkó"}
         029{"Karíbahafið"}
         030{"Austur-Asía"}
         034{"Suður-Asía"}
@@ -254,7 +254,7 @@ is{
         SV{"El Salvador"}
         SX{"Sint Maarten"}
         SY{"Sýrland"}
-        SZ{"Svasíland"}
+        SZ{"Esvatíní"}
         TA{"Tristan da Cunha"}
         TC{"Turks- og Caicoseyjar"}
         TD{"Tsjad"}
@@ -298,6 +298,9 @@ is{
         ZW{"Simbabve"}
         ZZ{"Óþekkt svæði"}
     }
+    Countries%chagos{
+        IO{"Chagos-eyjaklasinn"}
+    }
     Countries%short{
         HK{"Hong Kong"}
         MO{"Makaó"}
@@ -309,6 +312,7 @@ is{
         CD{"Kongó (Lýðstjórnarlýðveldið)"}
         CG{"Kongó (Lýðveldið)"}
         FK{"Falklandseyjar (Malvinas)"}
+        NZ{"Aotearoa, Nýja-Sjáland"}
         TL{"Austur-Tímor"}
     }
 }

@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 tk{
     Countries{
         001{"Dünýä"}
@@ -310,6 +310,7 @@ tk{
         CI{"Şirmaýy kenar"}
         CZ{"Çeh Respublikasy"}
         FK{"Folklend (Malwina) adalary"}
+        NZ{"Aotearoa Täze Zelandiýa"}
         SZ{"Swazilend"}
         TL{"Gündogar Timor"}
     }

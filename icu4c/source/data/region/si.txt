@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 si{
     Countries{
         001{"ලෝකය"}
@@ -298,6 +298,9 @@ si{
         ZW{"සිම්බාබ්වේ"}
         ZZ{"හඳුනා නොගත් කළාපය"}
     }
+    Countries%chagos{
+        IO{"චාගෝස් දූපත් සමූහය"}
+    }
     Countries%short{
         GB{"එ.රා"}
         HK{"හොංකොං"}
@@ -310,6 +313,7 @@ si{
         CI{"අයිවරි කෝස්ට්"}
         CZ{"චෙක් ජනරජය"}
         FK{"ෆෝක්ලන්ත දූපත් (අයිලස් මල්වියනාස්)"}
+        NZ{"ඔටේරෝවා නවසීලන්තය"}
         SZ{"ස්වාසිලන්තය"}
         TL{"නැගෙනහිර ටිමෝරය"}
     }

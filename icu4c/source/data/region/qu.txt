@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 qu{
     Countries{
         001{"Pacha"}
@@ -254,7 +254,7 @@ qu{
         SV{"El Salvador"}
         SX{"Sint Maarten"}
         SY{"Siria"}
-        SZ{"Suazilandia"}
+        SZ{"Esuatini"}
         TA{"Tristán de Acuña"}
         TC{"Islas Turcas y Caicos"}
         TD{"Chad"}
@@ -298,6 +298,9 @@ qu{
         ZW{"Zimbabue"}
         ZZ{"Mana yachasqa Suyu"}
     }
+    Countries%chagos{
+        IO{"Chagos Archipielago"}
+    }
     Countries%short{
         HK{"Hong Kong"}
         MO{"Macao"}
@@ -305,5 +308,7 @@ qu{
     }
     Countries%variant{
         CZ{"República Checa"}
+        NZ{"Aotearoa Nueva Zelanda"}
+        SZ{"Suazilandia"}
     }
 }

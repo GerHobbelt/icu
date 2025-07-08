@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 da{
     Countries{
         001{"Verden"}
@@ -70,7 +70,7 @@ da{
         BT{"Bhutan"}
         BV{"Bouvetøen"}
         BW{"Botswana"}
-        BY{"Hviderusland"}
+        BY{"Belarus"}
         BZ{"Belize"}
         CA{"Canada"}
         CC{"Cocosøerne"}
@@ -206,7 +206,7 @@ da{
         NF{"Norfolk Island"}
         NG{"Nigeria"}
         NI{"Nicaragua"}
-        NL{"Holland"}
+        NL{"Nederlandene"}
         NO{"Norge"}
         NP{"Nepal"}
         NR{"Nauru"}
@@ -298,6 +298,9 @@ da{
         ZW{"Zimbabwe"}
         ZZ{"Ukendt område"}
     }
+    Countries%chagos{
+        IO{"Chagosøerne"}
+    }
     Countries%short{
         HK{"Hongkong"}
         MO{"Macao"}
@@ -309,6 +312,7 @@ da{
         CG{"Republikken Congo"}
         CZ{"Den Tjekkiske Republik"}
         FK{"Falklandsøerne (Islas Malvinas)"}
+        NZ{"Aotearoa New Zealand"}
         SZ{"Swaziland"}
         TL{"Østtimor"}
     }

@@ -48,8 +48,10 @@ files {
   "icu4c/source/common/locdispnames.cpp",
   "icu4c/source/common/locid.cpp",
   "icu4c/source/common/loclikely.cpp",
+  "icu4c/source/common/loclikelysubtags.cpp",
   "icu4c/source/common/locmap.cpp",
   "icu4c/source/common/locresdata.cpp",
+  "icu4c/source/common/lsr.cpp",
   "icu4c/source/common/lstmbe.cpp",
   "icu4c/source/common/normalizer2.cpp",
   "icu4c/source/common/normalizer2impl.cpp",
@@ -174,7 +176,7 @@ files {
   "icu4c/source/i18n/uitercollationiterator.cpp",
   "icu4c/source/i18n/utf16collationiterator.cpp",
   "icu4c/source/i18n/utf8collationiterator.cpp",
-  "icu4c/source/data/icudt70_dat.c",
+  "icu4c/source/data/icudt77_dat.c",
   "icu4c/source/extra/scrptrun/scrptrun.cpp",
 }
 

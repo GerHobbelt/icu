@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 en_CA{
     zoneStrings{
         "America:St_Barthelemy"{
@@ -21,9 +21,6 @@ en_CA{
         "America:St_Vincent"{
             ec{"Saint Vincent"}
         }
-        "Asia:Aqtau"{
-            ec{"Aktau"}
-        }
         "Asia:Rangoon"{
             ec{"Rangoon"}
         }
@@ -35,48 +32,33 @@ en_CA{
         }
         "meta:Alaska"{
             ld{"Alaska Daylight Saving Time"}
+            lg{"Alaska Time"}
+            ls{"Alaska Standard Time"}
         }
         "meta:America_Central"{
             ld{"Central Daylight Saving Time"}
+            lg{"Central Time"}
+            ls{"Central Standard Time"}
         }
         "meta:America_Eastern"{
             ld{"Eastern Daylight Saving Time"}
-        }
-        "meta:America_Mountain"{
-            ld{"Mountain Daylight Saving Time"}
-        }
-        "meta:America_Pacific"{
-            ld{"Pacific Daylight Saving Time"}
-        }
-        "meta:Apia"{
-            ld{"Apia Daylight Saving Time"}
-        }
-        "meta:Arabian"{
-            ld{"Arabian Daylight Saving Time"}
+            lg{"Eastern Time"}
+            ls{"Eastern Standard Time"}
         }
         "meta:Argentina"{
             sg{"ART"}
         }
-        "meta:Atlantic"{
-            ld{"Atlantic Daylight Saving Time"}
-        }
-        "meta:Australia_Central"{
-            ld{"Australian Central Daylight Saving Time"}
-        }
         "meta:Australia_CentralWestern"{
-            ld{"Australian Central Western Daylight Saving Time"}
             sd{"ACWDT"}
             sg{"ACWT"}
             ss{"ACWST"}
         }
         "meta:Australia_Eastern"{
-            ld{"Australian Eastern Daylight Saving Time"}
             sd{"AEDT"}
             sg{"AET"}
             ss{"AEST"}
         }
         "meta:Australia_Western"{
-            ld{"Australian Western Daylight Saving Time"}
             sd{"AWDT"}
             ss{"AWST"}
         }
@@ -94,12 +76,8 @@ en_CA{
             ss{"BNT"}
         }
         "meta:Chatham"{
-            ld{"Chatham Daylight Saving Time"}
             sd{"CHADT"}
             ss{"CHAST"}
-        }
-        "meta:China"{
-            ld{"China Daylight Saving Time"}
         }
         "meta:Christmas"{
             ss{"CXT"}
@@ -109,9 +87,6 @@ en_CA{
         }
         "meta:Colombia"{
             sd{"COST"}
-        }
-        "meta:Cuba"{
-            ld{"Cuba Daylight Saving Time"}
         }
         "meta:East_Timor"{
             ss{"TLT"}
@@ -136,11 +111,11 @@ en_CA{
         "meta:Greenland_Eastern"{
             sg{"EGT"}
         }
+        "meta:Gulf"{
+            ss{"Gulf Time"}
+        }
         "meta:Guyana"{
             ss{"GYT"}
-        }
-        "meta:Hawaii_Aleutian"{
-            ld{"Hawaii-Aleutian Daylight Saving Time"}
         }
         "meta:India"{
             ss{"IST"}
@@ -159,20 +134,10 @@ en_CA{
         }
         "meta:Iran"{
             ld{"Iran Daylight Saving Time"}
+            lg{"Iran Time"}
+            ls{"Iran Standard Time"}
             sd{"IRDT"}
             ss{"IRST"}
-        }
-        "meta:Israel"{
-            ld{"Israel Daylight Saving Time"}
-        }
-        "meta:Japan"{
-            ld{"Japan Daylight Saving Time"}
-        }
-        "meta:Korea"{
-            ld{"Korean Daylight Saving Time"}
-        }
-        "meta:Lord_Howe"{
-            ld{"Lord Howe Daylight Saving Time"}
         }
         "meta:Malaysia"{
             ss{"MYT"}
@@ -180,26 +145,13 @@ en_CA{
         "meta:Maldives"{
             ss{"MVT"}
         }
-        "meta:Mexico_Northwest"{
-            ld{"Northwest Mexico Daylight Saving Time"}
-        }
-        "meta:Mexico_Pacific"{
-            ld{"Mexican Pacific Daylight Saving Time"}
-        }
         "meta:Nepal"{
             ss{"NPT"}
         }
-        "meta:New_Zealand"{
-            ld{"New Zealand Daylight Saving Time"}
-        }
         "meta:Newfoundland"{
-            ld{"Newfoundland Daylight Saving Time"}
             sd{"NDT"}
             sg{"NT"}
             ss{"NST"}
-        }
-        "meta:Norfolk"{
-            ld{"Norfolk Island Daylight Saving Time"}
         }
         "meta:Noronha"{
             sg{"FNT"}
@@ -223,10 +175,9 @@ en_CA{
             ss{"PMST"}
         }
         "meta:Samoa"{
-            ld{"Samoa Daylight Saving Time"}
-        }
-        "meta:Taipei"{
-            ld{"Taipei Daylight Saving Time"}
+            ld{"Samoan Time"}
+            lg{"American Samoa Time"}
+            ls{"American Samoa Standard Time"}
         }
         "meta:Uruguay"{
             sd{"UYST"}

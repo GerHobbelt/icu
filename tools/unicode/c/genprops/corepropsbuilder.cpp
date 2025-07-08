@@ -22,7 +22,9 @@
 #include <stdio.h>
 #include "unicode/utypes.h"
 #include "unicode/uchar.h"
+#include "unicode/ucptrie.h"
 #include "unicode/udata.h"
+#include "unicode/umutablecptrie.h"
 #include "unicode/uniset.h"
 #include "unicode/unistr.h"
 #include "unicode/usetiter.h"
@@ -47,7 +49,7 @@ the udata API for loading ICU data. Especially, a UDataInfo structure
 precedes the actual data. It contains platform properties values and the
 file format version.
 
-The following is a description of format version 7.8 .
+The following is a description of format version 9.0 .
 
 Data contents:
 
@@ -81,13 +83,14 @@ Formally, the file contains the following structures:
     i5 additionalVectorsColumns; -- number of 32-bit words per properties vector
 
     i6 scriptExtensionsIndex; -- 32-bit unit index to the Script_Extensions data
-    i7 reservedIndex7; -- 32-bit unit index to the top of the Script_Extensions data
-    i8 reservedIndex8; -- for now: i7, i8 and i9 have the same values
+    i7 blockTrieIndex; -- 32-bit unit index to the Block property trie (format version 9+)
+    i8 reservedIndex8; -- top of the previous part of the data; i8 and i9 have the same values
     i9 dataTopIndex; -- size of the data file (number of 32-bit units after the header)
 
     i10 maxValues; -- maximum code values for vector word 0, see uprops.h (new in format version 3.1+)
     i11 maxValues2; -- maximum code values for vector word 2, see uprops.h (new in format version 3.2)
-    i12..i15 reservedIndexes; -- reserved values; 0 for now
+    i12 maxValuesOther; -- additional maximum values, see uprops.h (format version 9+)
+    i13..i15 reservedIndexes; -- reserved values; 0 for now
 
     PT serialized properties trie, see utrie2.h (byte size: 4*(i0-16))
 
@@ -95,7 +98,7 @@ Formally, the file contains the following structures:
 
     P  const uint32_t props32[i1-i0];
     E  const uint32_t exceptions[i2-i1];
-    U  const UChar uchars[2*(i3-i2)];
+    U  const char16_t uchars[2*(i3-i2)];
 
     AT serialized trie for additional properties (byte size: 4*(i4-i3))
     PV const uint32_t propsVectors[(i6-i4)/i5][i5]==uint32_t propsVectors[i6-i4];
@@ -113,6 +116,10 @@ Formally, the file contains the following structures:
       indicate whether the main Script value is Common or Inherited (and the index is to a list)
       vs. another value (and the index is to a pair).
       (See UPROPS_SCRIPT_X_WITH_COMMON etc. in uprops.h.)
+
+    blockTrie serialized CodePointTrie/UCPTrie for the Block property (format version 9+)
+
+      Indexed by (code point >> 4). Takes advantage of each Block having xxx0..xxxF boundaries.
 
 Trie lookup and properties:
 
@@ -291,12 +298,32 @@ The value is split across bits 21..20 & 7..0.
 ICU 70 moves the emoji properties from uprops.icu to (new) uemoji.icu.
 The 6 bits in vector word 2 that stored emoji properties are unused again.
 
+--- Changes in format version 8.0 ---
+
+ICU 75 uses the vector word 2 bits 31..26 for encoded Identifier_Type bit sets.
+
+--- Changes in format version 9.0 (ICU 76) ---
+
+Age major:minor version bit fields changed from 4:4 to 6:2 so that age=16.0 fits.
+
+Block data moved from props vector 0 into its own new CodePointTrie.
+Reserve 10 bits in the new indexes[UPROPS_MAX_VALUES_OTHER_INDEX] for the max Block value,
+although the trie can hold 16-bit values.
+
+Props vector 0 bits shuffled so that script and script extensions bits are contiguous.
+
+Used 2 bits from props vector 0 to add Indic_Conjunct_Break. The bits used were freed up
+by the preceding move of the Block property out of props vector 0 and the bit shuffling
+("defragmentation") of Script and Script_Extensions.
+
 ----------------------------------------------------------------------------- */
 
 U_NAMESPACE_USE
 
+namespace {
+
 /* UDataInfo cf. udata.h */
-static UDataInfo dataInfo={
+UDataInfo dataInfo={
     sizeof(UDataInfo),
     0,
 
@@ -306,15 +333,9 @@ static UDataInfo dataInfo={
     0,
 
     { 0x55, 0x50, 0x72, 0x6f },                 /* dataFormat="UPro" */
-    { 7, 8, 0, 0 },                             /* formatVersion */
-    { 14, 0, 0, 0 }                             /* dataVersion */
+    { 9, 0, 0, 0 },                             /* formatVersion */
+    { 16, 0, 0, 0 }                             /* dataVersion */
 };
-
-inline uint32_t splitScriptCodeOrIndex(uint32_t v) {
-    return
-        ((v << UPROPS_SCRIPT_HIGH_SHIFT) & UPROPS_SCRIPT_HIGH_MASK) |
-        (v & UPROPS_SCRIPT_LOW_MASK);
-}
 
 class CorePropsBuilder : public PropsBuilder {
 public:
@@ -333,11 +354,15 @@ private:
     UTrie2 *pTrie;
     UTrie2 *props2Trie;
     UPropsVectors *pv;
+    UMutableCPTrie *mutableBlockTrie = nullptr;
+    UCPTrie *blockTrie = nullptr;
     UnicodeString scriptExtensions;
+    uint8_t blockTrieBytes[100000];
+    int32_t blockTrieSize = 0;
 };
 
 CorePropsBuilder::CorePropsBuilder(UErrorCode &errorCode)
-        : pTrie(NULL), props2Trie(NULL), pv(NULL) {
+        : pTrie(nullptr), props2Trie(nullptr), pv(nullptr) {
     pTrie=utrie2_open(0, 0, &errorCode);
     if(U_FAILURE(errorCode)) {
         fprintf(stderr, "genprops error: corepropsbuilder utrie2_open() failed - %s\n",
@@ -348,12 +373,19 @@ CorePropsBuilder::CorePropsBuilder(UErrorCode &errorCode)
         fprintf(stderr, "genprops error: corepropsbuilder upvec_open() failed - %s\n",
                 u_errorName(errorCode));
     }
+    mutableBlockTrie = umutablecptrie_open(0, 0, &errorCode);
+    if (U_FAILURE(errorCode)) {
+        fprintf(stderr, "genprops/Block error: umutablecptrie_open() failed: %s\n",
+                u_errorName(errorCode));
+    }
 }
 
 CorePropsBuilder::~CorePropsBuilder() {
     utrie2_close(pTrie);
     utrie2_close(props2Trie);
     upvec_close(pv);
+    umutablecptrie_close(mutableBlockTrie);
+    ucptrie_close(blockTrie);
 }
 
 void
@@ -361,7 +393,7 @@ CorePropsBuilder::setUnicodeVersion(const UVersionInfo version) {
     uprv_memcpy(dataInfo.dataVersion, version, 4);
 }
 
-static int32_t encodeFractional20(int32_t value, int32_t den) {
+int32_t encodeFractional20(int32_t value, int32_t den) {
     if(den<20 || 640<den) { return -1; }
     int32_t frac20;
     if(value==1 || value==3 || value==5 || value==7) {
@@ -383,7 +415,7 @@ static int32_t encodeFractional20(int32_t value, int32_t den) {
     return -1;
 }
 
-static int32_t encodeFractional32(int32_t value, int32_t den) {
+int32_t encodeFractional32(int32_t value, int32_t den) {
     if(den<32 || 256<den) { return -1; }
     int32_t frac32;
     if(value==1 || value==3 || value==5 || value==7) {
@@ -406,7 +438,7 @@ static int32_t encodeFractional32(int32_t value, int32_t den) {
 }
 
 // For nt=U_NT_NUMERIC.
-static int32_t
+int32_t
 encodeNumericValue(UChar32 start, const char *s, UErrorCode &errorCode) {
     const char *original=s;
     /* get a possible minus sign */
@@ -512,6 +544,48 @@ encodeNumericValue(UChar32 start, const char *s, UErrorCode &errorCode) {
     return ntv;
 }
 
+uint32_t encodeIdentifierType(const UnicodeSet &idType, UErrorCode &errorCode) {
+    if(U_FAILURE(errorCode)) { return 0; }
+    if(idType.isEmpty()) {
+        fprintf(stderr, "genprops error: data line has an empty Identifier_Type\n");
+        errorCode=U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
+    if(idType.contains(U_ID_TYPE_EXCLUSION) && idType.contains(U_ID_TYPE_LIMITED_USE)) {
+        // By definition, Exclusion and Limited_Use are mutually exclusive.
+        // We rely on that for the data structure.
+        fprintf(stderr,
+                "genprops error: data line has both Identifier_Type Exclusion and Limited_Use\n");
+        errorCode=U_ILLEGAL_ARGUMENT_ERROR;
+        return 0;
+    }
+    uint32_t result=UPROPS_ID_TYPE_NOT_CHARACTER;
+    UnicodeSetIterator iter(idType);
+    while(iter.next()) {
+        int32_t type=iter.getCodepoint();
+        if(type>=UPRV_LENGTHOF(uprops_idTypeToEncoded)) {
+            fprintf(stderr,
+                    "genprops error: data line contains unknown (new?) Identifier_Type %d\n",
+                    (int)type);
+            errorCode=U_ILLEGAL_ARGUMENT_ERROR;
+            return 0;
+        }
+        uint32_t encodedType=uprops_idTypeToEncoded[type];
+        if((encodedType & UPROPS_ID_TYPE_BIT)==0) {
+            if(idType.size()>1) {
+                fprintf(stderr,
+                        "genprops error: data line contains uncombinable Identifier_Type values\n");
+                errorCode=U_ILLEGAL_ARGUMENT_ERROR;
+                return 0;
+            }
+            result=encodedType;
+        } else {
+            result|=encodedType;
+        }
+    }
+    return result&~UPROPS_ID_TYPE_BIT;
+}
+
 void
 CorePropsBuilder::setGcAndNumeric(const UniProps &props, const UnicodeSet &newValues,
                                   UErrorCode &errorCode) {
@@ -521,7 +595,7 @@ CorePropsBuilder::setGcAndNumeric(const UniProps &props, const UnicodeSet &newVa
 
     int32_t type=props.getIntProp(UCHAR_NUMERIC_TYPE);
     const char *nvString=props.numericValue;
-    if(type!=U_NT_NONE && nvString==NULL && start==end) {
+    if(type!=U_NT_NONE && nvString==nullptr && start==end) {
         fprintf(stderr, "genprops error: cp line has Numeric_Type but no Numeric_Value\n");
         errorCode=U_ILLEGAL_ARGUMENT_ERROR;
         return;
@@ -532,13 +606,13 @@ CorePropsBuilder::setGcAndNumeric(const UniProps &props, const UnicodeSet &newVa
     }
 
     int32_t ntv=UPROPS_NTV_NONE;  // numeric type & value
-    if(nvString!=NULL && uprv_strcmp(nvString, "NaN")!=0) {
+    if(nvString!=nullptr && uprv_strcmp(nvString, "NaN")!=0) {
         int32_t digitValue=props.digitValue;
         if( type<=U_NT_NONE || U_NT_NUMERIC<type ||
             ((type==U_NT_DECIMAL || type==U_NT_DIGIT) && digitValue<0)
         ) {
             fprintf(stderr, "genprops error: nt=%d but nv=%s\n",
-                    (int)type, nvString==NULL ? "NULL" : nvString);
+                    (int)type, nvString==nullptr ? "nullptr" : nvString);
             errorCode=U_ILLEGAL_ARGUMENT_ERROR;
             return;
         }
@@ -586,7 +660,7 @@ struct PropToBinary {
     int32_t vecWord, vecShift;
 };
 
-static const PropToBinary
+const PropToBinary
 propToBinaries[]={
     { UCHAR_WHITE_SPACE,                    1, UPROPS_WHITE_SPACE },
     { UCHAR_DASH,                           1, UPROPS_DASH },
@@ -639,10 +713,10 @@ struct PropToEnum {
     uint32_t vecMask;
 };
 
-static const PropToEnum
+const PropToEnum
 propToEnums[]={
-    { UCHAR_BLOCK,                      0, UPROPS_BLOCK_SHIFT, UPROPS_BLOCK_MASK },
     { UCHAR_EAST_ASIAN_WIDTH,           0, UPROPS_EA_SHIFT, UPROPS_EA_MASK },
+    { UCHAR_INDIC_CONJUNCT_BREAK,       0, UPROPS_INCB_SHIFT, UPROPS_INCB_MASK },
     { UCHAR_DECOMPOSITION_TYPE,         2, 0, UPROPS_DT_MASK },
     { UCHAR_GRAPHEME_CLUSTER_BREAK,     2, UPROPS_GCB_SHIFT, UPROPS_GCB_MASK },
     { UCHAR_WORD_BREAK,                 2, UPROPS_WB_SHIFT, UPROPS_WB_MASK },
@@ -658,9 +732,10 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
 
     UChar32 start=props.start;
     UChar32 end=props.end;
+    UChar32 pvecEnd=end;
     if(start==0 && end==0x10ffff) {
         // Also set bits for initialValue and errorValue.
-        end=UPVEC_MAX_CP;
+        pvecEnd=UPVEC_MAX_CP;
     }
 
     if(newValues.containsSome(0, UCHAR_BINARY_LIMIT-1)) {
@@ -670,7 +745,7 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
             if(newValues.contains(p2b.prop)) {
                 uint32_t mask=U_MASK(p2b.vecShift);
                 uint32_t value= props.binProps[p2b.prop] ? mask : 0;
-                upvec_setValue(pv, start, end, p2b.vecWord, value, mask, &errorCode);
+                upvec_setValue(pv, start, pvecEnd, p2b.vecWord, value, mask, &errorCode);
             }
         }
     }
@@ -684,22 +759,33 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
                 uint32_t mask=p2e.vecMask;
                 uint32_t value=(uint32_t)(props.getIntProp(p2e.prop)<<p2e.vecShift);
                 U_ASSERT((value&mask)==value);
-                upvec_setValue(pv, start, end, p2e.vecWord, value, mask, &errorCode);
+                upvec_setValue(pv, start, pvecEnd, p2e.vecWord, value, mask, &errorCode);
             }
         }
     }
     if(newValues.contains(UCHAR_AGE)) {
-        if(props.age[0]>15 || props.age[1]>15 || props.age[2]!=0 || props.age[3]!=0) {
+        if(props.age[0]>UPROPS_AGE_MAJOR_MAX || props.age[1]>UPROPS_AGE_MINOR_MAX ||
+                props.age[2]!=0 || props.age[3]!=0) {
             char buffer[U_MAX_VERSION_STRING_LENGTH];
             u_versionToString(props.age, buffer);
             fprintf(stderr, "genprops error: age %s cannot be encoded\n", buffer);
             errorCode=U_ILLEGAL_ARGUMENT_ERROR;
             return;
         }
-        uint32_t version=(props.age[0]<<4)|props.age[1];
-        upvec_setValue(pv, start, end,
+        uint32_t version=(props.age[0]<<2)|props.age[1];
+        upvec_setValue(pv, start, pvecEnd,
                        0, version<<UPROPS_AGE_SHIFT, UPROPS_AGE_MASK,
                        &errorCode);
+    }
+    if (newValues.contains(UCHAR_BLOCK)) {
+        uint32_t value = props.getIntProp(UCHAR_BLOCK);
+        if ((start & 0xf) != 0 || (end & 0xf) != 0xf || value > UPROPS_MAX_BLOCK) {
+            fprintf(stderr, "genprops error: %04lX..%04lX Block 0x%x cannot be encoded\n",
+                    (long)start, (long)end, (int)value);
+            errorCode = U_ILLEGAL_ARGUMENT_ERROR;
+            return;
+        }
+        umutablecptrie_setRange(mutableBlockTrie, start >> 4, end >> 4, value, &errorCode);
     }
 
     // Set the script value if the Script_Extensions revert to {Script}.
@@ -715,11 +801,10 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
         !newValues.contains(UCHAR_SCRIPT);
     if(newValues.contains(UCHAR_SCRIPT) || revertToScript) {
         int32_t script=props.getIntProp(UCHAR_SCRIPT);
-        uint32_t value=splitScriptCodeOrIndex(script);
         // Use UPROPS_SCRIPT_X_MASK:
         // When writing a Script code, remove Script_Extensions bits as well.
         // If needed, they will get written again.
-        upvec_setValue(pv, start, end, 0, value, UPROPS_SCRIPT_X_MASK, &errorCode);
+        upvec_setValue(pv, start, pvecEnd, 0, script, UPROPS_SCRIPT_X_MASK, &errorCode);
     }
     // Write a new (Script, Script_Extensions) value if there are Script_Extensions
     // and either Script or Script_Extensions are new on the current line.
@@ -729,11 +814,11 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
     ) {
         UnicodeString codes;  // vector of 16-bit UScriptCode values
         UnicodeSetIterator iter(props.scx);
-        while(iter.next()) { codes.append((UChar)iter.getCodepoint()); }
+        while(iter.next()) { codes.append((char16_t)iter.getCodepoint()); }
 
         // Set bit 15 on the last script code, for termination.
         int32_t length=codes.length();
-        codes.setCharAt(length-1, (UChar)(codes[length-1]|0x8000));
+        codes.setCharAt(length-1, (char16_t)(codes[length-1]|0x8000));
         // Find this list of codes in the Script_Extensions data so far, or add this list.
         int32_t index=scriptExtensions.indexOf(codes);
         if(index<0) {
@@ -752,7 +837,7 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
             // Store an additional pair of 16-bit units for an unusual main Script code
             // together with the Script_Extensions index.
             UnicodeString codeIndexPair;
-            codeIndexPair.append((UChar)script).append((UChar)index);
+            codeIndexPair.append((char16_t)script).append((char16_t)index);
             index=scriptExtensions.indexOf(codeIndexPair);
             if(index<0) {
                 index=scriptExtensions.length();
@@ -765,8 +850,15 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
             errorCode=U_BUFFER_OVERFLOW_ERROR;
             return;
         }
-        scriptX|=splitScriptCodeOrIndex(index);
-        upvec_setValue(pv, start, end, 0, scriptX, UPROPS_SCRIPT_X_MASK, &errorCode);
+        scriptX|=index;
+        upvec_setValue(pv, start, pvecEnd, 0, scriptX, UPROPS_SCRIPT_X_MASK, &errorCode);
+    }
+    if(newValues.contains(UCHAR_IDENTIFIER_TYPE)) {
+        uint32_t encodedType=encodeIdentifierType(props.idType, errorCode);
+        upvec_setValue(
+            pv, start, pvecEnd, 2,
+            encodedType << UPROPS_2_ID_TYPE_SHIFT, UPROPS_2_ID_TYPE_MASK,
+            &errorCode);
     }
     if(U_FAILURE(errorCode)) {
         fprintf(stderr, "genprops error: unable to set props2 values for %04lX..%04lX: %s\n",
@@ -774,19 +866,19 @@ CorePropsBuilder::setProps(const UniProps &props, const UnicodeSet &newValues,
     }
 }
 
-static int32_t indexes[UPROPS_INDEX_COUNT]={
+int32_t indexes[UPROPS_INDEX_COUNT]={
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
 };
 
-static uint8_t trieBlock[100000];
-static int32_t trieSize;
-static uint8_t props2TrieBlock[100000];
-static int32_t props2TrieSize;
+uint8_t trieBlock[100000];
+int32_t trieSize;
+uint8_t props2TrieBlock[100000];
+int32_t props2TrieSize;
 
-static int32_t totalSize;
+int32_t totalSize;
 
 void
 CorePropsBuilder::build(UErrorCode &errorCode) {
@@ -826,13 +918,31 @@ CorePropsBuilder::build(UErrorCode &errorCode) {
     }
 
     int32_t pvRows;
-    upvec_getArray(pv, &pvRows, NULL);
+    upvec_getArray(pv, &pvRows, nullptr);
     int32_t pvCount=pvRows*UPROPS_VECTOR_WORDS;
 
     /* round up scriptExtensions to multiple of 4 bytes */
     if(scriptExtensions.length()&1) {
-        scriptExtensions.append((UChar)0);
+        scriptExtensions.append((char16_t)0);
     }
+
+    blockTrie = umutablecptrie_buildImmutable(
+        mutableBlockTrie, UCPTRIE_TYPE_SMALL, UCPTRIE_VALUE_BITS_16, &errorCode);
+    if (U_FAILURE(errorCode)) {
+        fprintf(stderr,
+                "genprops/Block error: umutablecptrie_buildImmutable() failed: %s\n",
+                u_errorName(errorCode));
+        return;
+    }
+    blockTrieSize = ucptrie_toBinary(blockTrie,
+                                     blockTrieBytes, sizeof(blockTrieBytes), &errorCode);
+    if (U_FAILURE(errorCode)) {
+        fprintf(stderr,
+                "genprops/Block error: ucptrie_toBinary() failed: %s (length %ld)\n",
+                u_errorName(errorCode), (long)trieSize);
+        return;
+    }
+    U_ASSERT((blockTrieSize & 3) == 0);  // multiple of 4 bytes
 
     /* set indexes */
     int32_t offset=sizeof(indexes)/4;       /* uint32_t offset to the properties trie */
@@ -848,21 +958,23 @@ CorePropsBuilder::build(UErrorCode &errorCode) {
     offset+=pvCount;
     indexes[UPROPS_SCRIPT_EXTENSIONS_INDEX]=offset;
     offset+=scriptExtensions.length()/2;
-    indexes[UPROPS_RESERVED_INDEX_7]=offset;
+    indexes[UPROPS_BLOCK_TRIE_INDEX]=offset;
+    offset+=blockTrieSize/4;
     indexes[UPROPS_RESERVED_INDEX_8]=offset;
     indexes[UPROPS_DATA_TOP_INDEX]=offset;
     totalSize=4*offset;
 
     indexes[UPROPS_MAX_VALUES_INDEX]=
         (((int32_t)U_EA_COUNT-1)<<UPROPS_EA_SHIFT)|
-        (((int32_t)UBLOCK_COUNT-1)<<UPROPS_BLOCK_SHIFT)|
-        (int32_t)splitScriptCodeOrIndex(USCRIPT_CODE_LIMIT-1);
+        ((int32_t)USCRIPT_CODE_LIMIT-1);
     indexes[UPROPS_MAX_VALUES_2_INDEX]=
         (((int32_t)U_LB_COUNT-1)<<UPROPS_LB_SHIFT)|
         (((int32_t)U_SB_COUNT-1)<<UPROPS_SB_SHIFT)|
         (((int32_t)U_WB_COUNT-1)<<UPROPS_WB_SHIFT)|
         (((int32_t)U_GCB_COUNT-1)<<UPROPS_GCB_SHIFT)|
         ((int32_t)U_DT_COUNT-1);
+    indexes[UPROPS_MAX_VALUES_OTHER_INDEX]=
+        (int32_t)UBLOCK_COUNT-1;
 
     if(!beQuiet) {
         puts("* uprops.icu stats *");
@@ -871,6 +983,7 @@ CorePropsBuilder::build(UErrorCode &errorCode) {
         printf("number of additional props vectors:    %5u\n", (int)pvRows);
         printf("number of 32-bit words per vector:     %5u\n", UPROPS_VECTOR_WORDS);
         printf("number of 16-bit scriptExtensions:     %5u\n", (int)scriptExtensions.length());
+        printf("size in bytes of Block trie:           %5u\n", (int)blockTrieSize);
         printf("data size:                            %6ld\n", (long)totalSize);
     }
 }
@@ -880,12 +993,12 @@ CorePropsBuilder::writeCSourceFile(const char *path, UErrorCode &errorCode) {
     if(U_FAILURE(errorCode)) { return; }
 
     int32_t pvRows;
-    const uint32_t *pvArray=upvec_getArray(pv, &pvRows, NULL);
+    const uint32_t *pvArray=upvec_getArray(pv, &pvRows, nullptr);
     int32_t pvCount=pvRows*UPROPS_VECTOR_WORDS;
 
     FILE *f=usrc_create(path, "uchar_props_data.h", 2016,
                         "icu/tools/unicode/c/genprops/corepropsbuilder.cpp");
-    if(f==NULL) {
+    if(f==nullptr) {
         errorCode=U_FILE_ACCESS_ERROR;
         return;
     }
@@ -896,21 +1009,21 @@ CorePropsBuilder::writeCSourceFile(const char *path, UErrorCode &errorCode) {
         "",
         "};\n\n");
     usrc_writeUTrie2Arrays(f,
-        "static const uint16_t propsTrie_index[%ld]={\n", NULL,
+        "static const uint16_t propsTrie_index[%ld]={\n", nullptr,
         pTrie,
         "\n};\n\n");
     usrc_writeUTrie2Struct(f,
         "static const UTrie2 propsTrie={\n",
-        pTrie, "propsTrie_index", NULL,
+        pTrie, "propsTrie_index", nullptr,
         "};\n\n");
 
     usrc_writeUTrie2Arrays(f,
-        "static const uint16_t propsVectorsTrie_index[%ld]={\n", NULL,
+        "static const uint16_t propsVectorsTrie_index[%ld]={\n", nullptr,
         props2Trie,
         "\n};\n\n");
     usrc_writeUTrie2Struct(f,
         "static const UTrie2 propsVectorsTrie={\n",
-        props2Trie, "propsVectorsTrie_index", NULL,
+        props2Trie, "propsVectorsTrie_index", nullptr,
         "};\n\n");
 
     usrc_writeArray(f,
@@ -927,6 +1040,8 @@ CorePropsBuilder::writeCSourceFile(const char *path, UErrorCode &errorCode) {
         "",
         "};\n\n");
 
+    usrc_writeUCPTrie(f, "block", blockTrie, UPRV_TARGET_SYNTAX_CCODE);
+
     usrc_writeArray(f,
         "static const int32_t indexes[UPROPS_INDEX_COUNT]={",
         indexes, 32, UPROPS_INDEX_COUNT,
@@ -941,11 +1056,11 @@ CorePropsBuilder::writeBinaryData(const char *path, UBool withCopyright, UErrorC
     if(U_FAILURE(errorCode)) { return; }
 
     int32_t pvRows;
-    const uint32_t *pvArray=upvec_getArray(pv, &pvRows, NULL);
+    const uint32_t *pvArray=upvec_getArray(pv, &pvRows, nullptr);
     int32_t pvCount=pvRows*UPROPS_VECTOR_WORDS;
 
     UNewDataMemory *pData=udata_create(path, "icu", "uprops", &dataInfo,
-                                       withCopyright ? U_COPYRIGHT_STRING : NULL, &errorCode);
+                                       withCopyright ? U_COPYRIGHT_STRING : nullptr, &errorCode);
     if(U_FAILURE(errorCode)) {
         fprintf(stderr, "genprops: udata_create(%s, uprops.icu) failed - %s\n",
                 path, u_errorName(errorCode));
@@ -957,6 +1072,7 @@ CorePropsBuilder::writeBinaryData(const char *path, UBool withCopyright, UErrorC
     udata_writeBlock(pData, props2TrieBlock, props2TrieSize);
     udata_writeBlock(pData, pvArray, pvCount*4);
     udata_writeBlock(pData, scriptExtensions.getBuffer(), scriptExtensions.length()*2);
+    udata_writeBlock(pData, blockTrieBytes, blockTrieSize);
 
     long dataLength=udata_finish(pData, &errorCode);
     if(U_FAILURE(errorCode)) {
@@ -972,11 +1088,13 @@ CorePropsBuilder::writeBinaryData(const char *path, UBool withCopyright, UErrorC
     }
 }
 
+}  // namespace
+
 PropsBuilder *
 createCorePropsBuilder(UErrorCode &errorCode) {
-    if(U_FAILURE(errorCode)) { return NULL; }
+    if(U_FAILURE(errorCode)) { return nullptr; }
     PropsBuilder *pb=new CorePropsBuilder(errorCode);
-    if(pb==NULL) {
+    if(pb==nullptr) {
         errorCode=U_MEMORY_ALLOCATION_ERROR;
     }
     return pb;

@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 hsb{
     Countries{
         001{"swět"}
@@ -298,6 +298,9 @@ hsb{
         ZW{"Simbabwe"}
         ZZ{"njeznaty region"}
     }
+    Countries%chagos{
+        IO{"Chagoske kupy"}
+    }
     Countries%short{
         GB{"UK"}
         HK{"Hongkong"}
@@ -310,6 +313,7 @@ hsb{
         CG{"Kongo (Republika)"}
         CI{"Słonowinowy pobrjóh"}
         FK{"Falklandske kupy (Malwiny)"}
+        NZ{"Aotearoa Nowoseelandska"}
         TL{"Wuchodny Timor"}
     }
 }

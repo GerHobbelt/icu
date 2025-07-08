@@ -18,7 +18,7 @@ License & terms of use: http://www.unicode.org/copyright.html
 {: .no_toc .text-delta }
 
 1. TOC
-{:toc}
+{:toc}OnlineDemosHowToUpdate
 
 ---
 
@@ -33,11 +33,11 @@ merged in from the trunk.
 
 ... to the ICU project site.
 
-Build the icuapps module following the README's. Update code and/or docs as
-needed. "Reference" platforms for icuapps are: RedHat Linux and win32. On Linux,
-icuapps is built against the "make install "'ed ICU. So, run ICU4C's configure
+Build the icu-demos module following the README's. Update code and/or docs as
+needed. "Reference" platforms for icu-demos are: RedHat Linux and win32. On Linux,
+icu-demos is built against the "make install "'ed ICU. So, run ICU4C's configure
 with --prefix=/some/where pointing to where ICU4C should be installed, and also
-follow icuapps's README.
+follow icu-demos's README.
 
 Install the new locale explorer and other demos/samples onto the public demo
 hosting site.
@@ -102,23 +102,23 @@ Use the GitHub GUI to create both the "release" and the "tag" at the same time:
 
 <https://github.com/unicode-org/icu/releases/new>
 
-Fill in the tag name, such as "release-63-rc" or "release-63-1", and make the
-target the "maint/maint-xx" branch (such as maint/maint-63).
-
-Set the title to "ICU 63 RC" or "ICU 63.1". Fill in the description using the
+1. Fill in the tag name, such as `release-63-rc` or `release-63-1`, and make the
+target the "maint/maint-xx" branch (such as `maint/maint-63`).
+1. Set the title to `ICU 63 RC` or `ICU 63.1`.
+1. Fill in the description using the
 text from the announcement email. (You can also look at previous releases and
 possibly re-use some of the generic text, such as links to the API docs, etc.)
-
-Your screen should look like this:
-
-![image](maint-63-rc-screenshot.png)
-
-For the release candidate tag, please check the box that says "Pre-Release".
-
-We no longer need to add the note about Git LFS files, as GitHub now includes
-them in the auto-generated .zip downloads.
-
-Click the "Publish Release" button to make the tag.
+1. Your screen should look like this:
+    ![image](maint-63-rc-screenshot.png)
+1. Check the box that says "Set as a pre-release".
+1. Click the "Publish Release" button to make the tag.
+1. Additional step only for the GA release:
+After completing the step above to mark the release as "pre-release",
+the second step is to wait for the day of the official announcement of the release,
+and then to edit the Github release entry's settings.
+    1.  The first Github release settings change should uncheck the "Set as a pre-release" checkbox,
+which has the effect of converting the release into  a regular release.
+    1. The next settings change should check the box that says "Set as the latest release".
 
 Note: The "latest" tag is no longer updated. It was agreed by the ICU-TC to be
 deleted around the 64.2 time-frame, as it doesn't work well with with Git. (You
@@ -126,6 +126,9 @@ need to force-push the new tag, and if somebody has already cloned the
 repository, they might have something different for the "latest" tag).
 A possible future alternative might be a sym-link folder, or HTTP redirect that
 points to the latest release.
+
+We no longer need to add the note about Git LFS files, as GitHub now includes
+them in the auto-generated .zip downloads.
 
 #### Maintenance release
 
@@ -146,13 +149,13 @@ copy that to tags/release-4-8. Specify the source revision explicitly via -r so
 that you don't inadvertently pick up an unexpected changeset. Make sure that the
 trunk at the source revision is good.~~
 
-~~We do not tag the data & icuapps trees. Steven Loomis writes on 2011-may-23:~~
+~~We do not tag the data & icu-demos trees. Steven Loomis writes on 2011-may-23:~~
 
 > ~~My thought had been (in the CVS days) to take a 'snapshot' of these items.
 > However, in SVN all you need is a date or a revision number (such as
 > r30140).~~
 
-> ~~So, probably, we don't need to tag these two (icuapps or data).~~
+> ~~So, probably, we don't need to tag these two (idu-demos or data).~~
 
 > ~~Tools are more important because those tools are actually used in the
 > release.~~
@@ -162,28 +165,19 @@ trunk at the source revision is good.~~
 Create the download page before the first milestone, if we have one, or before
 the release candidate.
 
-Log into the ICU homepage Google Site. (If you don't have write access, ask one
-of the editors to grant you access.)
+Since ICU 76, new download pages are in Markdown on GitHub, at docs/download/ .
 
-Verify that there is not already a page for the upcoming release: Either via the
-sitemap, or on the bottom of the main download page where it says something like
-"Subpages (27): View All".
+In your ICU workspace, copy the download page for the last release.
+Adjust the navbar data at the top: Title, and nav_order one fewer than last time.
 
-Copy the download page for the last release: Go to that page, gear menu, Copy
-page; "Name your page" using just the major version number for now (e.g., "61")
-so that the page URL is just that number, select "Put page under Downloading
-ICU", click the red COPY button.
+Adjust the new page as needed: Adjust the title to "ICU 77" (with the right version number...),
+remove contents specific to the previous release, update all version numbers, update all links.
 
-Adjust the new page as needed: Change the title to "Download ICU 61 Release
-Candidate" (with the right version number...), remove contents specific to the
-previous release, update all version numbers, update all links.
+Put a big, **bold+italics** warning at the top like "This version has not been
+released yet. Use it for testing but do not use it in production!"
 
-Put a big, bold+italics, red warning at the top like "This version has not been
-released yet. Use it for testing but not in production!"
-
-Save the page. It is generally a good idea to save frequently. For further
-edits, simply go back into edit mode. (Keyboard shortcut 'e' for edit, ctrl+s
-for save.)
+Compare with the one-year-ago release page and adjust for whether we have a major release,
+a new Unicode version, etc.
 
 Add new contents for the upcoming release: Grab some text from the sibling
 Unicode and CLDR release notes, look at the proposal status doc for this
@@ -195,9 +189,7 @@ like a Migration Issues section etc.
 
 Ask everyone on the team to add stuff & details.
 
-**Once the page has been created and various people are invited to edit it,
-everyone should keep editing short so that the page is not locked for others for
-long periods of time.**
+Once the page has been created and merged, consider editing online on GitHub.
 
 ### Maintenance release
 
@@ -238,15 +230,21 @@ Download Directories are located at, for example,
 corresponding to <http://download.icu-project.org/ex/files/icu4c/4.4.2/>
 Look at previous releases for an example.
 
-### Java Source/Bin:
+### Java Source/Bin
+
+**Post 76.1 see [Publish - Version 76.1](release.md)**
 
 Follow instructions here: [Building ICU4J Release Files](../release-build.md)
 
 ### C source/binary:
 
+**Post 76.1 see [Publish - Version 76.1](release.md)**
+
 <span style="background:yellow">***WORK IN PROGRESS***</a>
 
 #### Source and Linux Binaries:
+
+**Post 76.1 see [Publish - Version 76.1](release.md)**
 
 Important: this step works with Unix make + docker.
 
@@ -258,6 +256,7 @@ $ git clone https://github.com/unicode-org/icu-docker.git
 $ cd icu-docker/src
 $ git clone --branch release-64-rc --depth 1 https://github.com/unicode-org/icu.git
 $ cd icu
+$ git lfs install --local
 $ git lfs fetch
 $ git lfs checkout
 $ cd ../..
@@ -281,9 +280,12 @@ run \`make dist\`.
 
 #### Windows Binary:
 
+**Post 76.1 see [Publish - Version 76.1](release.md)** \
+That new flow overlaps with _"Using the output from the build bots"_ below.
+
 *   Manual process:
     *   Build with MSVC x64 Release. (See the ICU
-        [readme.html](https://github.com/unicode-org/icu/blob/main/icu4c/readme.html)
+        [readme.html](https://github.com/unicode-org/icu/main/blob/icu4c/readme.html)
         file for details).
     *   Open a command prompt.
         ```
@@ -305,36 +307,24 @@ run \`make dist\`.
     *   Click on the green check mark (✔) on the most recent/last commit. (It
         might be a red X if the builds failed, hopefully not).
         *   This will open up a pop-up with links to various CI builds.
-    *   Click on one of the various links that says "Details" for the Azure CI
-        builds.
+    *   Click on one of the various links that says "Details" for any of the GHA
+        builds and click on "Summary".
         *   This will open up the GitHub overview of the build status.<br>
-            ![image](azure-ci-builds.png)<br>
-    *   Click on the link "View more details on Azure Pipelines" link.
-        *   This will take you to the actual Azure CI build page.
-    *   On the top right of the page there should be a button titled
-        "Artifacts". Click this and it should show a drop-down with various ZIP
-        files that you can download.<br>
-        ![image](azure-ci-builds-artifacts.png)<br>
-    *   The ZIP may automatically download for you.
-    *   However, if you are signed-in to visualstudio.com then you might see a
-        dialog titled "Artifacts explorer".
-    *   In this case click on the name, then the "..." button to download the
-        zip file.<br>
-        ![image](azure-ci-builds-artifacts-download.png)<br>
-    *   Download both the x64 (64-bit) and x86 (32-bit) ZIP files.
+            ![image](gha-ci-summary.png)<br>
+    *   Scroll down at the bottom to find the sub-section "Artifacts". It should show you list of zips you can download<br>
+        ![image](gha-ci-artifacts.png)<br>
+    *   Download the x64, x86 and ARM zip files.
     *   For each architecture:
         *   Extract the Zip file. (It will have a name like
-            "20190829.6_ICU4C_MSVC_x64_Release.zip").
+            "icu4c.Win64.run_#104.zip").
         *   Navigate into the folder with the same name.
-        *   Rename the file "icu-windows.zip" to the appropriate name:
-            *   Ex: The x64 zip for version 64.1 was named
-                "icu4c-64_1-Win64-MSVC2017.zip"
-            *   Ex: The x86 zip for version 64.1 was named
-                "icu4c-64_1-Win32-MSVC2017.zip"
-            *   Note: Note: As of ICU 68, the pre-built binaries use MSVC2019
-                instead of MSVC2017.
+        *   Check and verify the names of the zip file are appropriate:
+            *   Ex: The x64 zip for version 76.1 should be named
+                "icu4c-76_1-Win64-MSVC2022.zip"
+            *   Ex: The x86 zip for version 76.1 should be named
+                "icu4c-76_1-Win32-MSVC2022.zip"
         *   Note: For RC releases the name looked like this:
-            "icu4c-64rc-Win64-MSVC2017.zip"
+            "icu4c-76rc-Win64-MSVC2022"
 *   ~~AIX Bin:~~ (AIX is broken and ignored for now.)
     *   ~~login to gcc119.fsffrance.org and copy the ICU4C source archive
         created above to there.~~
@@ -353,13 +343,27 @@ run \`make dist\`.
 
 #### Output of icuexportdata:
 
+**Post 76.1 see [Publish - Version 76.1](release.md)**
+
 This step publishes pre-processed Unicode property data, which may be ingested by downstream clients such as ICU4X.
 
 *   Using the output from the build bots:
-    *   Navigate to the Azure Pipelines artifacts as described in the previous section
-    *   Download the files named *icuexportdata_uprops_full.zip* and *icuexportdata_uprops_sample.zip*
+    *   Navigate to the GHA Workflow `icu4c-icuexportdata` and download the artifact (`icuexportdata_output`) from summary page
+    *   Unzip the file
+    *   Rename the `icuexportdata_tag-goes-here.zip` file to the correct tag (replacing slashes with dashes)
 
 ### Signing archives and creating checksums:
+
+**Post 76.1 see [Publish - Version 76.1](release.md)**
+
+#### Step 0. PGP keys:
+
+Use your own personal PGP key. Make sure that at least one other member of the
+ICU-TC has signed your key (so that there's an established chain-of-trust
+through which your key can be verified). Make sure that your signed public key
+is included in the `KEYS` file in the root of the ICU repository, so that users
+of ICU can easily find it there (and won't have to search random keyservers for
+it), see instructions in that file on how to update it.
 
 #### Step 1. PGP files:
 
@@ -440,11 +444,27 @@ the new ICU version.
 
 ## Update online demos
 
-Update online demos/tools to the latest version:
+These are the online demos/tools that need to be updated to the latest version.
 
-*   ICU demos (eg <https://icu4c-demos.unicode.org/icu-bin/idnbrowser>)
-*   CLDR Survey tool (eg <http://unicode.org/cldr/apps/about.jsp>)
-*   Unicode Utilities (eg <http://unicode.org/cldr/utility/character.jsp>)
+* Be sure to verify that the deployed version is publicly available.
+
+Note that updating ICU4C demos online requires Gcloud access.
+
+### ICU4C demos
+* [Run ICU4C demos](https://icu4c-demos.unicode.org/icu-bin/idnbrowser)
+
+* [Demo described here](https://github.com/unicode-org/icu-demos/blob/main/README.md)
+
+* [Building and deploying from GCloud](https://github.com/unicode-org/icu-demos//blob/main/README.md)
+
+### ICU4J demos
+
+* [Run ICU4J online demos](https://icu4j-demos.unicode.org/icu4jweb/)
+
+* [Information on the Java demos and samples](https://icu.unicode.org/home/icu4j-demos)
+
+* [Instructions for building and deploying updates](https://github.com/unicode-org/icu-demos/blob/main/icu4jweb/README.md)
+
 
 ### Online information update
 
@@ -506,9 +526,9 @@ Jira.
 ## Update readme
 
 Update [ICU4C
-readme.html](https://github.com/unicode-org/icu/blob/main/icu4c/readme.html)
+readme.html](https://github.com/unicode-org/icu/main/icu4c/readme.html)
 and [ICU4J
-readme.html](https://github.com/unicode-org/icu/blob/main/icu4j/readme.html)
+readme.html](https://github.com/unicode-org/icu/main/icu4j/readme.html)
 before every milestone (GA / RC / Milestone-N). Make sure the following items
 are up to date.
 

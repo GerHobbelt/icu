@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 ms{
     Countries{
         001{"Dunia"}
@@ -254,7 +254,7 @@ ms{
         SV{"El Salvador"}
         SX{"Sint Maarten"}
         SY{"Syria"}
-        SZ{"Swaziland"}
+        SZ{"Eswatini"}
         TA{"Tristan da Cunha"}
         TC{"Kepulauan Turks dan Caicos"}
         TD{"Chad"}
@@ -267,7 +267,7 @@ ms{
         TM{"Turkmenistan"}
         TN{"Tunisia"}
         TO{"Tonga"}
-        TR{"Turki"}
+        TR{"Turkiye"}
         TT{"Trinidad dan Tobago"}
         TV{"Tuvalu"}
         TW{"Taiwan"}
@@ -298,6 +298,9 @@ ms{
         ZW{"Zimbabwe"}
         ZZ{"Wilayah Tidak Diketahui"}
     }
+    Countries%chagos{
+        IO{"Kepulauan Chagos"}
+    }
     Countries%short{
         GB{"UK"}
         HK{"Hong Kong"}
@@ -312,6 +315,9 @@ ms{
         CI{"Ivory Coast"}
         CZ{"Republik Czech"}
         FK{"Kepulauan Falkland (Islas Malvinas)"}
+        NZ{"Aotearoa New Zealand"}
+        SZ{"Swaziland"}
         TL{"Timor Timur"}
+        TR{"Turki"}
     }
 }

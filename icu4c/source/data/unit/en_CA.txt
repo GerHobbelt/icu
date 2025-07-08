@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 en_CA{
     units{
         acceleration{
@@ -44,11 +44,6 @@ en_CA{
                 one{"{0} millimole per litre"}
                 other{"{0} millimoles per litre"}
             }
-            percent{
-                dnam{"per cent"}
-                one{"{0} per cent"}
-                other{"{0} per cent"}
-            }
             permille{
                 dnam{"per mille"}
                 one{"{0} per mille"}
@@ -85,6 +80,7 @@ en_CA{
         energy{
             kilowatt-hour{
                 one{"{0} kilowatt-hour"}
+                other{"{0} kilowatt-hours"}
             }
         }
         force{
@@ -123,6 +119,7 @@ en_CA{
                 other{"{0} decimetres"}
             }
             earth-radius{
+                one{"{0} earth radius"}
                 other{"{0} earth radii"}
             }
             kilometer{
@@ -166,22 +163,25 @@ en_CA{
         light{
             candela{
                 dnam{"candelas"}
+                one{"{0} candela"}
                 other{"{0} candelas"}
             }
             lumen{
                 dnam{"lumens"}
+                one{"{0} lumen"}
                 other{"{0} lumens"}
             }
         }
         mass{
-            metric-ton{
+            stone{
+                dnam{"stone"}
+                one{"{0} stone"}
+                other{"{0} stone"}
+            }
+            tonne{
                 dnam{"tonnes"}
                 one{"{0} tonne"}
                 other{"{0} tonnes"}
-            }
-            stone{
-                dnam{"stone"}
-                other{"{0} stone"}
             }
         }
         pressure{
@@ -209,6 +209,7 @@ en_CA{
             }
             kelvin{
                 dnam{"kelvin"}
+                one{"{0} kelvin"}
                 other{"{0} kelvin"}
             }
         }
@@ -248,7 +249,6 @@ en_CA{
                 other{"{0} decilitres"}
             }
             dessert-spoon{
-                dnam{"US dessertspoon"}
                 one{"{0} US dessertspoon"}
                 other{"{0} US dessertspoons"}
             }
@@ -320,19 +320,16 @@ en_CA{
     unitsNarrow{
         angle{
             revolution{
+                one{"{0}rev"}
                 other{"{0}revs"}
             }
         }
         area{
+            square-inch{
+                per{"{0}/sq in"}
+            }
             square-meter{
                 dnam{"metres²"}
-            }
-        }
-        concentr{
-            karat{
-                dnam{"carat"}
-                one{"{0}ct"}
-                other{"{0}ct"}
             }
         }
         consumption{
@@ -349,21 +346,34 @@ en_CA{
         }
         digital{
             bit{
+                one{"{0}bit"}
                 other{"{0}bits"}
             }
         }
         duration{
+            hour{
+                per{"{0}/hr"}
+            }
             minute{
                 one{"{0}min"}
                 other{"{0}min"}
+            }
+            month{
+                per{"{0}/mo"}
+            }
+            second{
+                per{"{0}/sec"}
+            }
+            week{
+                per{"{0}/wk"}
+            }
+            year{
+                per{"{0}/yr"}
             }
         }
         electric{
             ampere{
                 dnam{"A"}
-            }
-            ohm{
-                dnam{"Ω"}
             }
             volt{
                 dnam{"V"}
@@ -381,7 +391,6 @@ en_CA{
         }
         mass{
             carat{
-                dnam{"ct"}
                 one{"{0}ct"}
                 other{"{0}ct"}
             }
@@ -412,15 +421,13 @@ en_CA{
                 one{"{0}°F"}
                 other{"{0}°F"}
             }
+            generic{
+                dnam{"deg"}
+            }
         }
         volume{
             cup{
                 dnam{"cups"}
-            }
-            dessert-spoon{
-                dnam{"US dsp"}
-                one{"{0}USdsp"}
-                other{"{0}USdsp"}
             }
             dessert-spoon-imperial{
                 dnam{"dsp"}
@@ -456,6 +463,7 @@ en_CA{
             }
             jigger{
                 dnam{"jiggers"}
+                one{"{0}jigger"}
                 other{"{0}jiggers"}
             }
             liter{
@@ -484,6 +492,7 @@ en_CA{
         }
         angle{
             revolution{
+                one{"{0} rev"}
                 other{"{0} revs"}
             }
         }
@@ -516,9 +525,6 @@ en_CA{
             mole{
                 dnam{"moles"}
             }
-            percent{
-                dnam{"per cent"}
-            }
             permille{
                 dnam{"per mille"}
             }
@@ -532,7 +538,6 @@ en_CA{
             }
             liter-per-kilometer{
                 dnam{"litres/km"}
-                one{"{0} l/km"}
             }
             mile-per-gallon{
                 dnam{"miles/US gal"}
@@ -547,16 +552,17 @@ en_CA{
         }
         digital{
             bit{
-                dnam{"bits"}
+                one{"{0} bit"}
                 other{"{0} bits"}
             }
             byte{
-                dnam{"bytes"}
+                one{"{0} byte"}
                 other{"{0} bytes"}
             }
         }
         duration{
             hour{
+                one{"{0} hr"}
                 other{"{0} hrs"}
                 per{"{0}/hr"}
             }
@@ -569,6 +575,7 @@ en_CA{
                 other{"{0} millisecs"}
             }
             minute{
+                one{"{0} min"}
                 other{"{0} mins"}
             }
             month{
@@ -581,6 +588,7 @@ en_CA{
                 other{"{0} nanosecs"}
             }
             second{
+                one{"{0} sec"}
                 other{"{0} secs"}
                 per{"{0}/sec"}
             }
@@ -591,28 +599,11 @@ en_CA{
                 per{"{0}/yr"}
             }
         }
-        energy{
-            electronvolt{
-                dnam{"electronvolts"}
-            }
-            kilojoule{
-                dnam{"kilojoules"}
-            }
-            kilowatt-hour{
-                dnam{"kW-hours"}
-            }
-        }
         force{
             kilowatt-hour-per-100-kilometer{
                 dnam{"kWh/100 km"}
                 one{"{0} kWh/100 km"}
                 other{"{0} kWh/100 km"}
-            }
-        }
-        graphics{
-            dot{
-                one{"{0} dot"}
-                other{"{0} dots"}
             }
         }
         length{
@@ -629,8 +620,11 @@ en_CA{
                 other{"{0} ct"}
             }
             grain{
-                dnam{"grains"}
+                one{"{0} grain"}
                 other{"{0} grains"}
+            }
+            stone{
+                dnam{"stone"}
             }
         }
         pressure{
@@ -701,11 +695,6 @@ en_CA{
                 one{"{0} cu yd"}
                 other{"{0} cu yd"}
             }
-            dessert-spoon{
-                dnam{"US dssp"}
-                one{"{0} US dssp"}
-                other{"{0} US dssp"}
-            }
             dessert-spoon-imperial{
                 dnam{"dssp"}
                 one{"{0} dssp"}
@@ -717,7 +706,6 @@ en_CA{
                 other{"{0} fl drams"}
             }
             drop{
-                dnam{"drops"}
                 one{"{0} drops"}
                 other{"{0} drops"}
             }
@@ -744,14 +732,14 @@ en_CA{
                 per{"{0}/gal"}
             }
             jigger{
-                dnam{"jiggers"}
+                one{"{0} jiggers"}
                 other{"{0} jiggers"}
             }
             liter{
                 dnam{"litres"}
             }
             pinch{
-                dnam{"pinches"}
+                one{"{0} pinches"}
                 other{"{0} pinches"}
             }
             quart{

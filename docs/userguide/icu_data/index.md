@@ -38,7 +38,7 @@ the rest of ICU. No specific action or setup is required of either the
 application program or the execution environment.
 
 Update: as of ICU 64, the standard data library is over 20 MB in size. We have
-introduced a new tool, the [ICU Data Build Tool](./icu_data/buildtool.md),
+introduced a new tool, the [ICU Data Build Tool](./buildtool.md),
 to give you more control over what goes into your ICU locale data file.
 
 > :point_right: **Note**: ICU for C by default comes with pre-built data.
@@ -163,6 +163,10 @@ example, even if ICU is built in "files" mode, you must still link against the
     This option builds ICU data as a single (large) static library. This mode is
     more complex to use. If you encounter errors, you may need to build ICU
     multiple times.
+*   `--with-data-packaging=auto`
+    With this option, `configure` will pick `library` unless the options
+    `--enable-static` and `--disable-shared` are also given, in which case
+    it'll pic `static` instead.
 *   `--with-data-packaging=files`
     With this option, ICU outputs separate individual files (.res, .cnv, etc)
     which will be loaded at runtime. Read the rest of this document, especially
@@ -178,7 +182,7 @@ Because time zone data requires frequent updates in response to countries
 changing their transition dates for daylight saving time, ICU provides
 additional options for loading time zone data from separate files, thus avoiding
 the need to update a combined ICU data package. Further information is found
-under [Time Zones](datetime/timezone/index.md).
+under [Time Zones](../datetime/timezone/index.md).
 
 ## Application Data
 
@@ -466,7 +470,7 @@ this consists of conversion tables and locale information. The data itself is
 normally placed into a single shared library.
 
 Update: as of ICU 64, the standard data library is over 20 MB in size. We have
-introduced a new tool, the [ICU Data Build Tool](icu_data/buildtool.md),
+introduced a new tool, the [ICU Data Build Tool](./buildtool.md),
 to replace the makefiles explained below and give you more control over what
 goes into your ICU locale data file.
 
@@ -497,7 +501,7 @@ example, we will borrow the missing header fields from
 converter data.
 
 The ucm file format is described in the
-["Conversion Data" chapter](conversion/data.md) of this user guide.
+["Conversion Data" chapter](../conversion/data.md) of this user guide.
 
 After adjustment, the header of the `solaris-eucJP-2.7.ucm` file contains these
 items:
@@ -784,7 +788,7 @@ loadable data objects.)
     [genrb](https://github.com/unicode-org/icu/blob/main/icu4c/source/tools/genrb)
 
 #### Unicode conversion mapping tables
-*   Source format: .ucm: [Conversion Data chapter](conversion/data.md)
+*   Source format: .ucm: [Conversion Data chapter](../conversion/data.md)
 *   Binary format: .cnv:
     [source/common/ucnvmbcs.h](https://github.com/unicode-org/icu/blob/main/icu4c/source/common/ucnvmbcs.h)
 *   Generator tool:
@@ -884,7 +888,7 @@ Emoji properties of strings added.
     [tool at unicode.org maintained by Mark Davis](https://sites.google.com/site/unicodetools/#TOC-UCA)
     (call the Main class with option writeFractionalUCA); source tailorings (text rules) in
     [source/data/coll/*.txt](https://github.com/unicode-org/icu/blob/main/icu4c/source/data/coll)
-    resource bundles: [Collation Customization chapter](collation/customization/index.md).
+    resource bundles: [Collation Customization chapter](../collation/customization/index.md).
 *   Binary format: ucadata.icu & binary tailorings in resource bundles:
     [source/i18n/collationdatareader.h](https://github.com/unicode-org/icu/blob/main/icu4c/source/i18n/collationdatareader.h)
 *   Generator tool:
@@ -1139,14 +1143,14 @@ corresponding resource files already in that directory.
 
 1.  [ICU4C](https://icu.unicode.org/download)
 
-2.  Compilers and tools required for [building ICU4C](../icu4c/build).
+2.  Compilers and tools required for [building ICU4C](../icu4c/build.md).
 
 3.  J2SE SDK version 5 or above
 
 #### Procedure
 
 1.  Download and build ICU4C on a Windows or Linux machine. For instructions on downloading and building ICU4C, please click
-    [here](../icu4c/build).
+    [here](../icu4c/build.md).
 
 2.  Follow the remaining instructions in
     the [ICU4J Readme](../icu4j/).

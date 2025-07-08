@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 de{
     Countries{
         001{"Welt"}
@@ -298,6 +298,9 @@ de{
         ZW{"Simbabwe"}
         ZZ{"Unbekannte Region"}
     }
+    Countries%chagos{
+        IO{"Chagos-Archipel"}
+    }
     Countries%short{
         GB{"UK"}
         HK{"Hongkong"}
@@ -312,6 +315,7 @@ de{
         CI{"Elfenbeinküste"}
         CZ{"Tschechische Republik"}
         FK{"Falklandinseln (Malwinen)"}
+        NZ{"Aotearoa (Neuseeland)"}
         SZ{"Swasiland"}
         TL{"Osttimor"}
     }

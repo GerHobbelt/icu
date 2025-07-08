@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 fa{
     Countries{
         001{"جهان"}
@@ -298,6 +298,9 @@ fa{
         ZW{"زیمبابوه"}
         ZZ{"ناحیهٔ نامشخص"}
     }
+    Countries%chagos{
+        IO{"مجمع‌الجزایر چاگوس"}
+    }
     Countries%short{
         HK{"هنگ‌کنگ"}
         MO{"ماکائو"}
@@ -311,6 +314,7 @@ fa{
         CI{"ساحل‌عاج"}
         CZ{"جمهوری چک"}
         FK{"جزایر فالکلند (ایسلاس مالویناس)"}
+        NZ{"آتروا نیوزیلند"}
         SZ{"سوازیلند"}
         TL{"تیمور شرقی"}
     }

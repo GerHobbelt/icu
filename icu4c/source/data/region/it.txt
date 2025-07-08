@@ -1,6 +1,6 @@
 ﻿// © 2016 and later: Unicode, Inc. and others.
 // License & terms of use: http://www.unicode.org/copyright.html
-// Generated using tools/cldr/cldr-to-icu/build-icu-data.xml
+// Generated using tools/cldr/cldr-to-icu/
 it{
     Countries{
         001{"Mondo"}
@@ -45,7 +45,7 @@ it{
         AO{"Angola"}
         AQ{"Antartide"}
         AR{"Argentina"}
-        AS{"Samoa americane"}
+        AS{"Samoa Americane"}
         AT{"Austria"}
         AU{"Australia"}
         AW{"Aruba"}
@@ -64,7 +64,7 @@ it{
         BM{"Bermuda"}
         BN{"Brunei"}
         BO{"Bolivia"}
-        BQ{"Caraibi olandesi"}
+        BQ{"Caraibi Olandesi"}
         BR{"Brasile"}
         BS{"Bahamas"}
         BT{"Bhutan"}
@@ -103,7 +103,7 @@ it{
         EC{"Ecuador"}
         EE{"Estonia"}
         EG{"Egitto"}
-        EH{"Sahara occidentale"}
+        EH{"Sahara Occidentale"}
         ER{"Eritrea"}
         ES{"Spagna"}
         ET{"Etiopia"}
@@ -119,7 +119,7 @@ it{
         GB{"Regno Unito"}
         GD{"Grenada"}
         GE{"Georgia"}
-        GF{"Guyana francese"}
+        GF{"Guyana Francese"}
         GG{"Guernsey"}
         GH{"Ghana"}
         GI{"Gibilterra"}
@@ -129,7 +129,7 @@ it{
         GP{"Guadalupa"}
         GQ{"Guinea Equatoriale"}
         GR{"Grecia"}
-        GS{"Georgia del Sud e Sandwich australi"}
+        GS{"Georgia del Sud e Sandwich Australi"}
         GT{"Guatemala"}
         GU{"Guam"}
         GW{"Guinea-Bissau"}
@@ -146,7 +146,7 @@ it{
         IL{"Israele"}
         IM{"Isola di Man"}
         IN{"India"}
-        IO{"Territorio britannico dell’Oceano Indiano"}
+        IO{"Territorio Britannico dell’Oceano Indiano"}
         IQ{"Iraq"}
         IR{"Iran"}
         IS{"Islanda"}
@@ -189,7 +189,7 @@ it{
         MM{"Myanmar (Birmania)"}
         MN{"Mongolia"}
         MO{"RAS di Macao"}
-        MP{"Isole Marianne settentrionali"}
+        MP{"Isole Marianne Settentrionali"}
         MQ{"Martinica"}
         MR{"Mauritania"}
         MS{"Montserrat"}
@@ -213,9 +213,9 @@ it{
         NU{"Niue"}
         NZ{"Nuova Zelanda"}
         OM{"Oman"}
-        PA{"Panamá"}
+        PA{"Panama"}
         PE{"Perù"}
-        PF{"Polinesia francese"}
+        PF{"Polinesia Francese"}
         PG{"Papua Nuova Guinea"}
         PH{"Filippine"}
         PK{"Pakistan"}
@@ -223,7 +223,7 @@ it{
         PM{"Saint-Pierre e Miquelon"}
         PN{"Isole Pitcairn"}
         PR{"Portorico"}
-        PS{"Territori palestinesi"}
+        PS{"Territori Palestinesi"}
         PT{"Portogallo"}
         PW{"Palau"}
         PY{"Paraguay"}
@@ -254,11 +254,11 @@ it{
         SV{"El Salvador"}
         SX{"Sint Maarten"}
         SY{"Siria"}
-        SZ{"Swaziland"}
+        SZ{"Eswatini"}
         TA{"Tristan da Cunha"}
         TC{"Isole Turks e Caicos"}
         TD{"Ciad"}
-        TF{"Terre australi francesi"}
+        TF{"Terre Australi Francesi"}
         TG{"Togo"}
         TH{"Thailandia"}
         TJ{"Tagikistan"}
@@ -274,7 +274,7 @@ it{
         TZ{"Tanzania"}
         UA{"Ucraina"}
         UG{"Uganda"}
-        UM{"Altre isole americane del Pacifico"}
+        UM{"Isole Minori Esterne degli Stati Uniti"}
         UN{"Nazioni Unite"}
         US{"Stati Uniti"}
         UY{"Uruguay"}
@@ -298,6 +298,9 @@ it{
         ZW{"Zimbabwe"}
         ZZ{"Regione sconosciuta"}
     }
+    Countries%chagos{
+        IO{"Arcipelago Chagos"}
+    }
     Countries%short{
         GB{"UK"}
         HK{"Hong Kong"}
@@ -312,7 +315,9 @@ it{
         CI{"Côte d’Ivoire"}
         CZ{"Repubblica Ceca"}
         FK{"Isole Falkland (Isole Malvine)"}
-        SZ{"Regno di eSwatini"}
+        NZ{"Nuova Zelanda (Aotearoa)"}
+        SZ{"Regno di Eswatini"}
         TL{"Timor Leste"}
+        TR{"Türkiye"}
     }
 }
