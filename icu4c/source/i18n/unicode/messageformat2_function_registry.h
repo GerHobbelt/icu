@@ -564,21 +564,21 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API Formattable innerValue;
+            Formattable innerValue;
             /**
              * Resolved options attached to this value.
              *
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API FunctionOptions opts;
+            FunctionOptions opts;
             /**
              * The name of the function that constructed this FunctionValue.
              *
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API UnicodeString functionName;
+            UnicodeString functionName;
             /**
              * Fallback string that can be used if a later function encounters
              * an error when processing this FunctionValue.
@@ -586,7 +586,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API UnicodeString fallback;
+            UnicodeString fallback;
             /**
              * Locale from u:locale option.
              * Must be set from function context.
@@ -594,7 +594,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API Locale locale;
+            Locale locale;
             /**
              * Directionality of formatted result.
              * Defaults to U_MF_DIRECTIONALITY_UNKNOWN if not set
@@ -603,7 +603,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API UMFDirectionality dir = U_MF_DIRECTIONALITY_UNKNOWN;
+            UMFDirectionality dir = U_MF_DIRECTIONALITY_UNKNOWN;
             /**
              * Input directionality from u:dir option.
              * Defaults to U_MF_BIDI_OPTION_INHERIT if not set
@@ -612,7 +612,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_I18N_API UMFBidiOption inputDir = U_MF_BIDI_OPTION_INHERIT;
+            UMFBidiOption inputDir = U_MF_BIDI_OPTION_INHERIT;
         private:
             friend class FunctionOptions;
 
