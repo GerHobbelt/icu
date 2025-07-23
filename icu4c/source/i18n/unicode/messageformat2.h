@@ -216,7 +216,8 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_MF_BIDI_STYLE_HTML
+            U_MF_BIDI_STYLE_HTML,
+            U_MF_BIDI_STYLE_DEFAULT = U_MF_BIDI_STYLE_CONTROL
         } UMFBidiIsolationStyle;
 
         /**
