@@ -392,7 +392,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Builder& setBidiIsolationStrategy(UMFBidiIsolationStrategy strategy);
+            U_I18N_API Builder& setBidiIsolationStrategy(UMFBidiIsolationStrategy strategy);
             /**
              * Set the bidi isolation style for this formatter.
              *
@@ -411,7 +411,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Builder& setBidiIsolationStyle(UMFBidiIsolationStyle style);
+            U_I18N_API Builder& setBidiIsolationStyle(UMFBidiIsolationStyle style);
             /**
              * Set the directionality context of the input message.
              *
@@ -429,7 +429,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Builder& setBidiContext(UMFBidiContext dir);
+            U_I18N_API Builder& setBidiContext(UMFBidiContext dir);
             /**
              * Constructs a new immutable MessageFormatter using the pattern or data model
              * that was previously set, and the locale (if it was previously set)
