@@ -309,7 +309,7 @@ namespace message2 {
      * @internal ICU 78 technology preview
      * @deprecated This API is for technology preview only.
      */
-    class U_I18N_API FunctionContext : public UObject {
+    class U_I18N_API_CLASS FunctionContext : public UObject {
         public:
             /**
              * Returns the locale from this context.
@@ -319,7 +319,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            const Locale& getLocale() const { return locale; }
+            U_I18N_API const Locale& getLocale() const { return locale; }
             /**
              * Returns the text direction from this context.
              *
@@ -328,7 +328,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            UMFBidiOption getDirection() const { return dir; }
+            U_I18N_API UMFBidiOption getDirection() const { return dir; }
             /**
              * Returns the ID from this context.
              *
@@ -338,7 +338,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            const UnicodeString& getID() const { return id; }
+            U_I18N_API const UnicodeString& getID() const { return id; }
         private:
             friend class MessageFormatter;
 
@@ -403,7 +403,7 @@ namespace message2 {
      * @internal ICU 78 technology preview
      * @deprecated This API is for technology preview only.
      */
-    class U_I18N_API FunctionValue : public UObject {
+    class U_I18N_API_CLASS FunctionValue : public UObject {
         public:
             /**
              * Returns the string representation of this value. The default
@@ -416,7 +416,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual UnicodeString formatToString(UErrorCode& status) const {
+            U_I18N_API virtual UnicodeString formatToString(UErrorCode& status) const {
                 if (U_SUCCESS(status)) {
                     status = U_MF_FORMATTING_ERROR;
                 }
@@ -432,7 +432,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual const Formattable& unwrap() const { return innerValue; }
+            U_I18N_API virtual const Formattable& unwrap() const { return innerValue; }
             /**
              * Returns a reference to the resolved options for this value.
              *
@@ -441,7 +441,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual const FunctionOptions& getResolvedOptions() const { return opts; }
+            U_I18N_API virtual const FunctionOptions& getResolvedOptions() const { return opts; }
             /**
              * Returns the directionality of this value, i.e. the directionality
              * that its formatted result should have.
@@ -452,7 +452,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual UMFDirectionality getDirection() const { return dir; }
+            U_I18N_API virtual UMFDirectionality getDirection() const { return dir; }
             /**
              * Returns the directionality that this value was annotated with.
              *
@@ -467,7 +467,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual UMFBidiOption getDirectionAnnotation() const { return inputDir; }
+            U_I18N_API virtual UMFBidiOption getDirectionAnnotation() const { return inputDir; }
             /**
              * Returns true if this value supports selection. The default method
              * returns false. The method must be overridden for values that support
@@ -478,7 +478,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual UBool isSelectable() const {
+            U_I18N_API virtual UBool isSelectable() const {
                 // In the future, this function could return a capability
                 // indicating whether this function can format, select, or both.
                 return false;
@@ -494,7 +494,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual UBool isNullOperand() const { return false; }
+            U_I18N_API virtual UBool isNullOperand() const { return false; }
             /**
              * Compares this value to an array of keys, and returns an array of matching
              * keys sorted by preference. The default implementation of this method
@@ -515,7 +515,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual void selectKeys(const UnicodeString* keys,
+            U_I18N_API virtual void selectKeys(const UnicodeString* keys,
                                     int32_t keysLen,
                                     int32_t* prefs,
                                     int32_t& prefsLen,
@@ -537,7 +537,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual const UnicodeString& getFunctionName() const { return functionName; }
+            U_I18N_API virtual const UnicodeString& getFunctionName() const { return functionName; }
             /**
              * Returns a fallback string that can be used as output
              * if processing this function results in an error.
@@ -547,14 +547,14 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual const UnicodeString& getFallback() const { return fallback; }
+            U_I18N_API virtual const UnicodeString& getFallback() const { return fallback; }
             /**
              * Destructor.
              *
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            virtual ~FunctionValue();
+            U_I18N_API virtual ~FunctionValue();
          protected:
             /**
              * Computed result of the function invocation that
@@ -564,21 +564,21 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Formattable innerValue;
+            U_I18N_API Formattable innerValue;
             /**
              * Resolved options attached to this value.
              *
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            FunctionOptions opts;
+            U_I18N_API FunctionOptions opts;
             /**
              * The name of the function that constructed this FunctionValue.
              *
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            UnicodeString functionName;
+            U_I18N_API UnicodeString functionName;
             /**
              * Fallback string that can be used if a later function encounters
              * an error when processing this FunctionValue.
@@ -586,7 +586,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            UnicodeString fallback;
+            U_I18N_API UnicodeString fallback;
             /**
              * Locale from u:locale option.
              * Must be set from function context.
@@ -594,7 +594,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            Locale locale;
+            U_I18N_API Locale locale;
             /**
              * Directionality of formatted result.
              * Defaults to U_MF_DIRECTIONALITY_UNKNOWN if not set
@@ -603,7 +603,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            UMFDirectionality dir = U_MF_DIRECTIONALITY_UNKNOWN;
+            U_I18N_API UMFDirectionality dir = U_MF_DIRECTIONALITY_UNKNOWN;
             /**
              * Input directionality from u:dir option.
              * Defaults to U_MF_BIDI_OPTION_INHERIT if not set
@@ -612,7 +612,7 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            UMFBidiOption inputDir = U_MF_BIDI_OPTION_INHERIT;
+            U_I18N_API UMFBidiOption inputDir = U_MF_BIDI_OPTION_INHERIT;
         private:
             friend class FunctionOptions;
 
