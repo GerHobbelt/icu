@@ -61,7 +61,8 @@ namespace message2 {
           * @internal ICU 78 technology preview
           * @deprecated This API is for technology preview only.
           */
-         U_MF_DIRECTIONALITY_UNKNOWN
+         U_MF_DIRECTIONALITY_UNKNOWN,
+         U_MF_DIRECTIONALITY_DEFAULT = U_MF_DIRECTIONALITY_UNKNOWN
      } UMFDirectionality;
 
     /**

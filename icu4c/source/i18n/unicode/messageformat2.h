@@ -249,7 +249,8 @@ namespace message2 {
              * @internal ICU 78 technology preview
              * @deprecated This API is for technology preview only.
              */
-            U_MF_BIDI_CONTEXT_AUTO
+            U_MF_BIDI_CONTEXT_AUTO,
+            U_MF_BIDI_CONTEXT_DEFAULT = U_MF_BIDI_CONTEXT_AUTO
         } UMFBidiContext;
         /**
          * The mutable Builder class allows each part of the MessageFormatter to be initialized
@@ -282,12 +283,12 @@ namespace message2 {
             bool signalErrors = false;
             // Bidi isolation strategy
             MessageFormatter::UMFBidiIsolationStrategy
-                bidiIsolationStrategy = U_MF_BIDI_AUTO;
+                bidiIsolationStrategy = U_MF_BIDI_DEFAULT;
             // Message directionality
-            MessageFormatter::UMFBidiContext msgdir = U_MF_BIDI_CONTEXT_AUTO;
+            MessageFormatter::UMFBidiContext msgdir = U_MF_BIDI_CONTEXT_DEFAULT;
             // Bidi isolation style
             MessageFormatter::UMFBidiIsolationStyle
-                bidiStyle = U_MF_BIDI_STYLE_CONTROL;
+                bidiStyle = U_MF_BIDI_STYLE_DEFAULT;
 
             void clearState();
         public:
@@ -588,14 +589,14 @@ namespace message2 {
         bool signalErrors = false;
 
         // Bidi isolation strategy.
-        UMFBidiIsolationStrategy bidiIsolationStrategy = U_MF_BIDI_AUTO;
+        UMFBidiIsolationStrategy bidiIsolationStrategy = U_MF_BIDI_DEFAULT;
 
         // Message directionality
         // Inferred from locale by default
-        UMFDirectionality msgdir = U_MF_DIRECTIONALITY_UNKNOWN;
+        UMFDirectionality msgdir = U_MF_DIRECTIONALITY_DEFAULT;
 
         // Bidi isolation style
-        UMFBidiIsolationStyle bidiIsolationStyle = U_MF_BIDI_STYLE_CONTROL;
+        UMFBidiIsolationStyle bidiIsolationStyle = U_MF_BIDI_STYLE_DEFAULT;
 
     }; // class MessageFormatter
 
