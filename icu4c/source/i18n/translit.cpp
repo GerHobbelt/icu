@@ -999,7 +999,7 @@ Transliterator* Transliterator::createBasicInstance(const UnicodeString& id,
     // we handle aliases in a loop.  The max times through the loop is two.
     // [alan]
     while (alias != nullptr) {
-        U_ASSERT(t==0);
+        U_ASSERT(t == nullptr);
         // Rule-based aliases are handled with TransliteratorAlias::
         // parse(), followed by TransliteratorRegistry::reget().
         // Other aliases are handled with TransliteratorAlias::create().

@@ -224,11 +224,10 @@ static_assert(
     "Field should be a POD type for efficient initialization");
 
 constexpr FormattedStringBuilder::Field::Field(uint8_t category, uint8_t field)
-    : bits((
-        U_ASSERT(category <= 0xf),
-        U_ASSERT(field <= 0xf),
-        static_cast<uint8_t>((category << 4) | field)
-    )) {}
+    : bits( static_cast<uint8_t>((category << 4) | field) ) {
+    U_ASSERT(category <= 0xf);
+    U_ASSERT(field <= 0xf);
+}
 
 /**
  * Internal constant for the undefined field for use in FormattedStringBuilder.

@@ -1306,7 +1306,7 @@ Transliterator* TransliteratorRegistry::instantiateEntry(const UnicodeString& ID
                                                          TransliteratorAlias* &aliasReturn,
                                                          UErrorCode& status) {
     Transliterator* t = nullptr;
-    U_ASSERT(aliasReturn == 0);
+    U_ASSERT(aliasReturn == nullptr);
 
     switch (entry->entryType) {
     case TransliteratorEntry::RBT_DATA:

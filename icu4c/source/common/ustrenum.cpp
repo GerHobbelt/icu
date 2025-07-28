@@ -150,7 +150,7 @@ UStringEnumeration::fromUEnumeration(
 
 UStringEnumeration::UStringEnumeration(UEnumeration* _uenum) :
     uenum(_uenum) {
-    U_ASSERT(_uenum != 0);
+    U_ASSERT(_uenum != nullptr);
 }
 
 UStringEnumeration::~UStringEnumeration() {
