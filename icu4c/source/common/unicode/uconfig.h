@@ -58,7 +58,53 @@
 #define U_IO_IMPLEMENTATION 
 #define U_LAYOUT_IMPLEMENTATION 
 #define U_LAYOUTEX_IMPLEMENTATION 
-#define U_TOOLUTIL_IMPLEMENTATION 
+#define U_TOOLUTIL_IMPLEMENTATION
+
+/**
+ * \def U_NO_DEFAULT_INCLUDE_UTF_HEADERS
+ * Determines whether utypes.h includes utf.h, utf8.h, utf16.h and utf_old.h.
+ * utypes.h includes those headers if this macro is defined to 0.
+ * Otherwise, each those headers must be included explicitly when using one of their macros.
+ * Defaults to 0 for backward compatibility, except inside ICU.
+ * @stable ICU 49
+ */
+#define U_NO_DEFAULT_INCLUDE_UTF_HEADERS 0
+
+/**
+ * \def U_ENABLE_TRACING
+ * Determines whether to enable tracing.
+ * @internal
+ */
+#define U_ENABLE_TRACING 0
+
+/**
+ * \def UCONFIG_ENABLE_PLUGINS
+ * Determines whether to enable ICU plugins.
+ * @internal
+ */
+#define UCONFIG_ENABLE_PLUGINS 1
+
+/**
+ * \def U_ENABLE_DYLOAD
+ * Whether to enable Dynamic loading in ICU.
+ * @internal
+ */
+#define U_ENABLE_DYLOAD 0
+
+/**
+ * \def UCONFIG_ONLY_COLLATION
+ * This switch turns off modules that are not needed for collation.
+ *
+ * It does not turn off legacy conversion because that is necessary
+ * for ICU to work on EBCDIC platforms (for the default converter).
+ * If you want "only collation" and do not build for EBCDIC,
+ * then you can define UCONFIG_NO_CONVERSION or UCONFIG_NO_LEGACY_CONVERSION to 1 as well.
+ *
+ * @stable ICU 2.4
+ */
+//#define UCONFIG_ONLY_COLLATION 0
+//#define UCONFIG_NO_LEGACY_CONVERSION 1
+
 #endif
 
 /**
@@ -116,6 +162,10 @@
  * Defaults to 0 for backward compatibility, except inside ICU.
  * @stable ICU 49
  */
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable: 4574)   // shut up warning C4574: 'U_NO_DEFAULT_INCLUDE_UTF_HEADERS' is defined to be '0': did you mean to use '#if U_NO_DEFAULT_INCLUDE_UTF_HEADERS'?
+#endif
 #ifdef U_NO_DEFAULT_INCLUDE_UTF_HEADERS
     /* Use the predefined value. */
 #elif defined(U_COMBINED_IMPLEMENTATION) || defined(U_COMMON_IMPLEMENTATION) || defined(U_I18N_IMPLEMENTATION) || \
@@ -124,6 +174,9 @@
 #   define U_NO_DEFAULT_INCLUDE_UTF_HEADERS 1
 #else
 #   define U_NO_DEFAULT_INCLUDE_UTF_HEADERS 0
+#endif
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif
 
 /**
