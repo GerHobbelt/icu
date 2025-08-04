@@ -4611,13 +4611,13 @@ void RegexCompile::setEval(int32_t nextOp) {
     UnicodeSet *rightOperand = nullptr;
     UnicodeSet *leftOperand  = nullptr;
     for (;;) {
-        U_ASSERT(fSetOpStack.empty()==false);
+        U_ASSERT(bool(fSetOpStack.empty()) == false);
         int32_t pendingSetOperation = fSetOpStack.peeki();
         if ((pendingSetOperation&0xffff0000) < (nextOp&0xffff0000)) {
             break;
         }
         fSetOpStack.popi();
-        U_ASSERT(fSetStack.empty() == false);
+        U_ASSERT(bool(fSetStack.empty()) == false);
         rightOperand = static_cast<UnicodeSet*>(fSetStack.peek());
         // ICU 70 adds emoji properties of strings, but createSetForProperty() removes all strings
         // (see comments there).
