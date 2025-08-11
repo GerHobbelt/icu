@@ -196,7 +196,7 @@ UnicodeSet::applyPatternIgnoreSpace(const UnicodeString& pattern,
     // _applyPattern calls add() etc., which set pat to empty.
     UnicodeString rebuiltPat;
     RuleCharacterIterator chars(pattern, symbols, pos);
-    applyPattern(chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, 0, status);
+    parseUnicodeSet(chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, 0, status);
     if (U_FAILURE(status)) return;
     if (chars.inVariable()) {
         // syntaxError(chars, "Extra chars in variable value");
@@ -242,6 +242,14 @@ public:
 
 constexpr int32_t MAX_DEPTH = 100;
 
+constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
+    int32_t opts = RuleCharacterIterator::PARSE_VARIABLES | RuleCharacterIterator::PARSE_ESCAPES;
+    if ((unicodeSetOptions & USET_IGNORE_SPACE) != 0) {
+        opts |= RuleCharacterIterator::SKIP_WHITESPACE;
+    }
+    return opts;
+}
+
 }  // namespace
 
 /**
@@ -258,13 +266,13 @@ constexpr int32_t MAX_DEPTH = 100;
  * @param options a bit mask of zero or more of the following:
  * IGNORE_SPACE, CASE.
  */
-void UnicodeSet::applyPattern(RuleCharacterIterator& chars,
-                              const SymbolTable* symbols,
-                              UnicodeString& rebuiltPat,
-                              uint32_t options,
-                              UnicodeSet& (UnicodeSet::*caseClosure)(int32_t attribute),
-                              int32_t depth,
-                              UErrorCode& ec) {
+void UnicodeSet::parseUnicodeSet(RuleCharacterIterator& chars,
+                                 const SymbolTable* symbols,
+                                 UnicodeString& rebuiltPat,
+                                 uint32_t options,
+                                 UnicodeSet& (UnicodeSet::*caseClosure)(int32_t attribute),
+                                 int32_t depth,
+                                 UErrorCode& ec) {
     if (U_FAILURE(ec)) return;
     if (depth > MAX_DEPTH) {
         ec = U_ILLEGAL_ARGUMENT_ERROR;
@@ -275,27 +283,187 @@ void UnicodeSet::applyPattern(RuleCharacterIterator& chars,
 
     // Recognized special forms for chars, sets: c-c s-s s&s
 
-    int32_t opts = RuleCharacterIterator::PARSE_VARIABLES |
-                   RuleCharacterIterator::PARSE_ESCAPES;
-    if ((options & USET_IGNORE_SPACE) != 0) {
-        opts |= RuleCharacterIterator::SKIP_WHITESPACE;
-    }
-
-    UnicodeString patLocal, buf;
-    UBool usePat = false;
-    UnicodeSetPointer scratch;
-    RuleCharacterIterator::Pos backup;
-
-    // mode: 0=before [, 1=between [...], 2=after ]
-    // lastItem: 0=none, 1=char, 2=set
-    int8_t lastItem = 0, mode = 0;
-    UChar32 lastChar = 0;
-    char16_t op = 0;
-
-    UBool invert = false;
-
     clear();
 
+    bool isComplement = false;
+
+    if (resemblesPropertyPattern(chars, charsOptions(options))) {
+        // UnicodeSet ::= property-query | named-singleton
+        applyPropertyPattern(chars, rebuiltPat, ec);
+        if (U_FAILURE(ec)) return;
+    } else {
+        UBool escaped = false;
+        // TODO(egg): In PD UTS 61, add ^ to set-operator, remove [^.
+        // UnicodeSet ::=                [   Union ]
+        //              | Complement ::= [ ^ Union ]
+        char16_t c = chars.next(charsOptions(options), escaped, ec);
+        if (U_FAILURE(ec)) return;
+        if (escaped || c != u'[') {
+          ec = U_MALFORMED_SET;
+          return;
+        }
+        RuleCharacterIterator::Pos afterBracket;
+        chars.getPos(afterBracket);
+        c = chars.next(charsOptions(options), escaped, ec);
+        if (U_FAILURE(ec)) return;
+        if (!escaped && c == u'^') {
+            isComplement = true;
+            return;
+        } else {
+            chars.setPos(afterBracket);
+        }
+        parseUnion(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        if (U_FAILURE(ec)) return;
+        c = chars.next(charsOptions(options), escaped, ec);
+        if (U_FAILURE(ec)) return;
+        if (escaped || c != u']') {
+            ec = U_MALFORMED_SET;
+            return;
+        }
+    }
+
+    /**
+     * Handle global flags (isComplement, case insensitivity).  If this
+     * pattern should be compiled case-insensitive, then we need
+     * to close over case BEFORE COMPLEMENTING.  This makes
+     * patterns like /[^abc]/i work.
+     */
+    if ((options & USET_CASE_MASK) != 0) {
+        (this->*caseClosure)(options);
+    }
+    if (isComplement) {
+        complement().removeAllStrings();  // code point complement
+    }
+}
+
+void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
+                            const SymbolTable *symbols,
+                            UnicodeString &rebuiltPat,
+                            uint32_t options,
+                            UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute), int32_t depth,
+                            UErrorCode &ec) {
+    UBool escaped = false;
+    RuleCharacterIterator::Pos position;
+    chars.getPos(position);
+    // Union ::= Terms
+    //         | UnescapedHyphenMinus Terms
+    //         | Terms UnescapedHyphenMinus
+    //         | UnescapedHyphenMinus Terms UnescapedHyphenMinus
+    // Terms ::= ""
+    //         | Terms Term
+    char16_t c = chars.next(charsOptions(options), escaped, ec);
+    if (U_FAILURE(ec)) return;
+    if (!escaped && c == u'-') {
+        add(u'-');
+    } else {
+        chars.setPos(position);
+    }
+    for (;;) {
+        chars.getPos(position);
+        c = chars.next(charsOptions(options), escaped, ec);
+        if (U_FAILURE(ec)) return;
+        if (!escaped && c == u'-') {
+            // We can be here on the first iteration: [--] is allowed by the
+            // grammar and by the old parser.
+            add(u'-');
+            return;
+        }
+        chars.setPos(position);
+        if (!escaped && c == ']') {
+            return;
+        }
+        if (U_FAILURE(ec)) return;
+        parseTerm(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth, ec);
+        if (U_FAILURE(ec)) return;
+    }
+}
+
+void UnicodeSet::parseTerm(RuleCharacterIterator &chars,
+                           const SymbolTable *symbols,
+                           UnicodeString &rebuiltPat,
+                           uint32_t options,
+                           UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                           int32_t depth,
+                           UErrorCode &ec) {
+    UBool escaped = false;
+    RuleCharacterIterator::Pos termStart;
+    chars.getPos(termStart);
+    // Term ::= Elements
+    //        | Restriction
+    char16_t c = chars.next(charsOptions(options), escaped, ec);
+    if (!escaped && c == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
+        chars.setPos(termStart);
+        parseRestriction(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth, ec);
+        if (U_FAILURE(ec)) return;
+    } else {
+    }
+}
+
+void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
+                                  const SymbolTable *symbols,
+                                  UnicodeString &rebuiltPat,
+                                  uint32_t options,
+                                  UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                                  int32_t depth, UErrorCode &ec) {
+    UBool escaped = false;
+    // Restriction ::= UnicodeSet
+    //               | Intersection ::= Restriction & UnicodeSet
+    //               | Difference   ::= Restriction - UnicodeSet
+    // Start by parsing the first UnicodeSet.
+    parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth + 1, ec);
+    if (U_FAILURE(ec)) return;
+    // Now keep looking for an operator that would continue the Restriction.
+    for (;;) {
+        RuleCharacterIterator::Pos beforeOperator;
+        chars.getPos(beforeOperator);
+        char16_t c = chars.next(charsOptions(options), escaped, ec);
+        if (U_FAILURE(ec)) return;
+        if (!escaped && c == u'&') {
+            // Intersection ::= Restriction & UnicodeSet
+            UnicodeSet rightHandSide;
+            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure,
+                                          depth + 1, ec);
+            if (U_FAILURE(ec)) return;
+            retainAll(rightHandSide);
+        } else if (!escaped && c == u'-') {
+            // Here the grammar requires two tokens of lookahead to figure out whether the - the operator
+            // of a Difference or an UnescapedHyphenMinus in the enclosing Union.
+            RuleCharacterIterator::Pos afterOperator;
+            chars.getPos(afterOperator);
+            char16_t c = chars.next(charsOptions(options), escaped, ec);
+            if (U_FAILURE(ec)) return;
+            if (!escaped && c == u']') {
+                // The operator is actually an UnescapedHyphenMinus; terminate the Restriction before it.
+                chars.setPos(beforeOperator);
+                return;
+            }
+            chars.setPos(afterOperator);
+            // Difference ::= Restriction - UnicodeSet
+            UnicodeSet rightHandSide;
+            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure,
+                                          depth + 1, ec);
+            if (U_FAILURE(ec)) return;
+            removeAll(rightHandSide);
+        } else {
+            // Not an operator.
+            chars.setPos(beforeOperator);
+            return;
+        }
+    }
+}
+
+void UnicodeSet::parseElements(RuleCharacterIterator &chars,
+                               const SymbolTable *symbols,
+                               UnicodeString &rebuiltPat,
+                               uint32_t options,
+                               UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                               int32_t depth,
+                               UErrorCode &ec) {
+    UBool escaped = false;
+    
+}
+
+    #if 0
     while (mode != 2 && !chars.atEnd()) {
         U_ASSERT((lastItem == 0 && op == 0) ||
                  (lastItem == 1 && (op == 0 || op == u'-')) ||
@@ -652,7 +820,7 @@ void UnicodeSet::applyPattern(RuleCharacterIterator& chars,
         // We likely ran out of memory. AHHH!
         ec = U_MEMORY_ALLOCATION_ERROR;
     }
-}
+#endif
 
 //----------------------------------------------------------------
 // Property set implementation

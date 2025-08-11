@@ -1696,13 +1696,51 @@ private:
                                  const SymbolTable* symbols,
                                  UErrorCode& status);
 
-    void applyPattern(RuleCharacterIterator& chars,
-                      const SymbolTable* symbols,
-                      UnicodeString& rebuiltPat,
-                      uint32_t options,
-                      UnicodeSet& (UnicodeSet::*caseClosure)(int32_t attribute),
-                      int32_t depth,
-                      UErrorCode& ec);
+    // Recursive descent parsing.  These functions parse the syntactic categories matching their name in
+    // the base grammar of PD UTR #56 (before the highlighted changes are applied).  They add to *this
+    // the elements of the set that the parsed construct represents.
+    // https://www.unicode.org/reports/tr61/tr61-1.html#Set-Operations.
+
+    void parseUnicodeSet(RuleCharacterIterator &chars,
+                         const SymbolTable *symbols,
+                         UnicodeString &rebuiltPat,
+                         uint32_t options,
+                         UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                         int32_t depth,
+                         UErrorCode &ec);
+
+    void parseUnion(RuleCharacterIterator &chars,
+                    const SymbolTable *symbols,
+                    UnicodeString &rebuiltPat,
+                    uint32_t options,
+                    UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                    int32_t depth,
+                    UErrorCode &ec);
+
+    void parseTerm(RuleCharacterIterator &chars,
+                   const SymbolTable *symbols,
+                   UnicodeString &rebuiltPat,
+                   uint32_t options,
+                   UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                   int32_t depth,
+                   UErrorCode &ec);
+
+    void parseRestriction(RuleCharacterIterator &chars,
+                          const SymbolTable *symbols,
+                          UnicodeString &rebuiltPat,
+                          uint32_t options,
+                          UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                          int32_t depth,
+                          UErrorCode &ec);
+
+    void parseElements(RuleCharacterIterator &chars,
+                       const SymbolTable *symbols,
+                       UnicodeString &rebuiltPat,
+                       uint32_t options,
+                       UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                       int32_t depth,
+                       UErrorCode &ec);
+
 
     void closeOverCaseInsensitive(bool simple);
     void closeOverAddCaseMappings();
