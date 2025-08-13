@@ -1696,7 +1696,8 @@ private:
                                  const SymbolTable* symbols,
                                  UErrorCode& status);
 
-    void applyPattern(RuleCharacterIterator &chars,
+    void applyPattern(const UnicodeString &pattern,
+                      RuleCharacterIterator &chars,
                       const SymbolTable *symbols,
                       UnicodeString &rebuiltPat,
                       uint32_t options,
@@ -1708,7 +1709,8 @@ private:
     // applied).  They add to *this the elements of the set that the parsed construct represents.
     // https://www.unicode.org/reports/tr61/tr61-1.html#Set-Operations.
 
-    void parseUnicodeSet(RuleCharacterIterator &chars,
+    void parseUnicodeSet(const UnicodeString &pattern,
+                         RuleCharacterIterator &chars,
                          const SymbolTable *symbols,
                          UnicodeString &rebuiltPat,
                          uint32_t options,
@@ -1716,7 +1718,8 @@ private:
                          int32_t depth,
                          UErrorCode &ec);
 
-    void parseUnion(RuleCharacterIterator &chars,
+    void parseUnion(const UnicodeString &pattern,
+                    RuleCharacterIterator &chars,
                     const SymbolTable *symbols,
                     UnicodeString &rebuiltPat,
                     uint32_t options,
@@ -1724,7 +1727,8 @@ private:
                     int32_t depth,
                     UErrorCode &ec);
 
-    void parseTerm(RuleCharacterIterator &chars,
+    void parseTerm(const UnicodeString &pattern,
+                   RuleCharacterIterator &chars,
                    const SymbolTable *symbols,
                    UnicodeString &rebuiltPat,
                    uint32_t options,
@@ -1732,7 +1736,8 @@ private:
                    int32_t depth,
                    UErrorCode &ec);
 
-    void parseRestriction(RuleCharacterIterator &chars,
+    void parseRestriction(const UnicodeString &pattern,
+                          RuleCharacterIterator &chars,
                           const SymbolTable *symbols,
                           UnicodeString &rebuiltPat,
                           uint32_t options,
@@ -1740,7 +1745,8 @@ private:
                           int32_t depth,
                           UErrorCode &ec);
 
-    void parseElements(RuleCharacterIterator &chars,
+    void parseElements(const UnicodeString &pattern,
+                       RuleCharacterIterator &chars,
                        const SymbolTable *symbols,
                        UnicodeString &rebuiltPat,
                        uint32_t options,

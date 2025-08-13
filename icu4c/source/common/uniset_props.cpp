@@ -196,7 +196,7 @@ UnicodeSet::applyPatternIgnoreSpace(const UnicodeString& pattern,
     // _applyPattern calls add() etc., which set pat to empty.
     UnicodeString rebuiltPat;
     RuleCharacterIterator chars(pattern, symbols, pos);
-    applyPattern(chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, status);
+    applyPattern(pattern, chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, status);
     if (U_FAILURE(status)) return;
     if (chars.inVariable()) {
         // syntaxError(chars, "Extra chars in variable value");
@@ -296,10 +296,12 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
 
 #define U_UNICODESET_RETURN_IF_ERROR(ec)                                                                \
     do {                                                                                                \
+    constexpr std::string_view functionName = __func__;\
+    static_assert (functionName.substr(0, 5) == "parse");\
         if (U_FAILURE(ec)) {                                                                            \
             if (depth < 5) {                                                                            \
-                printf("--- at %s l. %d\n", __func__, __LINE__);                                        \
-            } else if (depth == 5 && std::string_view(__func__) == "parseUnicodeSet") {                 \
+                printf("--- in %s l. %d\n", __func__+5, __LINE__);                                        \
+            } else if (depth == 5 && std::string_view(__func__+5) == "UnicodeSet") {                 \
                 printf("--- [...]\n");                                                                  \
             }                                                                                           \
             return;                                                                                     \
@@ -307,13 +309,22 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
     } while (false)
 #define U_UNICODESET_RETURN_WITH_PARSE_ERROR(expected, actual, chars, ec)                               \
     do {                                                                                                \
+    constexpr std::string_view functionName = __func__;                                             \
+        static_assert(functionName.substr(0, 5) == "parse");\
         std::string actualUTF8;                                                                         \
         UnicodeString ahead;                                                                            \
         std::string aheadUTF8;                                                                          \
-        printf("*** Expected %s, got '%s' %s\n", (expected),                                            \
+        std::string behindUTF8;                                                                          \
+        (chars).lookahead(ahead); \
+        printf("*** Expected %s, got '%s' %s☜%s\n", (expected),                                            \
                UnicodeString(actual).toUTF8String(actualUTF8).c_str(),                                  \
-               (chars).lookahead(ahead, 60).toUTF8String(aheadUTF8).c_str());                           \
-        printf("--- at %s l. %d\n", __func__, __LINE__);                                                \
+               pattern.tempSubString(0, pattern.length() - ahead.length())                              \
+                   .toUTF8String(behindUTF8)                                                            \
+                   .c_str(),                                                                            \
+               pattern.tempSubString(pattern.length() - ahead.length(), 60)                              \
+                   .toUTF8String(aheadUTF8)                                                             \
+                   .c_str());                           \
+        printf("--- in %s l. %d\n", __func__ + 5, __LINE__);                                                \
         (ec) = U_MALFORMED_SET;                                                                         \
         return;                                                                                         \
     } while (false)
@@ -323,6 +334,7 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
 /**
  * Parse the pattern from the given RuleCharacterIterator.  The
  * iterator is advanced over the parsed pattern.
+ * @param pattern The pattern, only used by debug traces.
  * @param chars iterator over the pattern characters.  Upon return
  * it will be advanced to the first character after the parsed
  * pattern, or the end of the iteration if all characters are
@@ -335,7 +347,8 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
  * IGNORE_SPACE, CASE.
  */
 
-void UnicodeSet::applyPattern(RuleCharacterIterator &chars,
+void UnicodeSet::applyPattern(const UnicodeString &pattern,
+                              RuleCharacterIterator &chars,
                               const SymbolTable *symbols,
                               UnicodeString &rebuiltPat,
                               uint32_t options,
@@ -343,11 +356,12 @@ void UnicodeSet::applyPattern(RuleCharacterIterator &chars,
                               UErrorCode &ec) {
     if (U_FAILURE(ec)) return;
     clear();
-    parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure, /*depth=*/0, ec);
+    parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure, /*depth=*/0, ec);
     _generatePattern(rebuiltPat, false);
 }
 
-void UnicodeSet::parseUnicodeSet(RuleCharacterIterator& chars,
+void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
+                                 RuleCharacterIterator &chars,
                                  const SymbolTable* symbols,
                                  UnicodeString& rebuiltPat,
                                  uint32_t options,
@@ -388,7 +402,7 @@ void UnicodeSet::parseUnicodeSet(RuleCharacterIterator& chars,
         } else {
             chars.setPos(afterBracket);
         }
-        parseUnion(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseUnion(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
@@ -411,7 +425,8 @@ void UnicodeSet::parseUnicodeSet(RuleCharacterIterator& chars,
     }
 }
 
-void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
+void UnicodeSet::parseUnion(const UnicodeString &pattern,
+                            RuleCharacterIterator &chars,
                             const SymbolTable *symbols,
                             UnicodeString &rebuiltPat,
                             uint32_t options,
@@ -448,12 +463,13 @@ void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
         if (!escaped && c == ']') {
             return;
         }
-        parseTerm(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseTerm(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
     }
 }
 
-void UnicodeSet::parseTerm(RuleCharacterIterator &chars,
+void UnicodeSet::parseTerm(const UnicodeString &pattern,
+                           RuleCharacterIterator &chars,
                            const SymbolTable *symbols,
                            UnicodeString &rebuiltPat,
                            uint32_t options,
@@ -469,15 +485,16 @@ void UnicodeSet::parseTerm(RuleCharacterIterator &chars,
     const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
     chars.setPos(termStart);
     if (!escaped && ahead == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
-        parseRestriction(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseRestriction(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
     } else {
-        parseElements(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseElements(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
     }
 }
 
-void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
+void UnicodeSet::parseRestriction(const UnicodeString &pattern,
+                                  RuleCharacterIterator &chars,
                                   const SymbolTable *symbols,
                                   UnicodeString &rebuiltPat,
                                   uint32_t options,
@@ -489,7 +506,7 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
     //               | Intersection ::= Restriction & UnicodeSet
     //               | Difference   ::= Restriction - UnicodeSet
     // Start by parsing the first UnicodeSet.
-    parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure, depth + 1, ec);
+    parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth + 1, ec);
     U_UNICODESET_RETURN_IF_ERROR(ec);
     // Now keep looking for an operator that would continue the Restriction.
     // The loop terminates because when chars.atEnd(), op == DONE, so we go into the else branch and
@@ -502,7 +519,7 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
         if (!escaped && op == u'&') {
             // Intersection ::= Restriction & UnicodeSet
             UnicodeSet rightHandSide;
-            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure,
+            rightHandSide.parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
             U_UNICODESET_RETURN_IF_ERROR(ec);
             retainAll(rightHandSide);
@@ -521,7 +538,7 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
             chars.setPos(afterOperator);
             // Difference ::= Restriction - UnicodeSet
             UnicodeSet rightHandSide;
-            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure,
+            rightHandSide.parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
             U_UNICODESET_RETURN_IF_ERROR(ec);
             removeAll(rightHandSide);
@@ -533,7 +550,8 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
     }
 }
 
-void UnicodeSet::parseElements(RuleCharacterIterator &chars,
+void UnicodeSet::parseElements(const UnicodeString &pattern,
+                               RuleCharacterIterator &chars,
                                const SymbolTable *symbols,
                                UnicodeString &rebuiltPat,
                                uint32_t options,
