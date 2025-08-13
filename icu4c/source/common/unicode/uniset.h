@@ -1696,9 +1696,16 @@ private:
                                  const SymbolTable* symbols,
                                  UErrorCode& status);
 
-    // Recursive descent parsing.  These functions parse the syntactic categories matching their name in
-    // the base grammar of PD UTR #56 (before the highlighted changes are applied).  They add to *this
-    // the elements of the set that the parsed construct represents.
+    void applyPattern(RuleCharacterIterator &chars,
+                      const SymbolTable *symbols,
+                      UnicodeString &rebuiltPat,
+                      uint32_t options,
+                      UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                      UErrorCode &ec);
+
+    // Recursive descent parsing with no backtracking.  These functions parse the syntactic categories
+    // matching their name in the base grammar of PD UTR #56 (before the highlighted changes are
+    // applied).  They add to *this the elements of the set that the parsed construct represents.
     // https://www.unicode.org/reports/tr61/tr61-1.html#Set-Operations.
 
     void parseUnicodeSet(RuleCharacterIterator &chars,

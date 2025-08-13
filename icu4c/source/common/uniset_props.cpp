@@ -196,7 +196,7 @@ UnicodeSet::applyPatternIgnoreSpace(const UnicodeString& pattern,
     // _applyPattern calls add() etc., which set pat to empty.
     UnicodeString rebuiltPat;
     RuleCharacterIterator chars(pattern, symbols, pos);
-    parseUnicodeSet(chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, 0, status);
+    applyPattern(chars, symbols, rebuiltPat, USET_IGNORE_SPACE, nullptr, status);
     if (U_FAILURE(status)) return;
     if (chars.inVariable()) {
         // syntaxError(chars, "Extra chars in variable value");
@@ -250,6 +250,74 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
     return opts;
 }
 
+#if 0
+#define U_UNICODESET_TRACE(...)                                                                         \
+    struct UnicodeSetParserTrace {                                                                      \
+        char const *const symbol_;                                                                      \
+        int const depth_;                                                                               \
+        const UnicodeSet *const that_;                                                                  \
+        UnicodeSetParserTrace(char const *symbol, int depth, const UnicodeSet *that)                    \
+            : symbol_(symbol), depth_(depth), that_(that) {}                                            \
+        ~UnicodeSetParserTrace() {                                                                      \
+            UnicodeString ahead;                                                                        \
+            std::string aheadUTF8;                                                                      \
+            printf("%s%s\n", std::string(depth_ * 4, ' ').c_str(), symbol_);                            \
+            printf("%s\n", (UnicodeSet(*that_)                                                           \
+                               .complement()                                                            \
+                               .complement()                                                            \
+                               .toPattern(ahead)                                                        \
+                               .toUTF8String(aheadUTF8)                                                 \
+                               .c_str(),""));                                                               \
+        }                                                                                               \
+    };                                                                                                  \
+    UnicodeSetParserTrace unicodeSetParserTrace(                                                        \
+        std::string_view("" __VA_ARGS__).empty() ? __func__ + 5 : ("" __VA_ARGS__), depth, this);       \
+    do {                                                                                                \
+        char const *symbol = ("" __VA_ARGS__);                                                          \
+        if (std::string_view(symbol).empty()) {                                                         \
+            symbol = __func__ + 5;                                                                      \
+        }                                                                                               \
+        UnicodeString ahead;                                                                            \
+        std::string aheadUTF8;                                                                          \
+        printf("%s%s  > %s\n", std::string(depth * 4, ' ').c_str(), symbol,                             \
+               (chars).lookahead(ahead, 60).toUTF8String(aheadUTF8).c_str());                           \
+        printf("%s\n", (UnicodeSet(*this)                                                                \
+                           .complement()                                                                \
+                           .complement()                                                                \
+                           .toPattern(ahead)                                                            \
+                           .toUTF8String(aheadUTF8)                                                     \
+                           .c_str(),""));                                                                   \
+    } while (false)
+#else
+#define U_UNICODESET_TRACE(...)                                                                         \
+    do {                                                                                                \
+    } while (false)
+#endif
+
+#define U_UNICODESET_RETURN_IF_ERROR(ec)                                                                \
+    do {                                                                                                \
+        if (U_FAILURE(ec)) {                                                                            \
+            if (depth < 5) {                                                                            \
+                printf("--- at %s l. %d\n", __func__, __LINE__);                                        \
+            } else if (depth == 5 && std::string_view(__func__) == "parseUnicodeSet") {                 \
+                printf("--- [...]\n");                                                                  \
+            }                                                                                           \
+            return;                                                                                     \
+        }                                                                                               \
+    } while (false)
+#define U_UNICODESET_RETURN_WITH_PARSE_ERROR(expected, actual, chars, ec)                               \
+    do {                                                                                                \
+        std::string actualUTF8;                                                                         \
+        UnicodeString ahead;                                                                            \
+        std::string aheadUTF8;                                                                          \
+        printf("*** Expected %s, got '%s' %s\n", (expected),                                            \
+               UnicodeString(actual).toUTF8String(actualUTF8).c_str(),                                  \
+               (chars).lookahead(ahead, 60).toUTF8String(aheadUTF8).c_str());                           \
+        printf("--- at %s l. %d\n", __func__, __LINE__);                                                \
+        (ec) = U_MALFORMED_SET;                                                                         \
+        return;                                                                                         \
+    } while (false)
+
 }  // namespace
 
 /**
@@ -266,59 +334,66 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
  * @param options a bit mask of zero or more of the following:
  * IGNORE_SPACE, CASE.
  */
+
+void UnicodeSet::applyPattern(RuleCharacterIterator &chars,
+                              const SymbolTable *symbols,
+                              UnicodeString &rebuiltPat,
+                              uint32_t options,
+                              UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                              UErrorCode &ec) {
+    if (U_FAILURE(ec)) return;
+    clear();
+    parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure, /*depth=*/0, ec);
+    _generatePattern(rebuiltPat, false);
+}
+
 void UnicodeSet::parseUnicodeSet(RuleCharacterIterator& chars,
                                  const SymbolTable* symbols,
                                  UnicodeString& rebuiltPat,
                                  uint32_t options,
                                  UnicodeSet& (UnicodeSet::*caseClosure)(int32_t attribute),
-                                 int32_t depth,
-                                 UErrorCode& ec) {
-    if (U_FAILURE(ec)) return;
+                                 int32_t depth, UErrorCode &ec) {
+    U_UNICODESET_TRACE();
+
     if (depth > MAX_DEPTH) {
-        ec = U_ILLEGAL_ARGUMENT_ERROR;
-        return;
+        U_UNICODESET_RETURN_WITH_PARSE_ERROR(("depth <= " + std::to_string(MAX_DEPTH)).c_str(),
+                                             ("depth = " + std::to_string(depth)).c_str(), chars, ec);
     }
 
-    // Syntax characters: [ ] ^ - & { }
-
-    // Recognized special forms for chars, sets: c-c s-s s&s
-
-    clear();
-
     bool isComplement = false;
-
     if (resemblesPropertyPattern(chars, charsOptions(options))) {
-        // UnicodeSet ::= property-query | named-singleton
-        applyPropertyPattern(chars, rebuiltPat, ec);
-        if (U_FAILURE(ec)) return;
+        // UnicodeSet ::= property-query | named-element
+        U_UNICODESET_TRACE("property-query | named-element");
+        chars.skipIgnored(charsOptions(options));
+        UnicodeSet propertyQuery;
+        propertyQuery.applyPropertyPattern(chars, rebuiltPat, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
+        addAll(propertyQuery);
     } else {
         UBool escaped = false;
         // TODO(egg): In PD UTS 61, add ^ to set-operator, remove [^.
         // UnicodeSet ::=                [   Union ]
         //              | Complement ::= [ ^ Union ]
-        char16_t c = chars.next(charsOptions(options), escaped, ec);
-        if (U_FAILURE(ec)) return;
+        UChar32 c = chars.next(charsOptions(options), escaped, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
         if (escaped || c != u'[') {
-          ec = U_MALFORMED_SET;
-          return;
+            U_UNICODESET_RETURN_WITH_PARSE_ERROR(R"([: | \p | \P | \N | [)", c, chars, ec);
         }
         RuleCharacterIterator::Pos afterBracket;
         chars.getPos(afterBracket);
         c = chars.next(charsOptions(options), escaped, ec);
-        if (U_FAILURE(ec)) return;
+        U_UNICODESET_RETURN_IF_ERROR(ec);
         if (!escaped && c == u'^') {
             isComplement = true;
-            return;
         } else {
             chars.setPos(afterBracket);
         }
         parseUnion(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
-        if (U_FAILURE(ec)) return;
+        U_UNICODESET_RETURN_IF_ERROR(ec);
         c = chars.next(charsOptions(options), escaped, ec);
-        if (U_FAILURE(ec)) return;
+        U_UNICODESET_RETURN_IF_ERROR(ec);
         if (escaped || c != u']') {
-            ec = U_MALFORMED_SET;
-            return;
+            U_UNICODESET_RETURN_WITH_PARSE_ERROR("]", c, chars, ec);
         }
     }
 
@@ -342,6 +417,7 @@ void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
                             uint32_t options,
                             UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute), int32_t depth,
                             UErrorCode &ec) {
+    U_UNICODESET_TRACE();
     UBool escaped = false;
     RuleCharacterIterator::Pos position;
     chars.getPos(position);
@@ -351,17 +427,17 @@ void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
     //         | UnescapedHyphenMinus Terms UnescapedHyphenMinus
     // Terms ::= ""
     //         | Terms Term
-    char16_t c = chars.next(charsOptions(options), escaped, ec);
-    if (U_FAILURE(ec)) return;
+    UChar32 c = chars.next(charsOptions(options), escaped, ec);
+    U_UNICODESET_RETURN_IF_ERROR(ec);
     if (!escaped && c == u'-') {
         add(u'-');
     } else {
         chars.setPos(position);
     }
-    for (;;) {
+    while (!chars.atEnd()) {
         chars.getPos(position);
         c = chars.next(charsOptions(options), escaped, ec);
-        if (U_FAILURE(ec)) return;
+        U_UNICODESET_RETURN_IF_ERROR(ec);
         if (!escaped && c == u'-') {
             // We can be here on the first iteration: [--] is allowed by the
             // grammar and by the old parser.
@@ -372,9 +448,8 @@ void UnicodeSet::parseUnion(RuleCharacterIterator &chars,
         if (!escaped && c == ']') {
             return;
         }
-        if (U_FAILURE(ec)) return;
-        parseTerm(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth, ec);
-        if (U_FAILURE(ec)) return;
+        parseTerm(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
     }
 }
 
@@ -385,17 +460,20 @@ void UnicodeSet::parseTerm(RuleCharacterIterator &chars,
                            UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                            int32_t depth,
                            UErrorCode &ec) {
+    U_UNICODESET_TRACE();
     UBool escaped = false;
     RuleCharacterIterator::Pos termStart;
     chars.getPos(termStart);
     // Term ::= Elements
     //        | Restriction
-    char16_t c = chars.next(charsOptions(options), escaped, ec);
-    if (!escaped && c == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
-        chars.setPos(termStart);
-        parseRestriction(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth, ec);
-        if (U_FAILURE(ec)) return;
+    const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
+    chars.setPos(termStart);
+    if (!escaped && ahead == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
+        parseRestriction(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
     } else {
+        parseElements(chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
     }
 }
 
@@ -405,34 +483,37 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
                                   uint32_t options,
                                   UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                                   int32_t depth, UErrorCode &ec) {
+    U_UNICODESET_TRACE();
     UBool escaped = false;
     // Restriction ::= UnicodeSet
     //               | Intersection ::= Restriction & UnicodeSet
     //               | Difference   ::= Restriction - UnicodeSet
     // Start by parsing the first UnicodeSet.
-    parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure, depth + 1, ec);
-    if (U_FAILURE(ec)) return;
+    parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure, depth + 1, ec);
+    U_UNICODESET_RETURN_IF_ERROR(ec);
     // Now keep looking for an operator that would continue the Restriction.
+    // The loop terminates because when chars.atEnd(), op == DONE, so we go into the else branch and
+    // return.
     for (;;) {
         RuleCharacterIterator::Pos beforeOperator;
         chars.getPos(beforeOperator);
-        char16_t c = chars.next(charsOptions(options), escaped, ec);
-        if (U_FAILURE(ec)) return;
-        if (!escaped && c == u'&') {
+        const UChar32 op = chars.next(charsOptions(options), escaped, ec);
+        U_UNICODESET_RETURN_IF_ERROR(ec);
+        if (!escaped && op == u'&') {
             // Intersection ::= Restriction & UnicodeSet
             UnicodeSet rightHandSide;
-            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure,
+            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
-            if (U_FAILURE(ec)) return;
+            U_UNICODESET_RETURN_IF_ERROR(ec);
             retainAll(rightHandSide);
-        } else if (!escaped && c == u'-') {
+        } else if (!escaped && op == u'-') {
             // Here the grammar requires two tokens of lookahead to figure out whether the - the operator
             // of a Difference or an UnescapedHyphenMinus in the enclosing Union.
             RuleCharacterIterator::Pos afterOperator;
             chars.getPos(afterOperator);
-            char16_t c = chars.next(charsOptions(options), escaped, ec);
-            if (U_FAILURE(ec)) return;
-            if (!escaped && c == u']') {
+            const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
+            U_UNICODESET_RETURN_IF_ERROR(ec);
+            if (!escaped && ahead == u']') {
                 // The operator is actually an UnescapedHyphenMinus; terminate the Restriction before it.
                 chars.setPos(beforeOperator);
                 return;
@@ -440,12 +521,12 @@ void UnicodeSet::parseRestriction(RuleCharacterIterator &chars,
             chars.setPos(afterOperator);
             // Difference ::= Restriction - UnicodeSet
             UnicodeSet rightHandSide;
-            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, charsOptions(options), caseClosure,
+            rightHandSide.parseUnicodeSet(chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
-            if (U_FAILURE(ec)) return;
+            U_UNICODESET_RETURN_IF_ERROR(ec);
             removeAll(rightHandSide);
         } else {
-            // Not an operator.
+            // Not an operator, end of the Restriction.
             chars.setPos(beforeOperator);
             return;
         }
@@ -459,8 +540,89 @@ void UnicodeSet::parseElements(RuleCharacterIterator &chars,
                                UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                                int32_t depth,
                                UErrorCode &ec) {
+    U_UNICODESET_TRACE();
+    // Elements     ::= Element
+    //                | Range
+    // Range        ::= RangeElement - RangeElement
+    // RangeElement ::= literal-element
+    //                | escaped-element
+    // Element      ::= RangeElement
+    //                | string-literal
     UBool escaped = false;
-    
+    const UChar32 first = chars.next(charsOptions(options), escaped, ec);
+    U_UNICODESET_RETURN_IF_ERROR(ec);
+    if (!escaped) {
+        switch (first) {
+        case u'-':
+        case u'&':
+        case u'[':
+        case u']':
+        case u'^':
+            U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement | string-literal", first, chars, ec);
+        case u'{': {
+            UnicodeString string;
+            UChar32 c;
+            while (!chars.atEnd()) {
+                c = chars.next(charsOptions(options), escaped, ec);
+                U_UNICODESET_RETURN_IF_ERROR(ec);
+                if (!escaped && c == u'}') {
+                    add(string);
+                    return;
+                }
+                string.append(c);
+            }
+            U_UNICODESET_RETURN_WITH_PARSE_ERROR("}", RuleCharacterIterator::DONE, chars, ec);
+        }
+        case u'}':
+            // Disallowed by UTS #61, but historically accepted by ICU.  This is an extension.
+        default:
+            break;
+        }
+    }
+    RuleCharacterIterator::Pos beforeOperator;
+    chars.getPos(beforeOperator);
+    const UChar32 op = chars.next(charsOptions(options), escaped, ec);
+    U_UNICODESET_RETURN_IF_ERROR(ec);
+    if (escaped || op != u'-') {
+        // No operator,
+        // Elements ::= Element
+        chars.setPos(beforeOperator);
+        add(first);
+        return;
+    }
+    // Here the grammar requires two tokens of lookahead to figure out whether the - the operator
+    // of a Range or an UnescapedHyphenMinus in the enclosing Union.
+    const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
+    U_UNICODESET_RETURN_IF_ERROR(ec);
+    if (!escaped && ahead == u']') {
+        // The operator is actually an UnescapedHyphenMinus; terminate the Elements before it.
+        chars.setPos(beforeOperator);
+        add(first);
+        return;
+    }
+    const UChar32 last = ahead;
+    U_UNICODESET_RETURN_IF_ERROR(ec);
+    if (!escaped) {
+        switch (last) {
+        case u'-':
+        case u'&':
+        case u'[':
+        case u']':
+        case u'^':
+        case u'{':
+            U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement", last, chars, ec);
+        case u'}':
+            // Disallowed by UTS #61, but historically accepted by ICU.  This is an extension.
+        default:
+            break;
+        }
+    }
+    if (last <= first) {
+        U_UNICODESET_RETURN_WITH_PARSE_ERROR("first < last in Range",
+                                 UnicodeString(last) + u"-" + UnicodeString(first), chars, ec);
+    }
+    add(first, last);
+    return;
 }
 
     #if 0
