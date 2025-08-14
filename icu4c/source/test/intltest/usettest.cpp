@@ -4338,7 +4338,7 @@ void UnicodeSetTest::TestElementIterator() {
 }
 
 void UnicodeSetTest::TestToPatternOutput() {
-    for (const auto [expression, expected] :
+    for (const auto &[expression, expected] :
          std::vector<std::pair<std::u16string_view, std::u16string_view>>{
              // For a UnicodeSet which is not a property-query nor a named-element and without any
              // Restriction among its Terms (that is, whose Union consists solely a sequence of Elements
