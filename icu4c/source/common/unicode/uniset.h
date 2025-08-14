@@ -1725,6 +1725,7 @@ private:
                     uint32_t options,
                     UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                     int32_t depth,
+                    bool &containsRestrictions,
                     UErrorCode &ec);
 
     void parseTerm(const UnicodeString &pattern,
@@ -1734,6 +1735,7 @@ private:
                    uint32_t options,
                    UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                    int32_t depth,
+                   bool &containsRestriction,
                    UErrorCode &ec);
 
     void parseRestriction(const UnicodeString &pattern,

@@ -355,9 +355,7 @@ void UnicodeSet::applyPattern(const UnicodeString &pattern,
                               UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                               UErrorCode &ec) {
     if (U_FAILURE(ec)) return;
-    clear();
     parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure, /*depth=*/0, ec);
-    _generatePattern(rebuiltPat, false);
 }
 
 void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
@@ -367,6 +365,7 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
                                  uint32_t options,
                                  UnicodeSet& (UnicodeSet::*caseClosure)(int32_t attribute),
                                  int32_t depth, UErrorCode &ec) {
+    clear();
     U_UNICODESET_TRACE();
 
     if (depth > MAX_DEPTH) {
@@ -375,14 +374,21 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
     }
 
     bool isComplement = false;
+    // Whether to keep the syntax of the pattern at this level, only doing basic pretty-printing, e.g.,
+    // turn [ c - z[a]a - b ] into [c-z[a]a-b], but not into [a-z].
+    // This is true for a property query, or when there is a nested set.  Note that since we recurse,
+    // innermost sets consisting only of ranges will get simplified.
+    bool preserveSyntaxInPattern = false;
+    UnicodeString syntacticallyFaithfulPattern;
     if (resemblesPropertyPattern(chars, charsOptions(options))) {
         // UnicodeSet ::= property-query | named-element
         U_UNICODESET_TRACE("property-query | named-element");
         chars.skipIgnored(charsOptions(options));
         UnicodeSet propertyQuery;
-        propertyQuery.applyPropertyPattern(chars, rebuiltPat, ec);
+        propertyQuery.applyPropertyPattern(chars, syntacticallyFaithfulPattern, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         addAll(propertyQuery);
+        preserveSyntaxInPattern = true;
     } else {
         UBool escaped = false;
         // TODO(egg): In PD UTS 61, add ^ to set-operator, remove [^.
@@ -393,22 +399,26 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
         if (escaped || c != u'[') {
             U_UNICODESET_RETURN_WITH_PARSE_ERROR(R"([: | \p | \P | \N | [)", c, chars, ec);
         }
+        syntacticallyFaithfulPattern.append(u'[');
         RuleCharacterIterator::Pos afterBracket;
         chars.getPos(afterBracket);
         c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         if (!escaped && c == u'^') {
+            syntacticallyFaithfulPattern.append(u'^');
             isComplement = true;
         } else {
             chars.setPos(afterBracket);
         }
-        parseUnion(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseUnion(pattern, chars, symbols, syntacticallyFaithfulPattern, options, caseClosure, depth,
+                   /*containsRestrictions=*/preserveSyntaxInPattern, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         if (escaped || c != u']') {
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("]", c, chars, ec);
         }
+        syntacticallyFaithfulPattern.append(u']');
     }
 
     /**
@@ -423,6 +433,11 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
     if (isComplement) {
         complement().removeAllStrings();  // code point complement
     }
+    if (preserveSyntaxInPattern) {
+        rebuiltPat.append(syntacticallyFaithfulPattern);
+    } else {
+        _generatePattern(rebuiltPat, /*escapeUnprintable=*/false);
+    }
 }
 
 void UnicodeSet::parseUnion(const UnicodeString &pattern,
@@ -430,7 +445,9 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
                             const SymbolTable *symbols,
                             UnicodeString &rebuiltPat,
                             uint32_t options,
-                            UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute), int32_t depth,
+                            UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
+                            int32_t depth,
+                            bool &containsRestrictions,
                             UErrorCode &ec) {
     U_UNICODESET_TRACE();
     UBool escaped = false;
@@ -446,6 +463,9 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
     U_UNICODESET_RETURN_IF_ERROR(ec);
     if (!escaped && c == u'-') {
         add(u'-');
+        // When we otherwise preserve the syntax, we escape an initial UnescapedHyphenMinus, but not a
+        // final one, for consistency with older ICU behaviour.
+        rebuiltPat.append(u"\\-");
     } else {
         chars.setPos(position);
     }
@@ -456,6 +476,7 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
         if (!escaped && c == u'-') {
             // We can be here on the first iteration: [--] is allowed by the
             // grammar and by the old parser.
+            rebuiltPat.append(u'-');
             add(u'-');
             return;
         }
@@ -463,7 +484,8 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
         if (!escaped && c == ']') {
             return;
         }
-        parseTerm(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
+        parseTerm(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, containsRestrictions,
+                  ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
     }
 }
@@ -475,6 +497,7 @@ void UnicodeSet::parseTerm(const UnicodeString &pattern,
                            uint32_t options,
                            UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                            int32_t depth,
+                           bool &containsRestriction,
                            UErrorCode &ec) {
     U_UNICODESET_TRACE();
     UBool escaped = false;
@@ -485,6 +508,7 @@ void UnicodeSet::parseTerm(const UnicodeString &pattern,
     const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
     chars.setPos(termStart);
     if (!escaped && ahead == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
+        containsRestriction = true;
         parseRestriction(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
     } else {
@@ -506,7 +530,10 @@ void UnicodeSet::parseRestriction(const UnicodeString &pattern,
     //               | Intersection ::= Restriction & UnicodeSet
     //               | Difference   ::= Restriction - UnicodeSet
     // Start by parsing the first UnicodeSet.
-    parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth + 1, ec);
+    UnicodeSet leftHandSide;
+    leftHandSide.parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth + 1,
+                                 ec);
+    addAll(leftHandSide);
     U_UNICODESET_RETURN_IF_ERROR(ec);
     // Now keep looking for an operator that would continue the Restriction.
     // The loop terminates because when chars.atEnd(), op == DONE, so we go into the else branch and
@@ -518,6 +545,7 @@ void UnicodeSet::parseRestriction(const UnicodeString &pattern,
         U_UNICODESET_RETURN_IF_ERROR(ec);
         if (!escaped && op == u'&') {
             // Intersection ::= Restriction & UnicodeSet
+            rebuiltPat.append(u'&');
             UnicodeSet rightHandSide;
             rightHandSide.parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
@@ -537,6 +565,7 @@ void UnicodeSet::parseRestriction(const UnicodeString &pattern,
             }
             chars.setPos(afterOperator);
             // Difference ::= Restriction - UnicodeSet
+            rebuiltPat.append(u'-');
             UnicodeSet rightHandSide;
             rightHandSide.parseUnicodeSet(pattern, chars, symbols, rebuiltPat, options, caseClosure,
                                           depth + 1, ec);
@@ -597,6 +626,7 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
             break;
         }
     }
+    _appendToPat(rebuiltPat, first, /*escapeUnprintable=*/false);
     RuleCharacterIterator::Pos beforeOperator;
     chars.getPos(beforeOperator);
     const UChar32 op = chars.next(charsOptions(options), escaped, ec);
@@ -618,8 +648,9 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
         add(first);
         return;
     }
+    // Elements ::= Range ::= RangeElement - RangeElement
+    rebuiltPat.append(u'-');
     const UChar32 last = ahead;
-    U_UNICODESET_RETURN_IF_ERROR(ec);
     if (!escaped) {
         switch (last) {
         case u'-':
@@ -635,6 +666,7 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
             break;
         }
     }
+    _appendToPat(rebuiltPat, last, /*escapeUnprintable=*/false);
     if (last <= first) {
         U_UNICODESET_RETURN_WITH_PARSE_ERROR("first < last in Range",
                                  UnicodeString(last) + u"-" + UnicodeString(first), chars, ec);
