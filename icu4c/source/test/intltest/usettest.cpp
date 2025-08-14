@@ -4357,6 +4357,8 @@ void UnicodeSetTest::TestToPatternOutput() {
              {u"[a-c$d-z]", uR"([\$a-z])"},
              {uR"([\uFFFFa-z])", uR"([a-z\uFFFF])"},
              {u"[!-$z]", uR"([!-\$z])"},
+             {u"[-a-cd-z$-]", uR"([\$\-a-z])"},
+             {u"[-$-]", uR"([\$\-])"},
              // A property-query or named-element is kept as-is:
              {uR"(\p{ General_Category = Punctuation })", uR"(\p{ General_Category = Punctuation })"},
              {uR"(\p{P})", uR"(\p{P})"},
@@ -4374,6 +4376,7 @@ void UnicodeSetTest::TestToPatternOutput() {
               uR"([c-za-b\p{ General_Category = Punctuation }])"},
              {u"[^[c]]", uR"([^[c]])"},
              {uR"([ ^ [ \u0000-b d-\U0010FFFF ] ])", uR"([^[^c]])"},
+             {u"[$[]]", uR"([\$[]])"},
              // Spaces are eliminated within a string-literal even when the syntax is preserved.
              {u"[ {Z e i c h e n k e t t e } [] Zeichenmenge ]", u"[{Zeichenkette}[]Zeichenmenge]"},
              // Escapes are removed even when the syntax is preserved.
@@ -4384,6 +4387,8 @@ void UnicodeSetTest::TestToPatternOutput() {
              {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([\N{LATIN CAPITAL LETTER Z}eichenmenge])"},
              // An anchor also causes the syntax to be preserved.
              {u"[ d-z a-c $ ]", u"[d-za-c$]"},
+             {u"[ - a-c d-z $ ]", uR"([\-a-cd-z$])"},
+             {u"[$$$]", uR"([\$\$$])"},
          }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, errorCode);
