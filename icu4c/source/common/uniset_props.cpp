@@ -485,7 +485,8 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
             chars.getPos(afterDollar);
             c = chars.next(charsOptions(options), escaped, ec);
             if (!escaped && c == u']') {
-                // An unescaped $ at the end of a Union is an anchor.
+                // ICU extensions: A $ is allowed as a literal-element.
+                // A Term at the end of a Union consisting of a single $ is an anchor.
                 rebuiltPat.append(u'$');
                 chars.setPos(afterDollar);
                 add(U_ETHER);
