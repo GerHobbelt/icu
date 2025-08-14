@@ -379,13 +379,14 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
     // This is true for a property query, or when there is a nested set.  Note that since we recurse,
     // innermost sets consisting only of ranges will get simplified.
     bool preserveSyntaxInPattern = false;
-    UnicodeString syntacticallyFaithfulPattern;
+    // A pattern that preserves the original syntax but strips spaces, normalizes escaping, etc.
+    UnicodeString prettyPrintedPattern;
     if (resemblesPropertyPattern(chars, charsOptions(options))) {
         // UnicodeSet ::= property-query | named-element
         U_UNICODESET_TRACE("property-query | named-element");
         chars.skipIgnored(charsOptions(options));
         UnicodeSet propertyQuery;
-        propertyQuery.applyPropertyPattern(chars, syntacticallyFaithfulPattern, ec);
+        propertyQuery.applyPropertyPattern(chars, prettyPrintedPattern, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         addAll(propertyQuery);
         preserveSyntaxInPattern = true;
@@ -399,18 +400,18 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
         if (escaped || c != u'[') {
             U_UNICODESET_RETURN_WITH_PARSE_ERROR(R"([: | \p | \P | \N | [)", c, chars, ec);
         }
-        syntacticallyFaithfulPattern.append(u'[');
+        prettyPrintedPattern.append(u'[');
         RuleCharacterIterator::Pos afterBracket;
         chars.getPos(afterBracket);
         c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         if (!escaped && c == u'^') {
-            syntacticallyFaithfulPattern.append(u'^');
+            prettyPrintedPattern.append(u'^');
             isComplement = true;
         } else {
             chars.setPos(afterBracket);
         }
-        parseUnion(pattern, chars, symbols, syntacticallyFaithfulPattern, options, caseClosure, depth,
+        parseUnion(pattern, chars, symbols, prettyPrintedPattern, options, caseClosure, depth,
                    /*containsRestrictions=*/preserveSyntaxInPattern, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
         c = chars.next(charsOptions(options), escaped, ec);
@@ -418,7 +419,7 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
         if (escaped || c != u']') {
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("]", c, chars, ec);
         }
-        syntacticallyFaithfulPattern.append(u']');
+        prettyPrintedPattern.append(u']');
     }
 
     /**
@@ -434,7 +435,7 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
         complement().removeAllStrings();  // code point complement
     }
     if (preserveSyntaxInPattern) {
-        rebuiltPat.append(syntacticallyFaithfulPattern);
+        rebuiltPat.append(prettyPrintedPattern);
     } else {
         _generatePattern(rebuiltPat, /*escapeUnprintable=*/false);
     }
@@ -607,15 +608,18 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
         case u'^':
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement | string-literal", first, chars, ec);
         case u'{': {
+            rebuiltPat.append(u'{');
             UnicodeString string;
             UChar32 c;
             while (!chars.atEnd()) {
                 c = chars.next(charsOptions(options), escaped, ec);
                 U_UNICODESET_RETURN_IF_ERROR(ec);
                 if (!escaped && c == u'}') {
+                    rebuiltPat.append(u'}');
                     add(string);
                     return;
                 }
+                _appendToPat(rebuiltPat, c, /*escapeUnprintable=*/false);
                 string.append(c);
             }
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("}", RuleCharacterIterator::DONE, chars, ec);
