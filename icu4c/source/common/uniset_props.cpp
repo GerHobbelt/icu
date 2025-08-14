@@ -480,6 +480,18 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
             rebuiltPat.append(u'-');
             add(u'-');
             return;
+        } else if (!escaped && c == u'$') {
+            RuleCharacterIterator::Pos afterDollar;
+            chars.getPos(afterDollar);
+            c = chars.next(charsOptions(options), escaped, ec);
+            if (!escaped && c == u']') {
+                // An unescaped $ at the end of a Union is an anchor.
+                rebuiltPat.append(u'$');
+                chars.setPos(afterDollar);
+                add(U_ETHER);
+                containsRestrictions = true;
+                return;
+            }
         }
         chars.setPos(position);
         if (!escaped && c == ']') {
@@ -607,6 +619,7 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
         case u']':
         case u'^':
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement | string-literal", first, chars, ec);
+            // Unescaped '$'
         case u'{': {
             rebuiltPat.append(u'{');
             UnicodeString string;
@@ -625,6 +638,7 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("}", RuleCharacterIterator::DONE, chars, ec);
         }
         case u'}':
+        case u'$':
             // Disallowed by UTS #61, but historically accepted by ICU.  This is an extension.
         default:
             break;
@@ -664,6 +678,19 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
         case u'^':
         case u'{':
             U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement", last, chars, ec);
+        case u'$': {
+            // Disallowed by UTS #61, but historically accepted by ICU except at the end of a Union.
+            // This is an extension.
+            RuleCharacterIterator::Pos afterDollar;
+            chars.getPos(afterDollar);
+            UChar32 c = chars.next(charsOptions(options), escaped, ec);
+            chars.setPos(afterDollar);
+            if (!escaped && c == u']') {
+                U_UNICODESET_RETURN_WITH_PARSE_ERROR("Term after Range ending in unescaped $", c, chars,
+                                                     ec);
+            }
+            break;
+        }
         case u'}':
             // Disallowed by UTS #61, but historically accepted by ICU.  This is an extension.
         default:
