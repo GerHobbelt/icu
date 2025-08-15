@@ -250,6 +250,13 @@ constexpr uint32_t charsOptions(const uint32_t unicodeSetOptions) {
     return opts;
 }
 
+const UnicodeSet *getMatcherSymbol(const SymbolTable *const symbols, const UChar32 c) {
+    if (symbols == nullptr) {
+      return nullptr;
+    }
+    return dynamic_cast<const UnicodeSet *>(symbols->lookupMatcher(c));
+}
+
 #if 0
 #define U_UNICODESET_TRACE(...)                                                                         \
     struct UnicodeSetParserTrace {                                                                      \
@@ -395,31 +402,43 @@ void UnicodeSet::parseUnicodeSet(const UnicodeString &pattern,
         // TODO(egg): In PD UTS 61, add ^ to set-operator, remove [^.
         // UnicodeSet ::=                [   Union ]
         //              | Complement ::= [ ^ Union ]
+        // Extension:
+        //              | MatcherSymbol
+        // Where a MatcherSymbol may be a character or an escape.
+        // Strings that would match MatcherSymbol effectively get removed from
+        // all other terminals of the grammar, except [.
         UChar32 c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
-        if (escaped || c != u'[') {
+        if (!escaped && c == u'[') {
+            prettyPrintedPattern.append(u'[');
+            RuleCharacterIterator::Pos afterBracket;
+            chars.getPos(afterBracket);
+            c = chars.next(charsOptions(options), escaped, ec);
+            U_UNICODESET_RETURN_IF_ERROR(ec);
+            if (!escaped && c == u'^') {
+                prettyPrintedPattern.append(u'^');
+                isComplement = true;
+            } else {
+                chars.setPos(afterBracket);
+            }
+            parseUnion(pattern, chars, symbols, prettyPrintedPattern, options, caseClosure, depth,
+                       /*containsRestrictions=*/preserveSyntaxInPattern, ec);
+            U_UNICODESET_RETURN_IF_ERROR(ec);
+            c = chars.next(charsOptions(options), escaped, ec);
+            U_UNICODESET_RETURN_IF_ERROR(ec);
+            if (escaped || c != u']') {
+                U_UNICODESET_RETURN_WITH_PARSE_ERROR("]", c, chars, ec);
+            }
+            prettyPrintedPattern.append(u']');
+        } else {
+            const UnicodeSet *set = getMatcherSymbol(symbols, c);
+            if (set != nullptr) {
+                *this = *set;
+                this->_toPattern(rebuiltPat, /*escapeUnprintable=*/false);
+                return;
+            }
             U_UNICODESET_RETURN_WITH_PARSE_ERROR(R"([: | \p | \P | \N | [)", c, chars, ec);
         }
-        prettyPrintedPattern.append(u'[');
-        RuleCharacterIterator::Pos afterBracket;
-        chars.getPos(afterBracket);
-        c = chars.next(charsOptions(options), escaped, ec);
-        U_UNICODESET_RETURN_IF_ERROR(ec);
-        if (!escaped && c == u'^') {
-            prettyPrintedPattern.append(u'^');
-            isComplement = true;
-        } else {
-            chars.setPos(afterBracket);
-        }
-        parseUnion(pattern, chars, symbols, prettyPrintedPattern, options, caseClosure, depth,
-                   /*containsRestrictions=*/preserveSyntaxInPattern, ec);
-        U_UNICODESET_RETURN_IF_ERROR(ec);
-        c = chars.next(charsOptions(options), escaped, ec);
-        U_UNICODESET_RETURN_IF_ERROR(ec);
-        if (escaped || c != u']') {
-            U_UNICODESET_RETURN_WITH_PARSE_ERROR("]", c, chars, ec);
-        }
-        prettyPrintedPattern.append(u']');
     }
 
     /**
@@ -462,7 +481,7 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
     //         | Terms Term
     UChar32 c = chars.next(charsOptions(options), escaped, ec);
     U_UNICODESET_RETURN_IF_ERROR(ec);
-    if (!escaped && c == u'-') {
+    if (!escaped && c == u'-' && getMatcherSymbol(symbols, c)) {
         add(u'-');
         // When we otherwise preserve the syntax, we escape an initial UnescapedHyphenMinus, but not a
         // final one, for consistency with older ICU behaviour.
@@ -474,28 +493,30 @@ void UnicodeSet::parseUnion(const UnicodeString &pattern,
         chars.getPos(position);
         c = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
-        if (!escaped && c == u'-') {
-            // We can be here on the first iteration: [--] is allowed by the
-            // grammar and by the old parser.
-            rebuiltPat.append(u'-');
-            add(u'-');
-            return;
-        } else if (!escaped && c == u'$') {
-            RuleCharacterIterator::Pos afterDollar;
-            chars.getPos(afterDollar);
-            c = chars.next(charsOptions(options), escaped, ec);
-            if (!escaped && c == u']') {
-                // ICU extensions: A $ is allowed as a literal-element.
-                // A Term at the end of a Union consisting of a single $ is an anchor.
-                rebuiltPat.append(u'$');
-                chars.setPos(afterDollar);
-                add(U_ETHER);
-                containsRestrictions = true;
+        if (getMatcherSymbol(symbols, c) == nullptr) {
+            if (!escaped && c == u'-') {
+                // We can be here on the first iteration: [--] is allowed by the
+                // grammar and by the old parser.
+                rebuiltPat.append(u'-');
+                add(u'-');
                 return;
+            } else if (!escaped && c == u'$') {
+                RuleCharacterIterator::Pos afterDollar;
+                chars.getPos(afterDollar);
+                c = chars.next(charsOptions(options), escaped, ec);
+                if (!escaped && c == u']') {
+                    // ICU extensions: A $ is allowed as a literal-element.
+                    // A Term at the end of a Union consisting of a single $ is an anchor.
+                    rebuiltPat.append(u'$');
+                    chars.setPos(afterDollar);
+                    add(U_ETHER);
+                    containsRestrictions = true;
+                    return;
+                }
             }
         }
         chars.setPos(position);
-        if (!escaped && c == ']') {
+        if (!escaped && c == ']' && getMatcherSymbol(symbols, c) == nullptr) {
             return;
         }
         parseTerm(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, containsRestrictions,
@@ -521,7 +542,8 @@ void UnicodeSet::parseTerm(const UnicodeString &pattern,
     //        | Restriction
     const UChar32 ahead = chars.next(charsOptions(options), escaped, ec);
     chars.setPos(termStart);
-    if (!escaped && ahead == '[' || resemblesPropertyPattern(chars, charsOptions(options))) {
+    if (getMatcherSymbol(symbols, ahead) != nullptr || !escaped && ahead == '[' ||
+        resemblesPropertyPattern(chars, charsOptions(options))) {
         containsRestriction = true;
         parseRestriction(pattern, chars, symbols, rebuiltPat, options, caseClosure, depth, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
@@ -557,6 +579,11 @@ void UnicodeSet::parseRestriction(const UnicodeString &pattern,
         chars.getPos(beforeOperator);
         const UChar32 op = chars.next(charsOptions(options), escaped, ec);
         U_UNICODESET_RETURN_IF_ERROR(ec);
+        if (getMatcherSymbol(symbols, op)) {
+            // Not an operator, end of the Restriction.
+            chars.setPos(beforeOperator);
+            return;
+        }
         if (!escaped && op == u'&') {
             // Intersection ::= Restriction & UnicodeSet
             rebuiltPat.append(u'&');
@@ -650,7 +677,7 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
     chars.getPos(beforeOperator);
     const UChar32 op = chars.next(charsOptions(options), escaped, ec);
     U_UNICODESET_RETURN_IF_ERROR(ec);
-    if (escaped || op != u'-') {
+    if (escaped || op != u'-' || getMatcherSymbol(symbols, op) != nullptr) {
         // No operator,
         // Elements ::= Element
         chars.setPos(beforeOperator);
@@ -670,6 +697,9 @@ void UnicodeSet::parseElements(const UnicodeString &pattern,
     // Elements ::= Range ::= RangeElement - RangeElement
     rebuiltPat.append(u'-');
     const UChar32 last = ahead;
+    if (getMatcherSymbol(symbols, last) != nullptr) {
+        U_UNICODESET_RETURN_WITH_PARSE_ERROR("RangeElement", last, chars, ec);
+    }
     if (!escaped) {
         switch (last) {
         case u'-':
