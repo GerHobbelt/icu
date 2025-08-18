@@ -4339,57 +4339,57 @@ void UnicodeSetTest::TestElementIterator() {
 
 void UnicodeSetTest::TestToPatternOutput() {
     for (const auto &[expression, expected] :
-         std::vector<std::pair<std::u16string_view, std::u16string_view>>{
-             // For a UnicodeSet which is not a property-query nor a named-element and without any
-             // Restriction among its Terms (that is, whose Union consists solely a sequence of Elements
-             // UnescapedHyphenMinus), toPattern merges and sorts ranges, and introduces a complement to
-             // minimize the result.
-             {u"[c-za-b]", u"[a-z]"},
-             {u"[  c - z  a - b  ]", u"[a-z]"},
-             {uR"([ ^ \u0000-b d-\U0010FFFF ])", u"[c]"},
-             {uR"([ \u0000-b d-\U0010FFFF ])", u"[^c]"},
-             {u"[ - - ]", uR"([\-])"},
-             {u"[ - _ - ]", uR"([\-_])"},
-             {u"[ - + - ]", uR"([+\-])"},
-             {u"[ { Z e i c h e n k e t t e } Zeichenmenge ]", u"[Zceg-imn{Zeichenkette}]"},
-             {uR"([ { \x5A e i c h e n k e t t e } \x5Aeichenmenge ])", u"[Zceg-imn{Zeichenkette}]"},
-             {u"[$d-za-c]", uR"([\$a-z])"},
-             {u"[a-c$d-z]", uR"([\$a-z])"},
-             {uR"([\uFFFFa-z])", uR"([a-z\uFFFF])"},
-             {u"[!-$z]", uR"([!-\$z])"},
-             {u"[-a-cd-z$-]", uR"([\$\-a-z])"},
-             {u"[-$-]", uR"([\$\-])"},
-             // A property-query or named-element is kept as-is:
-             {uR"(\p{ General_Category = Punctuation })", uR"(\p{ General_Category = Punctuation })"},
-             {uR"(\p{P})", uR"(\p{P})"},
-             {uR"(\p{gc=P})", uR"(\p{gc=P})"},
-             {uR"([: general category = punctuation :])", uR"([: general category = punctuation :])"},
-             {uR"([: ^general category = punctuation :])", uR"([: ^general category = punctuation :])"},
-             {uR"(\P{ gc = punctuation })", uR"(\P{ gc = punctuation })"},
-             {uR"(\N{ latin small letter a })", uR"(\N{ latin small letter a })"},
-             // If there is any Restriction among the terms, its syntax is mostly as-is (spaces are
-             // still eliminated), with the exception that an initial UnescapedHyphenMinus gets escaped.
-             // This is applied recursively, so innermost ranges-only UnicodeSets get normalized.
-             {u"[ c-z a-b [c-f g-z] ]", u"[c-za-b[c-z]]"},
-             {u"[- + c-z a-b [c-f g-z] -]", uR"([\-+c-za-b[c-z]-])"},
-             {uR"([ c-z a-b \p{ General_Category = Punctuation } ])",
-              uR"([c-za-b\p{ General_Category = Punctuation }])"},
-             {u"[^[c]]", uR"([^[c]])"},
-             {uR"([ ^ [ \u0000-b d-\U0010FFFF ] ])", uR"([^[^c]])"},
-             {u"[$[]]", uR"([\$[]])"},
-             // Spaces are eliminated within a string-literal even when the syntax is preserved.
-             {u"[ {Z e i c h e n k e t t e } [] Zeichenmenge ]", u"[{Zeichenkette}[]Zeichenmenge]"},
-             // Escapes are removed even when the syntax is preserved.
-             {uR"([ { \x5A e i c h e n k e t t e } [] \x5Aeichenmenge ])",
-              u"[{Zeichenkette}[]Zeichenmenge]"},
-             // A named-element is currently a nested set, so it is preserved and causes the syntax to be
-             // preserved.
-             {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([\N{LATIN CAPITAL LETTER Z}eichenmenge])"},
-             // An anchor also causes the syntax to be preserved.
-             {u"[ d-z a-c $ ]", u"[d-za-c$]"},
-             {u"[ - a-c d-z $ ]", uR"([\-a-cd-z$])"},
-             {u"[$$$]", uR"([\$\$$])"},
-         }) {
+        std::vector<std::pair<std::u16string_view, std::u16string_view>>{
+            // For a UnicodeSet which is not a property-query nor a named-element and without any
+            // Restriction among its Terms (that is, whose Union consists solely a sequence of Elements
+            // UnescapedHyphenMinus), toPattern merges and sorts ranges, and introduces a complement to
+            // minimize the result.
+            {u"[c-za-b]", u"[a-z]"},
+            {u"[  c - z  a - b  ]", u"[a-z]"},
+            {uR"([ ^ \u0000-b d-\U0010FFFF ])", u"[c]"},
+            {uR"([ \u0000-b d-\U0010FFFF ])", u"[^c]"},
+            {u"[ - - ]", uR"([\-])"},
+            {u"[ - _ - ]", uR"([\-_])"},
+            {u"[ - + - ]", uR"([+\-])"},
+            {u"[ { Z e i c h e n k e t t e } Zeichenmenge ]", u"[Zceg-imn{Zeichenkette}]"},
+            {uR"([ { \x5A e i c h e n k e t t e } \x5Aeichenmenge ])", u"[Zceg-imn{Zeichenkette}]"},
+            {u"[$d-za-c]", uR"([\$a-z])"},
+            {u"[a-c$d-z]", uR"([\$a-z])"},
+            {uR"([\uFFFFa-z])", uR"([a-z\uFFFF])"},
+            {u"[!-$z]", uR"([!-\$z])"},
+            {u"[-a-cd-z$-]", uR"([\$\-a-z])"},
+            {u"[-$-]", uR"([\$\-])"},
+            // A property-query or named-element is kept as-is:
+            {uR"(\p{ General_Category = Punctuation })", uR"(\p{ General_Category = Punctuation })"},
+            {uR"(\p{P})", uR"(\p{P})"},
+            {uR"(\p{gc=P})", uR"(\p{gc=P})"},
+            {uR"([: general category = punctuation :])", uR"([: general category = punctuation :])"},
+            {uR"([: ^general category = punctuation :])", uR"([: ^general category = punctuation :])"},
+            {uR"(\P{ gc = punctuation })", uR"(\P{ gc = punctuation })"},
+            {uR"(\N{ latin small letter a })", uR"(\N{ latin small letter a })"},
+            // If there is any Restriction among the terms, its syntax is mostly as-is (spaces are
+            // still eliminated), with the exception that an initial UnescapedHyphenMinus gets escaped.
+            // This is applied recursively, so innermost ranges-only UnicodeSets get normalized.
+            {u"[ c-z a-b [c-f g-z] ]", u"[c-za-b[c-z]]"},
+            {u"[- + c-z a-b [c-f g-z] -]", uR"([\-+c-za-b[c-z]-])"},
+            {uR"([ c-z a-b \p{ General_Category = Punctuation } ])",
+            uR"([c-za-b\p{ General_Category = Punctuation }])"},
+            {u"[^[c]]", uR"([^[c]])"},
+            {uR"([ ^ [ \u0000-b d-\U0010FFFF ] ])", uR"([^[^c]])"},
+            {u"[$[]]", uR"([\$[]])"},
+            // Spaces are eliminated within a string-literal even when the syntax is preserved.
+            {u"[ {Z e i c h e n k e t t e } [] Zeichenmenge ]", u"[{Zeichenkette}[]Zeichenmenge]"},
+            // Escapes are removed even when the syntax is preserved.
+            {uR"([ { \x5A e i c h e n k e t t e } [] \x5Aeichenmenge ])",
+            u"[{Zeichenkette}[]Zeichenmenge]"},
+            // A named-element is currently a nested set, so it is preserved and causes the syntax to be
+            // preserved.
+            {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([\N{LATIN CAPITAL LETTER Z}eichenmenge])"},
+            // An anchor also causes the syntax to be preserved.
+            {u"[ d-z a-c $ ]", u"[d-za-c$]"},
+            {u"[ - a-c d-z $ ]", uR"([\-a-cd-z$])"},
+            {u"[$$$]", uR"([\$\$$])"},
+        }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, errorCode);
         UnicodeString actual;
