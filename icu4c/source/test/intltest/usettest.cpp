@@ -2003,11 +2003,10 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     // constructor returns an error but not an empty set. Don’t do that.
     symbols.add(u']', UnicodeSet(u"[{rightSquareBracket}]", errorCode));
     for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-         std::vector<
-             std::tuple<std::u16string_view, UErrorCode, std::u16string_view, std::u16string_view>>{
-             {u"]", U_ZERO_ERROR, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
-             {u"[]", U_MALFORMED_SET, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
-         }) {
+        std::vector<TestCase>{
+            {u"]", U_ZERO_ERROR, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
+            {u"[]", U_MALFORMED_SET, u"[{rightSquareBracket}]", u"[{rightSquareBracket}]"},
+        }) {
         UnicodeString actual;
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, USET_IGNORE_SPACE, &symbols, errorCode);
