@@ -1825,27 +1825,35 @@ void UnicodeSetTest::TestSymbolTable() {
             logln(UnicodeString("Ok, got ") + us.toPattern(a, true));
         }
     }
-    for (const auto &[variables, expression, expectedErrorCode, expectedPattern] :
-         std::vector<std::tuple<std::vector<std::pair<std::u16string_view, std::u16string_view>>,
-                                std::u16string_view, UErrorCode, std::u16string_view>>{
-             // You should not do this, but it works.
-             {{{u"privateUseOrUnassigned", u"[[:Co:][:Cn:]"}, {u"close", u"]"}},
-              u"$privateUseOrUnassigned$close",
-              U_ZERO_ERROR,
-              u"[[:Co:][:Cn:]]"},
-             // This works and it is fine.
-             {{{u"privateUse", u"[[:Co:]]"}}, u"$privateUse", U_ZERO_ERROR, u"[[:Co:]]"},
-             // This should work! But it does not. Note the doubled brackets on the one that works above.
-             // We are not yet inside the variable when we call lookahead(), so we try to parse
-             // $privateUse rather than [:Co:].
-             {{{u"privateUse", u"[:Co:]"}}, u"[$privateUse]", U_ILLEGAL_ARGUMENT_ERROR, u"[]"},
-             // This should not work, and it does not (we try to parse [$sad$surprised] as a
-             // property-query).
-             {{{u"sad", u":C"}, {u"surprised", u"o:"}},
-              u"[$sad$surprised]",
-              U_ILLEGAL_ARGUMENT_ERROR,
-              u"[]"},
-         }) {
+    struct TestCase {
+        struct Variable {
+            std::u16string_view name;
+            std::u16string_view value;
+        };
+        std::vector<Variable> variables;
+        std::u16string_view expression;
+        UErrorCode expectedErrorCode;
+        std::u16string_view expectedPattern;
+    };
+    for (const auto &[variables, expression, expectedErrorCode, expectedPattern] : std::vector<TestCase>{
+            // You should not do this, but it works.
+            {{{u"privateUseOrUnassigned", u"[[:Co:][:Cn:]"}, {u"close", u"]"}},
+            u"$privateUseOrUnassigned$close",
+            U_ZERO_ERROR,
+            u"[[:Co:][:Cn:]]"},
+            // This works and it is fine.
+            {{{u"privateUse", u"[[:Co:]]"}}, u"$privateUse", U_ZERO_ERROR, u"[[:Co:]]"},
+            // This should work! But it does not. Note the doubled brackets on the one that works above.
+            // We are not yet inside the variable when we call lookahead(), so we try to parse
+            // $privateUse rather than [:Co:].
+            {{{u"privateUse", u"[:Co:]"}}, u"[$privateUse]", U_ILLEGAL_ARGUMENT_ERROR, u"[]"},
+            // This should not work, and it does not (we try to parse [$sad$surprised] as a
+            // property-query).
+            {{{u"sad", u":C"}, {u"surprised", u"o:"}},
+            u"[$sad$surprised]",
+            U_ILLEGAL_ARGUMENT_ERROR,
+            u"[]"},
+        }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         TokenSymbolTable symbols(errorCode);
         if (U_FAILURE(errorCode)) {
@@ -1901,20 +1909,26 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     symbols.add(u'0', UnicodeSet(u"[ a-z ]", errorCode));
     symbols.add(u'1', UnicodeSet(u"[ b-c ]", errorCode));
     symbols.add(u'2', UnicodeSet(u"[: Co :]", errorCode));
+    struct TestCase {
+        std::u16string_view expression;
+        UErrorCode expectedErrorCode;
+        std::u16string_view expectedPattern;
+        std::u16string_view expectedRegeneratedPattern;
+    };
     for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-         std::vector<std::tuple<std::u16string_view, UErrorCode, std::u16string_view, std::u16string_view>>{
-             {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
-             {u"[0-1]", U_ZERO_ERROR, u"[[a-z]-[bc]]", u"[ad-z]"},
-             {u"[!-0]", U_MALFORMED_SET, u"[]", u"[]"},
-             // Substitution of lookupMatcher symbols takes place after de-escaping.
-             {uR"([!-\u0030])", U_MALFORMED_SET, u"[]", u"[]"},
-             // It does not take place in string literals.
-             {uR"([!-/{0}])", U_ZERO_ERROR, u"[!-0]", u"[!-0]"},
-             {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :]&[bc]]", u"[]"},
-             {uR"([ 21 ])", U_ZERO_ERROR, u"[[: Co :][bc]]",
-              u"[bc\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
-             {u"[ a-b 1 ]", U_ZERO_ERROR, u"[a-b[bc]]", u"[a-c]"},
-         }) {
+        std::vector<TestCase>{
+            {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
+            {u"[0-1]", U_ZERO_ERROR, u"[[a-z]-[bc]]", u"[ad-z]"},
+            {u"[!-0]", U_MALFORMED_SET, u"[]", u"[]"},
+            // Substitution of lookupMatcher symbols takes place after unescaping.
+            {uR"([!-\u0030])", U_MALFORMED_SET, u"[]", u"[]"},
+            // It does not take place in string literals.
+            {uR"([!-/{0}])", U_ZERO_ERROR, u"[!-0]", u"[!-0]"},
+            {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :]&[bc]]", u"[]"},
+            {uR"([ 21 ])", U_ZERO_ERROR, u"[[: Co :][bc]]",
+            u"[bc\uE000-\uF8FF\U000F0000-\U000FFFFD\U00100000-\U0010FFFD]"},
+            {u"[ a-b 1 ]", U_ZERO_ERROR, u"[a-b[bc]]", u"[a-c]"},
+        }) {
         UnicodeString actual;
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, USET_IGNORE_SPACE, &symbols, errorCode);
@@ -1944,33 +1958,32 @@ void UnicodeSetTest::TestLookupSymbolTable() {
     symbols.add(u'}', UnicodeSet(u"[{rightCurlyBracket}]", errorCode));
     symbols.add(u'$', UnicodeSet(u"[{dollarSign}]", errorCode));
     for (const auto &[expression, expectedErrorCode, expectedPattern, expectedRegeneratedPattern] :
-         std::vector<
-             std::tuple<std::u16string_view, UErrorCode, std::u16string_view, std::u16string_view>>{
-             {u"-", U_ZERO_ERROR, u"[{hyphenMinus}]", u"[{hyphenMinus}]"},
-             {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
-             // The hyphen no longer works as set difference.
-             {u"[0-1]", U_ZERO_ERROR, u"[[a-z][{hyphenMinus}][bc]]", u"[a-z{hyphenMinus}]"},
-             {u"[!-0]", U_ZERO_ERROR, u"[![{hyphenMinus}][a-z]]", u"[!a-z{hyphenMinus}]"},
-             // String literals no longer work.
-             {uR"([!-/{0}])", U_ZERO_ERROR,
-              u"[![{hyphenMinus}]/[{leftCurlyBracket}][a-z][{rightCurlyBracket}]]",
-              u"[!/a-z{hyphenMinus}{leftCurlyBracket}{rightCurlyBracket}]"},
-             // The ampersand no longer works as set difference.
-             {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :][{ampersand}][bc]]",
-              u"[bc-󰀀-󿿽􀀀-􏿽{ampersand}]"},
-              // Complementing still works.
-             {uR"([^ \u0000 ])", U_ZERO_ERROR, uR"([\u0001-\U0010FFFF])",
-              uR"([\u0001-\U0010FFFF])"},
-              // ^ elsewhere becomes a symbol rather than a syntax error.
-             {uR"([\u0000 ^ -])", U_ZERO_ERROR, uR"([\u0000[{circumflexAccent}][{hyphenMinus}]])",
-              uR"([\u0000{circumflexAccent}{hyphenMinus}])"},
-             // Opening brackets still work.
-             {uR"([^ [ [^] ] ])", U_ZERO_ERROR, uR"([^[[\u0000-\U0010FFFF]]])", uR"([])"},
-             // The only way to access the [ symbol is via escaping.
-             {uR"([ \[ ])", U_ZERO_ERROR, uR"([[{leftSquareBracket}]])", uR"([{leftSquareBracket}])"},
-             // Anchors are gone.
-             {uR"([$])", U_ZERO_ERROR, uR"([[{dollarSign}]])", uR"([{dollarSign}])"},
-         }) {
+        std::vector<TestCase>{
+            {u"-", U_ZERO_ERROR, u"[{hyphenMinus}]", u"[{hyphenMinus}]"},
+            {u"0", U_ZERO_ERROR, u"[a-z]", u"[a-z]"},
+            // The hyphen no longer works as set difference.
+            {u"[0-1]", U_ZERO_ERROR, u"[[a-z][{hyphenMinus}][bc]]", u"[a-z{hyphenMinus}]"},
+            {u"[!-0]", U_ZERO_ERROR, u"[![{hyphenMinus}][a-z]]", u"[!a-z{hyphenMinus}]"},
+            // String literals no longer work.
+            {uR"([!-/{0}])", U_ZERO_ERROR,
+            u"[![{hyphenMinus}]/[{leftCurlyBracket}][a-z][{rightCurlyBracket}]]",
+            u"[!/a-z{hyphenMinus}{leftCurlyBracket}{rightCurlyBracket}]"},
+            // The ampersand no longer works as set difference.
+            {uR"([ 2 & 1 ])", U_ZERO_ERROR, u"[[: Co :][{ampersand}][bc]]",
+            u"[bc-󰀀-󿿽􀀀-􏿽{ampersand}]"},
+            // Complementing still works.
+            {uR"([^ \u0000 ])", U_ZERO_ERROR, uR"([\u0001-\U0010FFFF])",
+            uR"([\u0001-\U0010FFFF])"},
+            // ^ elsewhere becomes a symbol rather than a syntax error.
+            {uR"([\u0000 ^ -])", U_ZERO_ERROR, uR"([\u0000[{circumflexAccent}][{hyphenMinus}]])",
+            uR"([\u0000{circumflexAccent}{hyphenMinus}])"},
+            // Opening brackets still work.
+            {uR"([^ [ [^] ] ])", U_ZERO_ERROR, uR"([^[[\u0000-\U0010FFFF]]])", uR"([])"},
+            // The only way to access the [ symbol is via escaping.
+            {uR"([ \[ ])", U_ZERO_ERROR, uR"([[{leftSquareBracket}]])", uR"([{leftSquareBracket}])"},
+            // Anchors are gone.
+            {uR"([$])", U_ZERO_ERROR, uR"([[{dollarSign}]])", uR"([{dollarSign}])"},
+        }) {
         UnicodeString actual;
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, USET_IGNORE_SPACE, &symbols, errorCode);
