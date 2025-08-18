@@ -4605,39 +4605,39 @@ void UnicodeSetTest::TestToPatternOutput() {
 
 void UnicodeSetTest::TestParseErrors() {
     for (const auto expression : std::vector<std::u16string_view>{
-             // Java error message: "Char expected after operator".
-             u"[a-[b]]",
-             // "Missing '['".
-             u"a-z",
-             // "Trailing '&'".
-             u"[[a]&]",
-             // "'-' not after char or set".
-             u"[[a]&-[z]]",
-             u"[[a]--[z]]",
-             u"[{aa}-{zz}]",
-             // "'&' not after set".
-             u"[a&z]",
-             u"[{aa}&{zz}]",
-             // "'^' not after '['"
-             u"[a^z]",  // TODO(egg): Exclude from literal-element in PDUTS61.
-             // "Missing operand after operator".
-             u"[a-{zz}]",
-             u"[[a]-{zz}]",
-             u"[[a]&{zz}]",
-             // "Invalid multicharacter string".
-             u"[{aa]",
-             // "Unquoted '$'".
-             u"[a-$]",
-             u"[!-$]",
-             // "Invalid range".
-             u"[a-a]",  // TODO(egg): Exclude in PDUTS61.
-             u"[z-a]",
-             // "Set expected after operator".
-             u"[[a]-z]",
-             u"[[a]&z]",
-             // "Missing ']'".
-             u"[a-z",
-         }) {
+            // Java error message: "Char expected after operator".
+            u"[a-[b]]",
+            // "Missing '['".
+            u"a-z",
+            // "Trailing '&'".
+            u"[[a]&]",
+            // "'-' not after char or set".
+            u"[[a]&-[z]]",
+            u"[[a]--[z]]",
+            u"[{aa}-{zz}]",
+            // "'&' not after set".
+            u"[a&z]",
+            u"[{aa}&{zz}]",
+            // "'^' not after '['"
+            u"[a^z]",  // TODO(egg): Exclude from literal-element in PDUTS61.
+            // "Missing operand after operator".
+            u"[a-{zz}]",
+            u"[[a]-{zz}]",
+            u"[[a]&{zz}]",
+            // "Invalid multicharacter string".
+            u"[{aa]",
+            // "Unquoted '$'".
+            u"[a-$]",
+            u"[!-$]",
+            // "Invalid range".
+            u"[a-a]",  // TODO(egg): Exclude in PDUTS61.
+            u"[z-a]",
+            // "Set expected after operator".
+            u"[[a]-z]",
+            u"[[a]&z]",
+            // "Missing ']'".
+            u"[a-z",
+        }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, errorCode);
         if (errorCode != U_MALFORMED_SET) {
@@ -4647,13 +4647,13 @@ void UnicodeSetTest::TestParseErrors() {
         }
     }
     for (const auto expression : std::vector<std::u16string_view>{
-             // Java error message: "Invalid property pattern".
-             u"[:]",
-             uR"(\p)"
-             u"[:^]",
-             uR"(\P)",
-             uR"(\N)",
-         }) {
+            // Java error message: "Invalid property pattern".
+            u"[:]",
+            uR"(\p)"
+            u"[:^]",
+            uR"(\P)",
+            uR"(\N)",
+        }) {
         UErrorCode errorCode = U_ZERO_ERROR;
         const UnicodeSet set(expression, errorCode);
         if (errorCode != U_ILLEGAL_ARGUMENT_ERROR) {
