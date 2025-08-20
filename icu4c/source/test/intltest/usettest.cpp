@@ -1885,6 +1885,9 @@ void UnicodeSetTest::TestSymbolTable() {
 
 void UnicodeSetTest::TestLookupSymbolTable() {
     UErrorCode errorCode = U_ZERO_ERROR;
+    // We let `variables` be empty by default in the test cases below.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"
     struct TestCase {
         struct Variable {
             std::u16string_view name;
@@ -2110,6 +2113,7 @@ void UnicodeSetTest::TestLookupSymbolTable() {
                   ", got " + actual);
         }
     }
+#pragma GCC diagnostic pop
 }
 
 void UnicodeSetTest::TestSurrogate() {
