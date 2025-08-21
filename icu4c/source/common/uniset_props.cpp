@@ -380,6 +380,10 @@ namespace {
 
 constexpr int32_t MAX_DEPTH = 100;
 
+#define U_DEBUGGING_UNICODESET_PARSING 0
+
+#if U_DEBUGGING_UNICODESET_PARSING
+
 #define U_UNICODESET_RETURN_IF_ERROR(ec)                                                                \
     do {                                                                                                \
     constexpr std::string_view functionName = __func__;\
@@ -406,6 +410,22 @@ constexpr int32_t MAX_DEPTH = 100;
         (ec) = U_MALFORMED_SET;                                                                         \
         return;                                                                                         \
     } while (false)
+
+#else
+
+#define U_UNICODESET_RETURN_IF_ERROR(ec)                                                                \
+    do {                                                                                                \
+        if (U_FAILURE(ec)) {                                                                            \
+            return;                                                                                     \
+        }                                                                                               \
+    } while (false)
+#define U_UNICODESET_RETURN_WITH_PARSE_ERROR(expected, actual, lexer, ec)                               \
+    do {                                                                                                \
+        (ec) = U_MALFORMED_SET;                                                                         \
+        return;                                                                                         \
+    } while (false)
+
+#endif
 
 }  // namespace
 
