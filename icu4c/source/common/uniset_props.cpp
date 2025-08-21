@@ -627,7 +627,6 @@ void UnicodeSet::parseRestriction(Lexer &lexer,
     // The loop terminates because when chars.atEnd(), op == DONE, so we go into the else branch and
     // return.
     for (;;) {
-        RuleCharacterIterator::Pos beforeOperator;
         if (lexer.lookahead().standIn() != nullptr) {
             // Not an operator, end of the Restriction.
             return;
@@ -710,7 +709,6 @@ void UnicodeSet::parseElements(Lexer &lexer,
     }
     lexer.lookahead().moveAfter();
     _appendToPat(rebuiltPat, first, /*escapeUnprintable=*/false);
-    RuleCharacterIterator::Pos beforeOperator;
     if (!lexer.lookahead().isUnescapedNotStandIn(u'-')) {
         // No operator,
         // Elements ::= Element
