@@ -1697,6 +1697,7 @@ private:
                                  UErrorCode& status);
 
     void applyPattern(const UnicodeString &pattern,
+                      const ParsePosition& parsePosition,
                       RuleCharacterIterator &chars,
                       const SymbolTable *symbols,
                       UnicodeString &rebuiltPat,
@@ -1709,18 +1710,16 @@ private:
     // applied).  They add to *this the elements of the set that the parsed construct represents.
     // https://www.unicode.org/reports/tr61/tr61-1.html#Set-Operations.
 
-    void parseUnicodeSet(const UnicodeString &pattern,
-                         RuleCharacterIterator &chars,
-                         const SymbolTable *symbols,
+    class Lexer;
+
+    void parseUnicodeSet(Lexer &lexer,
                          UnicodeString &rebuiltPat,
                          uint32_t options,
                          UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                          int32_t depth,
                          UErrorCode &ec);
 
-    void parseUnion(const UnicodeString &pattern,
-                    RuleCharacterIterator &chars,
-                    const SymbolTable *symbols,
+    void parseUnion(Lexer &lexer,
                     UnicodeString &rebuiltPat,
                     uint32_t options,
                     UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
@@ -1728,30 +1727,23 @@ private:
                     bool &containsRestrictions,
                     UErrorCode &ec);
 
-    void parseTerm(const UnicodeString &pattern,
-                   RuleCharacterIterator &chars,
-                   const SymbolTable *symbols,
+    void parseTerm(Lexer &lexer,
                    UnicodeString &rebuiltPat,
                    uint32_t options,
                    UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                    int32_t depth,
-                   bool &containsRestriction,
+                   bool &containsRestrictions,
                    UErrorCode &ec);
 
-    void parseRestriction(const UnicodeString &pattern,
-                          RuleCharacterIterator &chars,
-                          const SymbolTable *symbols,
+    void parseRestriction(Lexer &lexer,
                           UnicodeString &rebuiltPat,
                           uint32_t options,
                           UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                           int32_t depth,
                           UErrorCode &ec);
 
-    void parseElements(const UnicodeString &pattern,
-                       RuleCharacterIterator &chars,
-                       const SymbolTable *symbols,
+    void parseElements(Lexer &lexer,
                        UnicodeString &rebuiltPat,
-                       uint32_t options,
                        UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                        int32_t depth,
                        UErrorCode &ec);
