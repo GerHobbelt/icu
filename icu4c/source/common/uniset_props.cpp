@@ -380,50 +380,6 @@ namespace {
 
 constexpr int32_t MAX_DEPTH = 100;
 
-#if 0
-#define U_UNICODESET_TRACE(...)                                                                         \
-    struct UnicodeSetParserTrace {                                                                      \
-        char const *const symbol_;                                                                      \
-        int const depth_;                                                                               \
-        const UnicodeSet *const that_;                                                                  \
-        UnicodeSetParserTrace(char const *symbol, int depth, const UnicodeSet *that)                    \
-            : symbol_(symbol), depth_(depth), that_(that) {}                                            \
-        ~UnicodeSetParserTrace() {                                                                      \
-            UnicodeString ahead;                                                                        \
-            std::string aheadUTF8;                                                                      \
-            printf("%s%s\n", std::string(depth_ * 4, ' ').c_str(), symbol_);                            \
-            printf("%s\n", (UnicodeSet(*that_)                                                           \
-                               .complement()                                                            \
-                               .complement()                                                            \
-                               .toPattern(ahead)                                                        \
-                               .toUTF8String(aheadUTF8)                                                 \
-                               .c_str(),""));                                                               \
-        }                                                                                               \
-    };                                                                                                  \
-    UnicodeSetParserTrace unicodeSetParserTrace(                                                        \
-        std::string_view("" __VA_ARGS__).empty() ? __func__ + 5 : ("" __VA_ARGS__), depth, this);       \
-    do {                                                                                                \
-        char const *symbol = ("" __VA_ARGS__);                                                          \
-        if (std::string_view(symbol).empty()) {                                                         \
-            symbol = __func__ + 5;                                                                      \
-        }                                                                                               \
-        UnicodeString ahead;                                                                            \
-        std::string aheadUTF8;                                                                          \
-        printf("%s%s  > %s\n", std::string(depth * 4, ' ').c_str(), symbol,                             \
-               (chars).lookahead(ahead, 60).toUTF8String(aheadUTF8).c_str());                           \
-        printf("%s\n", (UnicodeSet(*this)                                                                \
-                           .complement()                                                                \
-                           .complement()                                                                \
-                           .toPattern(ahead)                                                            \
-                           .toUTF8String(aheadUTF8)                                                     \
-                           .c_str(),""));                                                                   \
-    } while (false)
-#else
-#define U_UNICODESET_TRACE(...)                                                                         \
-    do {                                                                                                \
-    } while (false)
-#endif
-
 #define U_UNICODESET_RETURN_IF_ERROR(ec)                                                                \
     do {                                                                                                \
     constexpr std::string_view functionName = __func__;\
@@ -490,7 +446,6 @@ void UnicodeSet::parseUnicodeSet(Lexer &lexer,
                                  int32_t depth,
                                  UErrorCode &ec) {
     clear();
-    U_UNICODESET_TRACE();
 
     if (depth > MAX_DEPTH) {
         U_UNICODESET_RETURN_WITH_PARSE_ERROR(("depth <= " + std::to_string(MAX_DEPTH)).c_str(),
@@ -507,7 +462,6 @@ void UnicodeSet::parseUnicodeSet(Lexer &lexer,
     UnicodeString prettyPrintedPattern;
     if (lexer.resemblesPropertyPattern()) {
         // UnicodeSet ::= property-query | named-element
-        U_UNICODESET_TRACE("property-query | named-element");
         lexer.getCharacterIterator().skipIgnored(lexer.charsOptions());
         UnicodeSet propertyQuery;
         propertyQuery.applyPropertyPattern(lexer.getCharacterIterator(), prettyPrintedPattern, ec);
@@ -575,7 +529,6 @@ void UnicodeSet::parseUnion(Lexer &lexer,
                             int32_t depth,
                             bool &containsRestrictions,
                             UErrorCode &ec) {
-    U_UNICODESET_TRACE();
     // Union ::= Terms
     //         | UnescapedHyphenMinus Terms
     //         | Terms UnescapedHyphenMinus
@@ -623,7 +576,6 @@ void UnicodeSet::parseTerm(Lexer &lexer,
                            int32_t depth,
                            bool &containsRestriction,
                            UErrorCode &ec) {
-    U_UNICODESET_TRACE();
     // Term ::= Elements
     //        | Restriction
     if (lexer.lookahead().standIn() != nullptr || lexer.lookahead().isUnescaped('[') ||
@@ -643,7 +595,6 @@ void UnicodeSet::parseRestriction(Lexer &lexer,
                                   UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                                   int32_t depth,
                                   UErrorCode &ec) {
-    U_UNICODESET_TRACE();
     // Restriction ::= UnicodeSet
     //               | Intersection ::= Restriction & UnicodeSet
     //               | Difference   ::= Restriction - UnicodeSet
@@ -695,7 +646,6 @@ void UnicodeSet::parseElements(Lexer &lexer,
                                UnicodeSet &(UnicodeSet::*caseClosure)(int32_t attribute),
                                int32_t depth,
                                UErrorCode &ec) {
-    U_UNICODESET_TRACE();
     // Elements     ::= Element
     //                | Range
     // Range        ::= RangeElement - RangeElement
