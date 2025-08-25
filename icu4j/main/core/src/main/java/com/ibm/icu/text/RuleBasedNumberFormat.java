@@ -419,7 +419,7 @@ import com.ibm.icu.util.UResourceBundleIterator;
  *     <td>Format the number unchanged</td>
  *   </tr>
  *   <tr style="border-top: 1px solid black;">
- *     <td style="white-space: nowrap;" rowspan="6">[]<br/>[|]</td>
+ *     <td style="white-space: nowrap;" rowspan="6">[]<br>[|]</td>
  *     <td style="white-space: nowrap; vertical-align: top; padding-left: 1em; padding-right: 1em;">in normal rule</td>
  *     <td>
  *       <ul>
@@ -547,7 +547,7 @@ import com.ibm.icu.util.UResourceBundleIterator;
  * @see PluralRules
  * @stable ICU 2.0
  */
-public class RuleBasedNumberFormat extends NumberFormat {
+public class RuleBasedNumberFormat extends NumberFormat implements Cloneable {
 
     //-----------------------------------------------------------------------
     // constants
@@ -908,8 +908,8 @@ public class RuleBasedNumberFormat extends NumberFormat {
      * @stable ICU 2.0
      */
     @Override
-    public Object clone() {
-        return super.clone();
+    public RuleBasedNumberFormat clone() {
+        return (RuleBasedNumberFormat) super.clone();
     }
 
     /**
@@ -1490,7 +1490,7 @@ public class RuleBasedNumberFormat extends NumberFormat {
      */
     public void setDecimalFormatSymbols(DecimalFormatSymbols newSymbols) {
         if (newSymbols != null) {
-            decimalFormatSymbols = (DecimalFormatSymbols) newSymbols.clone();
+            decimalFormatSymbols = newSymbols.clone();
             if (decimalFormat != null) {
                 decimalFormat.setDecimalFormatSymbols(decimalFormatSymbols);
             }
