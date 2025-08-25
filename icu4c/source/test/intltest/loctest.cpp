@@ -4085,7 +4085,6 @@ static const struct {
             "zh_Hani_CN", // If change, please also update common/unicode/locid.h
             "zh_Hani"
         }, {
-        }, {
             // ICU-22545 & ICU-22742
             "en_XA",
             "en_Latn_XA",
@@ -4200,7 +4199,6 @@ LocaleTest::TestAddLikelyAndMinimizeSubtags() {
         } else {
             assertEquals("addLikelySubtags", org, res.getName());
         }
-
     }
 
     for (const auto& item : likely_subtags_data) {

@@ -549,12 +549,6 @@ LSR LikelySubtags::makeMaximizedLsrFrom(const Locale &locale,
 
 namespace {
 
-const char *getCanonicalScript(const char* script) {
-    static const char* kZinh = "Zinh";
-    static const char* kQaai = "Qaai";
-    return (uprv_strcmp(script, kQaai) == 0) ? kZinh : script;
-}
-
 const char *getCanonical(const CharStringMap &aliases, const char *alias) {
     const char *canonical = aliases.get(alias);
     return canonical == nullptr ? alias : canonical;
@@ -606,7 +600,7 @@ LSR LikelySubtags::makeMaximizedLsr(const char *language, const char *script, co
     } // end of if (!returnInputIfUnmatch)
 
     language = getCanonical(languageAliases, language);
-    script = getCanonicalScript(script);
+    // (We have no script mappings.)
     region = getCanonical(regionAliases, region);
     return maximize(language, script, region, returnInputIfUnmatch, errorCode);
 }

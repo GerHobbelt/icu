@@ -417,8 +417,6 @@ adding the two example strings as above.
 #include <windows.h>
 #include <winver.h>
 
-#include "resource.h"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Generated from the TEXTINCLUDE 2 resource.

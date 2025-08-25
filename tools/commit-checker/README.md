@@ -68,6 +68,6 @@ Before sending the report to ICU-TC, do some basic cleanup yourself by adjusting
 
 It should be possible to clear the first two sections of the report simply by correcting the ticket resolutions and fix versions in Jira.
 
-When ready, create a branch  and push to your fork so others can view the report easily.  Team members should close issues they own that are correctly fixed.  Re-generate the report periodically until it comes back clean.
+When ready, create a branch and push to your fork so others can view the report easily.  Team members should close issues they own that are correctly fixed.  Re-generate the report periodically until it comes back clean.
 
 Note: REPORT.md is not intended to be merged back into main.
