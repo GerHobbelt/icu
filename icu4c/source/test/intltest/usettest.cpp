@@ -110,6 +110,8 @@ UnicodeSetTest::runIndexedTest(int32_t index, UBool exec,
     TESTCASE_AUTO(TestRangeIterator);
     TESTCASE_AUTO(TestStringIterator);
     TESTCASE_AUTO(TestElementIterator);
+    TESTCASE_AUTO(TestToPatternOutput);
+    TESTCASE_AUTO(TestParseErrors);
     TESTCASE_AUTO_END;
 }
 
@@ -4333,4 +4335,130 @@ void UnicodeSetTest::TestElementIterator() {
 
     // begin() & end() return USetElementIterator for which explicit APIs are tested via USet
     // in a header-only unit test file.
+}
+
+void UnicodeSetTest::TestToPatternOutput() {
+    for (const auto &[expression, expected] :
+        std::vector<std::pair<std::u16string_view, std::u16string_view>>{
+            // For a UnicodeSet which is not a property-query nor a named-element and without any
+            // Restriction among its Terms (that is, whose Union consists solely a sequence of Elements
+            // UnescapedHyphenMinus), toPattern merges and sorts ranges, and introduces a complement to
+            // minimize the result.
+            {u"[c-za-b]", u"[a-z]"},
+            {u"[  c - z  a - b  ]", u"[a-z]"},
+            {uR"([ ^ \u0000-b d-\U0010FFFF ])", u"[c]"},
+            {uR"([ \u0000-b d-\U0010FFFF ])", u"[^c]"},
+            {u"[ - - ]", uR"([\-])"},
+            {u"[ - _ - ]", uR"([\-_])"},
+            {u"[ - + - ]", uR"([+\-])"},
+            {u"[ { Z e i c h e n k e t t e } Zeichenmenge ]", u"[Zceg-imn{Zeichenkette}]"},
+            {uR"([ { \x5A e i c h e n k e t t e } \x5Aeichenmenge ])", u"[Zceg-imn{Zeichenkette}]"},
+            {u"[$d-za-c]", uR"([\$a-z])"},
+            {u"[a-c$d-z]", uR"([\$a-z])"},
+            {uR"([\uFFFFa-z])", uR"([a-z\uFFFF])"},
+            {u"[!-$z]", uR"([!-\$z])"},
+            {u"[-a-cd-z$-]", uR"([\$\-a-z])"},
+            {u"[-$-]", uR"([\$\-])"},
+            // A property-query or named-element is kept as-is:
+            {uR"(\p{ General_Category = Punctuation })", uR"(\p{ General_Category = Punctuation })"},
+            {uR"(\p{P})", uR"(\p{P})"},
+            {uR"(\p{gc=P})", uR"(\p{gc=P})"},
+            {uR"([: general category = punctuation :])", uR"([: general category = punctuation :])"},
+            {uR"([: ^general category = punctuation :])", uR"([: ^general category = punctuation :])"},
+            {uR"(\P{ gc = punctuation })", uR"(\P{ gc = punctuation })"},
+            {uR"(\N{ latin small letter a })", uR"(\N{ latin small letter a })"},
+            // If there is any Restriction among the terms, its syntax is mostly as-is (spaces are
+            // still eliminated), with the exception that an initial UnescapedHyphenMinus gets escaped.
+            // This is applied recursively, so innermost ranges-only UnicodeSets get normalized.
+            {u"[ c-z a-b [c-f g-z] ]", u"[c-za-b[c-z]]"},
+            {u"[- + c-z a-b [c-f g-z] -]", uR"([\-+c-za-b[c-z]-])"},
+            {uR"([ c-z a-b \p{ General_Category = Punctuation } ])",
+            uR"([c-za-b\p{ General_Category = Punctuation }])"},
+            {u"[^[c]]", uR"([^[c]])"},
+            {uR"([ ^ [ \u0000-b d-\U0010FFFF ] ])", uR"([^[^c]])"},
+            {u"[$[]]", uR"([\$[]])"},
+            // Spaces are eliminated within a string-literal even when the syntax is preserved.
+            {u"[ {Z e i c h e n k e t t e } [] Zeichenmenge ]", u"[{Zeichenkette}[]Zeichenmenge]"},
+            // Escapes are removed even when the syntax is preserved.
+            {uR"([ { \x5A e i c h e n k e t t e } [] \x5Aeichenmenge ])",
+            u"[{Zeichenkette}[]Zeichenmenge]"},
+            // A named-element is currently a nested set, so it is preserved and causes the syntax to be
+            // preserved.
+            {uR"([ \N{LATIN CAPITAL LETTER Z}eichenmenge ])", uR"([\N{LATIN CAPITAL LETTER Z}eichenmenge])"},
+            // An anchor also causes the syntax to be preserved.
+            {u"[ d-z a-c $ ]", u"[d-za-c$]"},
+            {u"[ - a-c d-z $ ]", uR"([\-a-cd-z$])"},
+            {u"[$$$]", uR"([\$\$$])"},
+        }) {
+        UErrorCode errorCode = U_ZERO_ERROR;
+        const UnicodeSet set(expression, errorCode);
+        UnicodeString actual;
+        if (U_FAILURE(errorCode)) {
+            errln(u"Failed to parse " + expression + u": " + u_errorName(errorCode));
+        } else if (set.toPattern(actual) != expected) {
+            errln(u"UnicodeSet(R\"(" + expression + u")\").toPattern() expected " + expected + ", got " +
+                  actual);
+        }
+    }
+}
+
+void UnicodeSetTest::TestParseErrors() {
+    for (const auto expression : std::vector<std::u16string_view>{
+            // Java error message: "Char expected after operator".
+            u"[a-[b]]",
+            // "Missing '['".
+            u"a-z",
+            // "Trailing '&'".
+            u"[[a]&]",
+            // "'-' not after char or set".
+            u"[[a]&-[z]]",
+            u"[[a]--[z]]",
+            u"[{aa}-{zz}]",
+            // "'&' not after set".
+            u"[a&z]",
+            u"[{aa}&{zz}]",
+            // "'^' not after '['"
+            u"[a^z]",  // TODO(egg): Exclude from literal-element in PDUTS61.
+            // "Missing operand after operator".
+            u"[a-{zz}]",
+            u"[[a]-{zz}]",
+            u"[[a]&{zz}]",
+            // "Invalid multicharacter string".
+            u"[{aa]",
+            // "Unquoted '$'".
+            u"[a-$]",
+            u"[!-$]",
+            // "Invalid range".
+            u"[a-a]",  // TODO(egg): Exclude in PDUTS61.
+            u"[z-a]",
+            // "Set expected after operator".
+            u"[[a]-z]",
+            u"[[a]&z]",
+            // "Missing ']'".
+            u"[a-z",
+        }) {
+        UErrorCode errorCode = U_ZERO_ERROR;
+        const UnicodeSet set(expression, errorCode);
+        if (errorCode != U_MALFORMED_SET) {
+            UnicodeString s;
+            errln(expression + u": Expected U_MALFORMED_SET, got " + u_errorName(errorCode) +
+                  ", set is " + UnicodeSet(set).complement().complement().toPattern(s));
+        }
+    }
+    for (const auto expression : std::vector<std::u16string_view>{
+            // Java error message: "Invalid property pattern".
+            u"[:]",
+            uR"(\p)"
+            u"[:^]",
+            uR"(\P)",
+            uR"(\N)",
+        }) {
+        UErrorCode errorCode = U_ZERO_ERROR;
+        const UnicodeSet set(expression, errorCode);
+        if (errorCode != U_ILLEGAL_ARGUMENT_ERROR) {
+            UnicodeString s;
+            errln(expression + u": Expected U_ILLEGAL_ARGUMENT_ERROR, got " + u_errorName(errorCode) +
+                  ", set is " + UnicodeSet(set).complement().complement().toPattern(s));
+        }
+    }
 }

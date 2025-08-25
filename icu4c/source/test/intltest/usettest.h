@@ -110,6 +110,9 @@ private:
     void TestStringIterator();
     void TestElementIterator();
 
+    void TestToPatternOutput();
+    void TestParseErrors();
+
 private:
 
     UBool toPatternAux(UChar32 start, UChar32 end);
