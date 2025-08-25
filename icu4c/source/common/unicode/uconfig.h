@@ -60,6 +60,16 @@
 #define U_LAYOUTEX_IMPLEMENTATION 
 #define U_TOOLUTIL_IMPLEMENTATION
 
+// https://unicode-org.github.io/icu/userguide/icu4c/build#recommended-build-options
+#define UNISTR_FROM_CHAR_EXPLICIT     explicit
+#define UNISTR_FROM_STRING_EXPLICIT   explicit
+
+#define ICU_NO_USER_DATA_OVERRIDE    1
+#define U_SHOW_CPLUSPLUS_API         1
+#define U_ALL_IMPLEMENTATION         1
+
+#define U_CHECK_DYLOAD               0
+
 /**
  * \def U_NO_DEFAULT_INCLUDE_UTF_HEADERS
  * Determines whether utypes.h includes utf.h, utf8.h, utf16.h and utf_old.h.
