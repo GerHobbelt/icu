@@ -69,7 +69,6 @@ import com.ibm.icu.text.UnicodeSet;
 import com.ibm.icu.util.Currency;
 import com.ibm.icu.util.Currency.CurrencyUsage;
 import com.ibm.icu.util.CurrencyAmount;
-import com.ibm.icu.util.LocaleData;
 import com.ibm.icu.util.MeasureUnit;
 import com.ibm.icu.util.ULocale;
 
@@ -4460,12 +4459,12 @@ public class NumberFormatTest extends CoreTestFmwk {
                 {"ja_JP",             "-1000.5",  "-￥1,000",          "-￥1,000",          "(￥1,000)",         "false"},
                 {"ja_JP@cf=account",  "-1000.5",  "(￥1,000)",         "-￥1,000",          "(￥1,000)",         "false"},
                 {"de_DE",             "-23456.7", "-23.456,70\u00A0€", "-23.456,70\u00A0€", "-23.456,70\u00A0€", "true" },
-                {"en_ID",             "1234.5",   "Rp 1.234,50",      "Rp 1.234,50",      "Rp 1.234,50",      "true"},
-                {"en_ID@cf=account",  "1234.5",   "Rp 1.234,50",      "Rp 1.234,50",      "Rp 1.234,50",      "true"},
-                {"en_ID@cf=standard", "1234.5",   "Rp 1.234,50",      "Rp 1.234,50",      "Rp 1.234,50",      "true"},
-                {"en_ID",             "-1234.5",  "-Rp 1.234,50",     "-Rp 1.234,50",     "(Rp 1.234,50)",    "true"},
-                {"en_ID@cf=account",  "-1234.5",  "(Rp 1.234,50)",    "-Rp 1.234,50",     "(Rp 1.234,50)",    "true"},
-                {"en_ID@cf=standard", "-1234.5",  "-Rp 1.234,50",     "-Rp 1.234,50",     "(Rp 1.234,50)",    "true"},
+                {"en_ID",             "1234.5",   "Rp 1.234",      "Rp 1.234",      "Rp 1.234",      "true"},
+                {"en_ID@cf=account",  "1234.5",   "Rp 1.234",      "Rp 1.234",      "Rp 1.234",      "true"},
+                {"en_ID@cf=standard", "1234.5",   "Rp 1.234",      "Rp 1.234",      "Rp 1.234",      "true"},
+                {"en_ID",             "-1234.5",  "-Rp 1.234",     "-Rp 1.234",     "(Rp 1.234)",    "true"},
+                {"en_ID@cf=account",  "-1234.5",  "(Rp 1.234)",    "-Rp 1.234",     "(Rp 1.234)",    "true"},
+                {"en_ID@cf=standard", "-1234.5",  "-Rp 1.234",     "-Rp 1.234",     "(Rp 1.234)",    "true"},
                 {"sh_ME",             "1234.5",   "1.234,50 €",        "1.234,50 €",        "1.234,50 €",        "true"},
                 {"sh_ME@cf=account",  "1234.5",   "1.234,50 €",        "1.234,50 €",        "1.234,50 €",        "true"},
                 {"sh_ME@cf=standard", "1234.5",   "1.234,50 €",        "1.234,50 €",        "1.234,50 €",        "true"},

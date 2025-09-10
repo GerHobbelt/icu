@@ -754,7 +754,7 @@ public:
             UnitIter &p0, UnitIter &p, const LimitIter &limit) {
         constexpr bool isMultiPass = prv::forward_iterator<UnitIter>;
         // Very similar to U16_NEXT_OR_FFFD().
-        CP32 c = *p;
+        CP32 c = static_cast<CP32>(*p);
         ++p;
         if (!U16_IS_SURROGATE(c)) {
             if constexpr (isMultiPass) {
@@ -785,7 +785,7 @@ public:
     U_FORCE_INLINE static CodeUnits<CP32, UnitIter> decAndRead(UnitIter start, UnitIter &p) {
         // Very similar to U16_PREV_OR_FFFD().
         UnitIter p0 = p;
-        CP32 c = *--p;
+        CP32 c = static_cast<CP32>(*--p);
         if (!U16_IS_SURROGATE(c)) {
             return {c, 1, true, p, p0};
         } else {
@@ -984,7 +984,7 @@ public:
     U_FORCE_INLINE static UnsafeCodeUnits<CP32, UnitIter> readAndInc(UnitIter &p0, UnitIter &p) {
         constexpr bool isMultiPass = prv::forward_iterator<UnitIter>;
         // Very similar to U16_NEXT_UNSAFE().
-        CP32 c = *p;
+        CP32 c = static_cast<CP32>(*p);
         ++p;
         if (!U16_IS_LEAD(c)) {
             if constexpr (isMultiPass) {
@@ -1007,7 +1007,7 @@ public:
     U_FORCE_INLINE static UnsafeCodeUnits<CP32, UnitIter> decAndRead(UnitIter &p) {
         // Very similar to U16_PREV_UNSAFE().
         UnitIter p0 = p;
-        CP32 c = *--p;
+        CP32 c = static_cast<CP32>(*--p);
         if (!U16_IS_TRAIL(c)) {
             return {c, 1, p, p0};
         } else {
@@ -1859,7 +1859,8 @@ private:
 /** @internal */
 template<typename CP32, UTFIllFormedBehavior behavior>
 struct UTFStringCodePointsAdaptor
-#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02  // http://wg21.link/P2387R3.
+#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02 &&                                         \
+    __cpp_lib_bind_back >= 2022'02 // http://wg21.link/P2387R3.
     : std::ranges::range_adaptor_closure<UTFStringCodePointsAdaptor<CP32, behavior>>
 #endif
 {
@@ -2570,7 +2571,8 @@ private:
 /** @internal */
 template<typename CP32>
 struct UnsafeUTFStringCodePointsAdaptor
-#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02  // http://wg21.link/P2387R3.
+#if U_CPLUSPLUS_VERSION >= 23 && __cpp_lib_ranges >= 2022'02 &&                                         \
+    __cpp_lib_bind_back >= 2022'02 // http://wg21.link/P2387R3.
     : std::ranges::range_adaptor_closure<UnsafeUTFStringCodePointsAdaptor<CP32>>
 #endif
 {

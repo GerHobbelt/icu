@@ -9,7 +9,6 @@ import java.io.LineNumberReader;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -52,7 +51,9 @@ public class PersonNameConsistencyTest extends CoreTestFmwk {
         return Map.of(
                 "bal_Latn.txt", "CLDR-17874",
                 // Khmer person name tests: adjust for Unicode 17 GCB changes
-                "km.txt", "CLDR-18815");
+                "km.txt", "CLDR-18815",
+                "kk_Arab.txt", "ICU-23187",
+                "shn.txt", "ICU-23187");
     }
     static List<String> readTestCases() throws Exception {
         List<String> tests = new ArrayList<>();

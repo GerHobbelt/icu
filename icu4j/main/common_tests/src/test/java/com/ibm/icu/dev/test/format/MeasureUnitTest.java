@@ -36,6 +36,7 @@ import org.junit.runners.JUnit4;
 import com.ibm.icu.dev.test.CoreTestFmwk;
 import com.ibm.icu.dev.test.serializable.FormatHandler;
 import com.ibm.icu.dev.test.serializable.SerializableTestUtility;
+import com.ibm.icu.impl.ICUDebug;
 import com.ibm.icu.impl.Utility;
 import com.ibm.icu.impl.units.MeasureUnitImpl;
 import com.ibm.icu.math.BigDecimal;
@@ -57,6 +58,7 @@ import com.ibm.icu.util.ULocale;
  */
 @RunWith(JUnit4.class)
 public class MeasureUnitTest extends CoreTestFmwk {
+    private static final boolean DEBUG = ICUDebug.enabled("measureunittest");
 
     @Test
     public void TestExamplesInDocs() {
@@ -247,7 +249,9 @@ public class MeasureUnitTest extends CoreTestFmwk {
         mf = MeasureFormat.getInstance(ULocale.GERMAN, FormatWidth.WIDE, nf);
         verifyFormatPeriod("de FULL", mf, fullDataDe);
         mf = MeasureFormat.getInstance(ULocale.GERMAN, FormatWidth.NUMERIC, nf);
-        verifyFormatPeriod("de NUMERIC", mf, numericDataDe);
+        if (!logKnownIssue("CLDR-18905", "German narrow change needs revisiting")) {
+            verifyFormatPeriod("de NUMERIC", mf, numericDataDe);
+        }
 
         // Same tests, with Java Locale
         nf = NumberFormat.getNumberInstance(Locale.GERMAN);
@@ -255,7 +259,9 @@ public class MeasureUnitTest extends CoreTestFmwk {
         mf = MeasureFormat.getInstance(Locale.GERMAN, FormatWidth.WIDE, nf);
         verifyFormatPeriod("de FULL(Java Locale)", mf, fullDataDe);
         mf = MeasureFormat.getInstance(Locale.GERMAN, FormatWidth.NUMERIC, nf);
-        verifyFormatPeriod("de NUMERIC(Java Locale)", mf, numericDataDe);
+        if (!logKnownIssue("CLDR-18905", "German narrow change needs revisiting")) {
+            verifyFormatPeriod("de NUMERIC(Java Locale)", mf, numericDataDe);
+        }
 
         ULocale bengali = ULocale.forLanguageTag("bn");
         nf = NumberFormat.getNumberInstance(bengali);
@@ -524,6 +530,12 @@ public class MeasureUnitTest extends CoreTestFmwk {
             }
             String result = mf.formatMeasures(hours, minutes);
             if (!result.equals(row[2])) {
+                if (((ULocale)row[0]).equals(ULocale.GERMAN) && 
+                    ((FormatWidth)row[1]).equals(FormatWidth.NARROW) && 
+                    logKnownIssue("CLDR-18905", "German narrow change needs revisiting")
+                    ) {
+                    continue;
+                }
                 errln("MeasureFormat.formatMeasures for locale " + row[0] + ", width " +
                         row[1] + ", expected \"" + (String)row[2] + "\", got \"" + result + "\"" );
             }
@@ -1588,7 +1600,9 @@ public class MeasureUnitTest extends CoreTestFmwk {
     @Test
     public void TestParseBuiltIns() {
         for (MeasureUnit unit : MeasureUnit.getAvailable()) {
-            System.out.println("unit ident: " + unit.getIdentifier() + ", type: " + unit.getType());
+            if (DEBUG) {
+                System.out.println("unit ident: " + unit.getIdentifier() + ", type: " + unit.getType());
+            }
             if (unit.getType() == "currency") {
                 continue;
             }

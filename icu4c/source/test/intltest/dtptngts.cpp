@@ -1159,7 +1159,8 @@ void IntlTestDateTimePatternGeneratorAPI::testC() {
             {"en",     "CCCCCCm", "hh:mm\\u202Faaaaa"},
             {"en-BN",  "Cm",      "h:mm\\u202Fb"},
             {"gu-IN",  "Cm",      "h:mm B"},
-            {"und-IN", "Cm",      "h:mm B"}
+            {"und-IN", "Cm",      "h:mm B"},
+            {"fi",     "Cm",      "H.mm"}
     };
 
     UErrorCode status = U_ZERO_ERROR;
@@ -1586,7 +1587,7 @@ void IntlTestDateTimePatternGeneratorAPI::testBestPattern() {
         // ICU-21428: Bad patterns for nonstandard calendars
         { "en_GB",                   "yMd", u"dd/MM/y"          },
         { "en_GB@calendar=coptic",   "yMd", u"dd/MM/y GGGGG"    },
-        { "en_GB@calendar=japanese", "yMd", u"dd/MM/y GGGGG"    },
+        { "en_GB@calendar=japanese", "yMd", u"d/M/y GGGGG"    },
         { "en_GB@calendar=buddhist", "yMd", u"dd/MM/y GGGGG"    },
         // ICU-22757: Not inheriting availableFormats patterns from root
         { "sv_SE",                   "yMd", u"y-MM-dd"          },

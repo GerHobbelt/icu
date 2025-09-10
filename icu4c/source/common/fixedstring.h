@@ -5,12 +5,15 @@
 #define FIXEDSTRING_H
 
 #include <string_view>
+#include <utility>
 
 #include "unicode/uobject.h"
 #include "unicode/utypes.h"
 #include "cmemory.h"
 
 U_NAMESPACE_BEGIN
+
+class UnicodeString;
 
 /**
  * ICU-internal fixed-length char* string class.
@@ -28,7 +31,15 @@ public:
     FixedString() = default;
     ~FixedString() { operator delete[](ptr); }
 
-    FixedString(const FixedString&) = delete;
+    FixedString(const FixedString& other) : FixedString(other.data()) {}
+
+    FixedString(std::string_view init) {
+        size_t size = init.size();
+        if (size > 0 && reserve(size + 1)) {
+            uprv_memcpy(ptr, init.data(), size);
+            ptr[size] = '\0';
+        }
+    }
 
     FixedString(std::string_view init) {
         size_t size = init.size();
@@ -57,7 +68,7 @@ public:
         return *this;
     }
 
-    FixedString(FixedString&&) noexcept = delete;
+    FixedString(FixedString&& other) noexcept : ptr(std::exchange(other.ptr, nullptr)) {}
 
     FixedString& operator=(FixedString&& other) noexcept {
         operator delete[](ptr);
@@ -93,6 +104,8 @@ public:
 private:
     char* ptr = nullptr;
 };
+
+U_COMMON_API void copyInvariantChars(const UnicodeString& src, FixedString& dst, UErrorCode& status);
 
 U_NAMESPACE_END
 
