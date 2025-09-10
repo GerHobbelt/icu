@@ -157,8 +157,8 @@ void U_CALLCONV initNumberParseUniSets(UErrorCode& status) {
     // These sets were decided after discussion with icu-design@. See tickets #13084 and #13309.
     // Zs+TAB is "horizontal whitespace" according to UTS #18 (blank property).
     gUnicodeSets[DEFAULT_IGNORABLES] = new UnicodeSet(
-            u"[[:Zs:][\\u0009][:Bidi_Control:][:Variation_Selector:]]", status);
-    gUnicodeSets[STRICT_IGNORABLES] = new UnicodeSet(u"[[:Bidi_Control:]]", status);
+        UnicodeString(u"[[:Zs:][\\u0009][:Bidi_Control:][:Variation_Selector:]]"), status);
+    gUnicodeSets[STRICT_IGNORABLES] = new UnicodeSet(UnicodeString(u"[[:Bidi_Control:]]"), status);
 
     LocalUResourceBundlePointer rb(ures_open(nullptr, "root", &status));
     if (U_FAILURE(status)) { return; }
@@ -174,7 +174,7 @@ void U_CALLCONV initNumberParseUniSets(UErrorCode& status) {
     U_ASSERT(gUnicodeSets[APOSTROPHE_SIGN] != nullptr);
 
     LocalPointer<UnicodeSet> otherGrouping(new UnicodeSet(
-        u"[٬‘\\u0020\\u00A0\\u2000-\\u200A\\u202F\\u205F\\u3000]",
+        UnicodeString(u"[٬‘\\u0020\\u00A0\\u2000-\\u200A\\u202F\\u205F\\u3000]"),
         status
     ), status);
     if (U_FAILURE(status)) { return; }
@@ -189,7 +189,7 @@ void U_CALLCONV initNumberParseUniSets(UErrorCode& status) {
     U_ASSERT(gUnicodeSets[PERCENT_SIGN] != nullptr);
     U_ASSERT(gUnicodeSets[PERMILLE_SIGN] != nullptr);
 
-    gUnicodeSets[INFINITY_SIGN] = new UnicodeSet(u"[∞]", status);
+    gUnicodeSets[INFINITY_SIGN] = new UnicodeSet(UnicodeString(u"[∞]"), status);
     if (U_FAILURE(status)) { return; }
 
     U_ASSERT(gUnicodeSets[DOLLAR_SIGN] != nullptr);
@@ -198,7 +198,7 @@ void U_CALLCONV initNumberParseUniSets(UErrorCode& status) {
     U_ASSERT(gUnicodeSets[YEN_SIGN] != nullptr);
     U_ASSERT(gUnicodeSets[WON_SIGN] != nullptr);
 
-    gUnicodeSets[DIGITS] = new UnicodeSet(u"[:digit:]", status);
+    gUnicodeSets[DIGITS] = new UnicodeSet(UnicodeString(u"[:digit:]"), status);
     if (U_FAILURE(status)) { return; }
     gUnicodeSets[DIGITS_OR_ALL_SEPARATORS] = computeUnion(DIGITS, ALL_SEPARATORS);
     gUnicodeSets[DIGITS_OR_STRICT_ALL_SEPARATORS] = computeUnion(DIGITS, STRICT_ALL_SEPARATORS);
