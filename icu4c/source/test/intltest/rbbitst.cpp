@@ -4933,7 +4933,7 @@ In Table 3-7, cases where a trailing byte range is not 80..BF are shown in bold 
 
 As a consequence of the well-formedness conditions specified in Table 3-7, the following byte values are disallowed in UTF-8: C0–C1, F5–FF.
 )TUS17";
-    UErrorCode errorCode;
+    UErrorCode errorCode = U_ZERO_ERROR;
     Locale locale;
     auto* const line = RuleBasedBreakIterator::createLineInstance(locale, errorCode);
     constexpr int samples = 1000;
