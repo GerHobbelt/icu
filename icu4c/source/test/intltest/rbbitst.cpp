@@ -29,6 +29,7 @@
 #include <utility>
 #include <vector>
 #include <string_view>
+#include <iostream>
 
 #include "unicode/brkiter.h"
 #include "unicode/localpointer.h"
@@ -158,6 +159,7 @@ void RBBITest::runIndexedTest( int32_t index, UBool exec, const char* &name, cha
     TESTCASE_AUTO(TestBug22585);
     TESTCASE_AUTO(TestBug22602);
     TESTCASE_AUTO(TestBug22636);
+    TESTCASE_AUTO(BenchmarkLineBreak);
 
 #if U_ENABLE_TRACING
     TESTCASE_AUTO(TestTraceCreateCharacter);
@@ -4892,6 +4894,74 @@ void RBBITest::TestBug22636() {
     ec = U_ZERO_ERROR;
     RuleBasedBreakIterator bi3(u"A{2147483647};", pe, ec);
     assertEquals(WHERE, ec, U_ZERO_ERROR);
+}
+
+void RBBITest::BenchmarkLineBreak() {
+    const UnicodeString testString =
+        uR"TUS17(3.9.3 UTF-8
+D92UTF-8 encoding form: The Unicode encoding form that assigns each Unicode scalar value to an unsigned byte sequence of one to four bytes in length, as specified in Table 3-6 and Table 3-7.
+
+In UTF-8, the code point sequence <004D, 0430, 4E8C, 10302> is represented as <4D D0 B0 E4 BA 8C F0 90 8C 82>, where <4D> corresponds to U+004D, <D0 B0> corresponds to U+0430, <E4 BA 8C> corresponds to U+4E8C, and <F0 90 8C 82> corresponds to U+10302.
+Any UTF-8 byte sequence that does not match the patterns listed in Table 3-7 is ill-formed.
+Before the Unicode Standard, Version 3.1, the problematic “non-shortest form” byte sequences in UTF-8 were those where BMP characters could be represented in more than one way. These sequences are ill-formed, because they are not allowed by Table 3-7.
+Because surrogate code points are not Unicode scalar values, any UTF-8 byte sequence that would otherwise map to code points U+D800..U+DFFF is ill-formed.
+Table 3-6 specifies the bit distribution for the UTF-8 encoding form, showing the ranges of Unicode scalar values corresponding to one-, two-, three-, and four-byte sequences. For a discussion of the difference in the formulation of UTF-8 in ISO/IEC 10646, see Appendix C.3, UTF-8 and UTF-16.
+
+Table 3-6. UTF-8 Bit Distribution
+Scalar Value	First Byte	Second Byte	Third Byte	Fourth Byte
+00000000 0xxxxxxx	0xxxxxxx			
+00000yyy yyxxxxxx	110yyyyy	10xxxxxx		
+zzzzyyyy yyxxxxxx	1110zzzz	10yyyyyy	10xxxxxx	
+000uuuuu zzzzyyyy yyxxxxxx	11110uuu	10uuzzzz	10yyyyyy	10xxxxxx
+Table 3-7 lists all of the byte sequences that are well-formed in UTF-8. A range of byte values such as A0..BF indicates that any byte from A0 to BF (inclusive) is well-formed in that position. Any byte value outside of the ranges listed is ill-formed. For example:
+
+The byte sequence <C0 AF> is ill-formed, because C0 is not well-formed in the “First Byte” column.
+The byte sequence <E0 9F 80> is ill-formed, because in the row where E0 is well-formed as a first byte, 9F is not well-formed as a second byte.
+The byte sequence <F4 80 83 92> is well-formed, because every byte in that sequence matches a byte range in a row of the table (the last row).
+Table 3-7. Well-Formed UTF-8 Byte Sequences
+Code Points	First Byte	Second Byte	Third Byte	Fourth Byte
+U+0000..U+007F	00..7F			
+U+0080..U+07FF	C2..DF	80..BF		
+U+0800..U+0FFF	E0	A0..BF	80..BF	
+U+1000..U+CFFF	E1..EC	80..BF	80..BF	
+U+D000..U+D7FF	ED	80..9F	80..BF	
+U+E000..U+FFFF	EE..EF	80..BF	80..BF	
+U+10000..U+3FFFF	F0	90..BF	80..BF	80..BF
+U+40000..U+FFFFF	F1..F3	80..BF	80..BF	80..BF
+U+100000..U+10FFFF	F4	80..8F	80..BF	80..BF
+In Table 3-7, cases where a trailing byte range is not 80..BF are shown in bold italic to draw attention to them. These exceptions to the general pattern occur only in the second byte of a sequence.
+
+As a consequence of the well-formedness conditions specified in Table 3-7, the following byte values are disallowed in UTF-8: C0–C1, F5–FF.
+)TUS17";
+    UErrorCode errorCode = U_ZERO_ERROR;
+    Locale locale;
+    auto* const line = RuleBasedBreakIterator::createLineInstance(locale, errorCode);
+    constexpr int samples = 1000;
+    std::vector<std::uint64_t> outputs;
+    outputs.resize(samples);
+    std::vector<std::chrono::steady_clock::duration> timings;
+    timings.resize(samples);
+    for (int i = 0; i < samples; ++i) {
+        const auto start = std::chrono::steady_clock::now();
+        line->setText(testString);
+        while (line->next() != RuleBasedBreakIterator::DONE) {
+            ++outputs[i];
+        }
+        timings[i] = std::chrono::steady_clock::now() - start;
+    }
+    std::uint64_t breaks = 0;
+    for (const std::uint64_t n : outputs) {
+      breaks += n;
+    }
+    std::cout << breaks / samples << "\n";
+    std::sort(timings.begin(), timings.end());
+    std::cout << "min             : " << std::chrono::nanoseconds(timings[0]).count() << " ns\n";
+    std::cout << "median          : " << std::chrono::nanoseconds(timings[samples / 2]).count()
+              << " ns\n";
+    std::cout << "90th percentile : " << std::chrono::nanoseconds(timings[9 * samples / 10]).count()
+              << " ns\n";
+    std::cout << "99th percentile : " << std::chrono::nanoseconds(timings[99 * samples / 100]).count()
+              << " ns\n";
 }
 
 void RBBITest::TestBug22584() {
