@@ -169,6 +169,7 @@ public:
     void TestLongLocaleSetKeywordAssign();
     void TestLongLocaleSetKeywordMoveAssign();
     void TestSierraLeoneCurrency21997();
+    void TestPayload();
 
 private:
     void assertLSR(UnicodeString msg, const Locale& expected, const LSR& actual);
