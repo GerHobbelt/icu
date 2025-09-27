@@ -2469,13 +2469,13 @@ public class DateFormatTest extends CoreTestFmwk {
         try{
             sym = new ChineseDateFormatSymbols(null, new Locale("en", "US"));
             errln("ChineseDateFormatSymbols(Calender, Locale) was suppose to return a null " +
-                    "pointer exception for a null paramater.");
+                    "pointer exception for a null parameter.");
         } catch(Exception e){}
         sym = new ChineseDateFormatSymbols(new ChineseCalendar(), new Locale("en", "US"));
         try{
             sym = new ChineseDateFormatSymbols(null, new ULocale("en_US"));
             errln("ChineseDateFormatSymbols(Calender, ULocale) was suppose to return a null " +
-                    "pointer exception for a null paramater.");
+                    "pointer exception for a null parameter.");
         } catch(Exception e){}
         sym = new ChineseDateFormatSymbols(new ChineseCalendar(), foo);
         // cover new ChineseDateFormatSymbols(Calendar, ULocale)
