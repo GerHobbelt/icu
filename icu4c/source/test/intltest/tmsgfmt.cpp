@@ -2078,7 +2078,7 @@ void TestMessageFormat::TestMessageFormatTimeSkeleton() {
 
 void TestMessageFormat::TestNumberOverflow() {
     IcuTestErrorCode status(*this, "TestNumberOverflow");
-    MessageFormat msgf(u"{90000000000", status);
+    MessageFormat msgf(u"{90000000000}", status);
     status.expectErrorAndReset(U_PATTERN_SYNTAX_ERROR);
 }
 #endif /* #if !UCONFIG_NO_FORMATTING */

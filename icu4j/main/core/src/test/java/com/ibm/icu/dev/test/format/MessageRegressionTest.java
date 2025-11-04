@@ -951,7 +951,7 @@ public class MessageRegressionTest extends CoreTestFmwk {
     @Test
     public void TestNumberOverflow() {
         try {
-            MessageFormat format = new MessageFormat("{90000000000");
+            MessageFormat format = new MessageFormat("{90000000000}");
             errln("MessageFormat overflow should throw IllegalArgumentException");
         } catch (IllegalArgumentException e) {
             // expeted
