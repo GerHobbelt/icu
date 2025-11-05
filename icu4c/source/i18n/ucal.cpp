@@ -367,7 +367,7 @@ ucal_setAttribute(      UCalendar*              cal,
 
     switch(attr) {
   case UCAL_LENIENT:
-      ((Calendar*)cal)->setLenient((UBool)newValue);
+      ((Calendar*)cal)->setLenient(!!newValue);
       break;
 
   case UCAL_FIRST_DAY_OF_WEEK:

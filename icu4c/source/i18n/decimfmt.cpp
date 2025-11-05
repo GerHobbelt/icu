@@ -389,7 +389,7 @@ void DecimalFormat::setParseIntegerOnly(UBool value) {
     touchNoError();
 }
 
-void DecimalFormat::setLenient(UBool enable) {
+void DecimalFormat::setLenient(bool enable) {
     if (fields == nullptr) {
         return;
     }

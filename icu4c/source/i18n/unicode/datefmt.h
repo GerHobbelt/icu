@@ -677,14 +677,14 @@ public:
      * @see Calendar::setLenient
      * @stable ICU 2.0     
      */
-    U_I18N_API virtual void setLenient(UBool lenient);
+    U_I18N_API virtual void setLenient(bool lenient);
 
 
     /**
      * Returns whether date/time parsing in the encapsulated Calendar object processing is lenient.
      * @stable ICU 53
      */
-    U_I18N_API virtual UBool isCalendarLenient() const;
+    U_I18N_API virtual bool isCalendarLenient() const;
 
     /**
      * Specifies whether encapsulated Calendar date/time parsing is to be lenient.  With
@@ -695,7 +695,7 @@ public:
      * @see com.ibm.icu.util.Calendar#setLenient
      * @stable ICU 53
      */
-    U_I18N_API virtual void setCalendarLenient(UBool lenient);
+    U_I18N_API virtual void setCalendarLenient(bool lenient);
 
 
     /**

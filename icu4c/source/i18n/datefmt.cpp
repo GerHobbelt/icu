@@ -665,7 +665,7 @@ DateFormat::getTimeZone() const
 //----------------------------------------------------------------------
 
 void
-DateFormat::setLenient(UBool lenient)
+DateFormat::setLenient(bool lenient)
 {
     if (fCalendar != nullptr) {
         fCalendar->setLenient(lenient);
@@ -677,7 +677,7 @@ DateFormat::setLenient(UBool lenient)
 
 //----------------------------------------------------------------------
 
-UBool
+bool
 DateFormat::isLenient() const
 {
     UBool lenient = true;
@@ -691,7 +691,7 @@ DateFormat::isLenient() const
 }
 
 void
-DateFormat::setCalendarLenient(UBool lenient)
+DateFormat::setCalendarLenient(bool lenient)
 {
     if (fCalendar != nullptr) {
         fCalendar->setLenient(lenient);
@@ -700,7 +700,7 @@ DateFormat::setCalendarLenient(UBool lenient)
 
 //----------------------------------------------------------------------
 
-UBool
+bool
 DateFormat::isCalendarLenient() const
 {
     if (fCalendar != nullptr) {

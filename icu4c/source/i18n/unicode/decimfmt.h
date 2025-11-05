@@ -819,7 +819,7 @@ class U_I18N_API DecimalFormat : public NumberFormat {
      *               \c false otherwise.
      * @stable ICU 4.8
      */
-    void setLenient(UBool enable) override;
+    void setLenient(bool enable) override;
 
     /**
      * Create a DecimalFormat from the given pattern and symbols.
