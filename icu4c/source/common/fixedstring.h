@@ -41,14 +41,6 @@ public:
         }
     }
 
-    FixedString(std::string_view init) {
-        size_t size = init.size();
-        if (reserve(size + 1)) {
-            uprv_memcpy(ptr, init.data(), size);
-            ptr[size] = '\0';
-        }
-    }
-
     FixedString& operator=(const FixedString& other) {
         *this = other.data();
         return *this;

@@ -215,7 +215,7 @@ class U_COMMON_API StringPiece : public UMemory {
    * @return true if the string is empty
    * @stable ICU 4.2
    */
-  UBool empty() const { return length_ == 0; }
+  bool empty() const { return length_ == 0; }
 
   /**
    * Sets to an empty string.

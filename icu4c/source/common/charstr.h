@@ -70,7 +70,7 @@ public:
     U_COMMON_API CharString &copyFrom(const CharString &other, UErrorCode &errorCode);
     U_COMMON_API CharString &copyFrom(StringPiece s, UErrorCode &errorCode);
 
-    U_COMMON_API UBool isEmpty() const { return len==0; }
+    U_COMMON_API bool isEmpty() const { return len==0; }
     U_COMMON_API int32_t length() const { return len; }
     U_COMMON_API char operator[](int32_t index) const { return buffer[index]; }
     U_COMMON_API StringPiece toStringPiece() const { return StringPiece(buffer.getAlias(), len); }
