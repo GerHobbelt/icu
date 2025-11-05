@@ -2407,6 +2407,10 @@ namespace message2 {
 
 U_NAMESPACE_END
 
+#if defined(U_REAL_MSVC)
+#pragma warning(pop)
+#endif
+
 #endif // U_HIDE_DEPRECATED_API
 
 #endif /* #if !UCONFIG_NO_MF2 */

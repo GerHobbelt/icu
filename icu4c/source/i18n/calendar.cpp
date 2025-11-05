@@ -2171,7 +2171,7 @@ void Calendar::add(UCalendarDateFields field, int32_t amount, UErrorCode& status
     case UCAL_MONTH:
     case UCAL_ORDINAL_MONTH:
       {
-        UBool oldLenient = isLenient();
+        bool oldLenient = isLenient();
         setLenient(true);
         int32_t value = get(field, status);
         if (U_FAILURE(status)) {
@@ -2468,14 +2468,14 @@ Calendar::orphanTimeZone()
 // -------------------------------------
 
 void
-Calendar::setLenient(UBool lenient)
+Calendar::setLenient(bool lenient)
 {
     fLenient = lenient;
 }
 
 // -------------------------------------
 
-UBool
+bool
 Calendar::isLenient() const
 {
     return fLenient;

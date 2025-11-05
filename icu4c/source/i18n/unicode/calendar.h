@@ -891,7 +891,7 @@ public:
      * @see            DateFormat#setLenient
      * @stable ICU 2.0
      */
-    U_I18N_API void setLenient(UBool lenient);
+    U_I18N_API void setLenient(bool lenient);
 
     /**
      * Tells whether date/time interpretation is to be lenient.
@@ -899,7 +899,7 @@ public:
      * @return   True tells that date/time interpretation is to be lenient.
      * @stable ICU 2.0
      */
-    U_I18N_API UBool isLenient() const;
+    U_I18N_API bool isLenient() const;
 
     /**
      * Sets the behavior for handling wall time repeating multiple times

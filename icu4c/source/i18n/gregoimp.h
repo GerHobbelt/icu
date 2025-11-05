@@ -171,7 +171,7 @@ class Grego {
      * @param year Gregorian year, with 0 == 1 BCE, -1 == 2 BCE, etc.
      * @return true if the year is a leap year
      */
-    static inline UBool isLeapYear(int32_t year);
+    static inline bool isLeapYear(int32_t year);
 
     /**
      * Return the number of days in the given month.
@@ -328,7 +328,7 @@ inline double ClockMath::floorDivide(double numerator, double denominator) {
     return uprv_floor(numerator / denominator);
 }
 
-inline UBool Grego::isLeapYear(int32_t year) {
+inline bool Grego::isLeapYear(int32_t year) {
     // year&0x3 == year%4
     return ((year&0x3) == 0) && ((year%100 != 0) || (year%400 == 0));
 }

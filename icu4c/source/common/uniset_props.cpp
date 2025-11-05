@@ -274,7 +274,7 @@ class UnicodeSet::Lexer {
         }
 
         bool escaped() const {
-            return escaped_;
+            return !!escaped_;
         }
 
         const UnicodeSet *standIn() {
@@ -364,7 +364,7 @@ class UnicodeSet::Lexer {
     }
 
     bool atEnd() const {
-        return chars_.atEnd();
+        return !!chars_.atEnd();
     }
 
   private:

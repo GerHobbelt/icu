@@ -7,7 +7,9 @@
 
 // Allow implicit conversion from char16_t* to UnicodeString for this file:
 // Helpful in toString methods and elsewhere.
+#undef UNISTR_FROM_STRING_EXPLICIT
 #define UNISTR_FROM_STRING_EXPLICIT
+#undef UNISTR_FROM_CHAR_EXPLICIT
 #define UNISTR_FROM_CHAR_EXPLICIT
 
 #include "uassert.h"
