@@ -22,10 +22,13 @@
 
 #include "line.h"
 
+#include "unicode/utypes.h"
 #include "unicode/ustdio.h"
 #include "unicode/unistr.h"
 #include "unicode/ustring.h"
 
+
+U_NAMESPACE_BEGIN
 
 class UPrinter {
   UFILE *out;
@@ -48,6 +51,6 @@ public:
   };
 };
 
-
+U_NAMESPACE_END
 
 #endif // #ifndef COLPROBE_UPRINTER_H

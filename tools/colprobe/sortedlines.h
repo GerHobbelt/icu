@@ -3,6 +3,8 @@
 #ifndef COLPROBE_SORTEDLINES_H
 #define COLPROBE_SORTEDLINES_H
 
+#include "unicode/utypes.h"
+
 // colprobe includes
 #include "colprobe.h"
 #include "line.h"
@@ -15,6 +17,8 @@
 #include "unicode/usetiter.h"
 #include "unicode/uscript.h"
 #include "hash.h"
+
+U_NAMESPACE_BEGIN
 
 class SortedLines {
   Line empty;
@@ -115,8 +119,8 @@ private:
   void noteContraction(const char* msg, Line *toAddTo, int32_t &toAddToSize, Line *left, Line *right, int32_t &noConts, UErrorCode &status);
   int32_t gooseUp(int32_t resetIndex, int32_t expansionIndex, Line &expLine, int32_t *expIndexes, int32_t &expIndexSize, UColAttributeValue strength);
   UBool getExpansionLine(const Line &expansion, const Line &previous, const Line &exp, Line &expansionLine);
-
-
 };
+
+U_NAMESPACE_END
 
 #endif  // #ifndef COLPROBE_SORTEDLINES_H

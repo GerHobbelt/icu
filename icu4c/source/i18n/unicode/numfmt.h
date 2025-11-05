@@ -723,7 +723,7 @@ public:
      *               \c false otherwise.
      * @stable ICU 4.8
      */
-    virtual void setLenient(UBool enable);
+    virtual void setLenient(bool enable);
 
     /**
      * Returns whether lenient parsing is enabled (it is off by default).
@@ -733,7 +733,7 @@ public:
      * @see #setLenient
      * @stable ICU 4.8
      */
-    virtual UBool isLenient() const;
+    virtual bool isLenient() const;
 
     /**
      * Create a default style NumberFormat for the current default locale.
@@ -1270,10 +1270,10 @@ NumberFormat::isParseIntegerOnly() const
     return fParseIntegerOnly;
 }
 
-inline UBool
+inline bool
 NumberFormat::isLenient() const
 {
-    return fLenient;
+    return !!fLenient;
 }
 
 U_NAMESPACE_END

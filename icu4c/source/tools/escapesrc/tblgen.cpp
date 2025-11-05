@@ -8,6 +8,7 @@
 
 using icu::LocalUConverterPointer;
 using icu::UnicodeSet;
+using icu::UnicodeString;
 
 static const char *kConverter = "ibm-1047";
 
@@ -42,9 +43,9 @@ int main(int argc, const char *argv[]) {
 
   // 
   //  UnicodeSet oldIllegal("[:print:]", status); // [a-zA-Z0-9_}{#)(><%:;.?*+-/^&|~!=,\\u005b\\u005d\\u005c]", status);
-  UnicodeSet oldIllegal("[0-9 a-z A-Z "
+  UnicodeSet oldIllegal(UnicodeString("[0-9 a-z A-Z "
                         "_ \\{ \\} \\[ \\] # \\( \\) < > % \\: ; . "
-                        "? * + \\- / \\^ \\& | ~ ! = , \\ \" ' ]", status);
+                        "? * + \\- / \\^ \\& | ~ ! = , \\ \" ' ]"), status);
   
   /*
 

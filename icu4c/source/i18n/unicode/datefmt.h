@@ -655,7 +655,7 @@ public:
      * numeric processing is lenient.
      * @stable ICU 2.0
      */
-    U_I18N_API virtual UBool isLenient() const;
+    U_I18N_API virtual bool isLenient() const;
 
     /**
      * Specifies whether date/time parsing is to be lenient.  With

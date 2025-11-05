@@ -1282,7 +1282,7 @@ RuleBasedNumberFormat::parse(const UnicodeString& text,
 #if !UCONFIG_NO_COLLATION
 
 void
-RuleBasedNumberFormat::setLenient(UBool enabled)
+RuleBasedNumberFormat::setLenient(bool enabled)
 {
     lenient = enabled;
     if (!enabled && collator) {

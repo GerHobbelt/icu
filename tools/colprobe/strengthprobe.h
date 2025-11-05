@@ -27,10 +27,14 @@
 #ifndef COLPROBE_STRENGTHPROBE_H
 #define COLPROBE_STRENGTHPROBE_H
 
+#include "unicode/utypes.h"
+
 #include "colprobe.h"
 #include "line.h"
 #include "unicode/uniset.h"
 #include "unicode/usetiter.h"
+
+U_NAMESPACE_BEGIN
 
 class StrengthProbe {
 public:
@@ -82,6 +86,7 @@ public:
  
 };
 
+U_NAMESPACE_END
 
 #endif //#ifndef COLPROBE_STRENGTHPROBE_H
 

@@ -1020,7 +1020,7 @@ public:
    * @see RuleBasedCollator
    * @stable ICU 2.0
    */
-  U_I18N_API virtual void setLenient(UBool enabled) override;
+  U_I18N_API virtual void setLenient(bool enabled) override;
 
   /**
    * Returns true if lenient-parse mode is turned on.  Lenient parsing is off
@@ -1029,7 +1029,7 @@ public:
    * @see #setLenient
    * @stable ICU 2.0
    */
-  U_I18N_API virtual inline UBool isLenient() const override;
+  U_I18N_API virtual inline bool isLenient() const override;
 
 #endif
 
@@ -1173,9 +1173,9 @@ private:
 
 #if !UCONFIG_NO_COLLATION
 
-inline UBool
+inline bool
 RuleBasedNumberFormat::isLenient() const {
-    return lenient;
+    return !!lenient;
 }
 
 #endif

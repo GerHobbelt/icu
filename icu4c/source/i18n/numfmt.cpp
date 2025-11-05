@@ -761,7 +761,7 @@ NumberFormat::setParseIntegerOnly(UBool value)
 // Sets whether lenient parse is enabled.
 
 void
-NumberFormat::setLenient(UBool enable)
+NumberFormat::setLenient(bool enable)
 {
     fLenient = enable;
 }
