@@ -246,12 +246,12 @@ public class JavaTimeFormatTest extends CoreTestFmwk {
                 .setLocale(locale);
 
         MessageFormatter mf2 = mf2Builder.setPattern("(mf2) Your card expires on {$expDate}").build();
-        assertEquals("", "(mf2) Your card expires on 27/09/2013 19:43", mf2.formatToString(arguments));
+        assertEquals("", "(mf2) Your card expires on ven. 27 sept. 2013, 19:43", mf2.formatToString(arguments));
 
         mf2 = mf2Builder.setPattern("(mf2) Your card expires on {$expDate :date}").build();
-        assertEquals("", "(mf2) Your card expires on 27/09/2013", mf2.formatToString(arguments));
+        assertEquals("", "(mf2) Your card expires on ven. 27 sept. 2013", mf2.formatToString(arguments));
 
-        mf2 = mf2Builder.setPattern("(mf2) Your card expires on {$expDate :datetime dateStyle=long}").build();
+        mf2 = mf2Builder.setPattern("(mf2) Your card expires on {$expDate :date fields=year-month-day length=long}").build();
         assertEquals("", "(mf2) Your card expires on 27 septembre 2013", mf2.formatToString(arguments));
 
         mf2 = mf2Builder.setPattern("(mf2) Your card expires on {$expDate :date icu:skeleton=EEEyMMMd}").build();
@@ -278,10 +278,7 @@ public class JavaTimeFormatTest extends CoreTestFmwk {
 
         // Test that both JDK and ICU Calendar are recognized as types.
         arguments.put("expDate", new java.util.GregorianCalendar(2013, 8, 27));
-        // We don't test MessageFormat (MF1) with a java.util.Calendar
-        // because it throws. The ICU DateFormat does not support it.
-        // I filed https://unicode-org.atlassian.net/browse/ICU-22852
-        // MF2 converts the JDK Calendar to an ICU Calendar, so it works.
+        assertEquals("", expectedMf1Result, mf.format(arguments));
         assertEquals("", expectedMf2Result, mf2.formatToString(arguments));
 
         // Make sure that Instant and Clock are not formatted

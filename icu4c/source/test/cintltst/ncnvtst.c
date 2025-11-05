@@ -79,6 +79,7 @@ static void TestFlushInternalBuffer(void);  /*for improved code coverage in ucnv
 static void TestResetBehaviour(void);
 static void TestTruncated(void);
 static void TestUnicodeSet(void);
+static void TestISO2022Crash(void);
 
 static void TestWithBufferSize(int32_t osize, int32_t isize);
 
@@ -2065,6 +2066,7 @@ TestUnicodeSet(void) {
     uset_close(set);
 }
 
+// Test for https://unicode-org.atlassian.net/browse/ICU-23165
 static void TestISO2022Crash(void) {
     static const char offendingText[] = {
         0x6d, 0x1b, 0x24, 0x29, 0x45, 0x65, 0x6c, 0x3a,

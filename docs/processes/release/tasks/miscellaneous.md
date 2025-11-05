@@ -80,11 +80,29 @@ by:
     The dropdown should reveal an input form in which to provide inputs
 
 1. Provide the same inputs in the form as you would for a local run of the tool,
-as described in the tool's Readme in the instructions above.
+as described in the [tool's Readme](https://github.com/unicode-org/icu/tree/main/tools/commit-checker) in the instructions above.
 
     The only difference from the local run instructions is that git branch names in the 
-Actions workflow input form should be prefixed with `origin/`.
+Actions workflow input form should be prefixed with `origin/`. Ex:
 
+    ```
+    The ICU Jira "Fix Version" semver -> 78.1
+    The git ref start of comparison range. Prefix branches with `origin/`. -> release-77-1
+    The git ref end of comparison range. Must be descendant of `from_git_ref`. Prefix branches with `origin/`. -> origin/main
+    ```
+
+1. If the job fails with an error such as this:
+
+    ```
+    jira.exceptions.JIRAError: JiraError HTTP 404 url: https://unicode-org.atlassian.net/rest/api/2/issue/ICU-XXXXX
+        text: Issue does not exist or you do not have permission to see it.
+    ```
+
+    then you likely can solve this by recreating the Jira API token as described in the [tool's Readme](https://github.com/unicode-org/icu/tree/main/tools/commit-checker) in the instructions above.
+    Since 2024, the [Jira API tokens are not allowed to last longer than 365 days](https://support.atlassian.com/atlassian-account/docs/manage-api-tokens-for-your-atlassian-account/),
+    but may expire more quickly than 365 days depending on what duration was set, etc.
+    The account corresponding to the email should be allowed to view sensitive tickets, or else any
+    existence of sensitive tickets in the git commit range will cause a failure.
 ---
 
 ## Fix Mis-ticketted commits
@@ -114,7 +132,7 @@ and then reapply branch protection. Create a new branch named something like
 "pre63-new-main" to allow users to easily switch between the two heads.
 
 Send an email to icu-support explaining the change and how to deal with it. You
-can use [this email](https://sourceforge.net/p/icu/mailman/message/36426642/) as
+can use [this email](https://groups.google.com/a/unicode.org/g/icu-support/c/DC_pX9kPEoc) as
 a model.
 
 ---
