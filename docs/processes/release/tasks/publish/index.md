@@ -102,7 +102,7 @@ Use the GitHub GUI to create both the "release" and the "tag" at the same time:
 
 <https://github.com/unicode-org/icu/releases/new>
 
-1. Fill in the tag name, such as `release-63-1rc` or `release-63-1`, and make the
+1. Fill in the tag name, such as `release-63.1rc` or `release-63.1`, and make the
 target the "maint/maint-xx" branch (such as `maint/maint-63`).
 1. Set the title to `ICU 63 RC` or `ICU 63.1`.
 1. Fill in the description using the
@@ -127,8 +127,12 @@ repository, they might have something different for the "latest" tag).
 A possible future alternative might be a sym-link folder, or HTTP redirect that
 points to the latest release.
 
-We no longer need to add the note about Git LFS files, as GitHub now includes
+Note: We no longer need to add the note about Git LFS files, as GitHub now includes
 them in the auto-generated .zip downloads.
+
+Note: The release tag name convention changed with ICU 78.
+Prior, the convention was like `release-63-rc` or `release-63-1`.
+Afterwards, the convention is like `release-63.1rc` or `release-63.1`.
 
 #### Maintenance release
 
@@ -173,8 +177,15 @@ Adjust the navbar data at the top: Title, and nav_order one fewer than last time
 Adjust the new page as needed: Adjust the title to "ICU 77" (with the right version number...),
 remove contents specific to the previous release, update all version numbers, update all links.
 
-Put a big, **bold+italics** warning at the top like "This version has not been
-released yet. Use it for testing but do not use it in production!"
+Put a warning at the top (before the Release Overview) like
+"This version has not been released yet. Use it for testing but do not use it in production!"
+
+Another example:
+```
+## Release Candidate
+
+**This is a release candidate. Please use it for testing, but do not use it in production.**
+```
 
 Compare with the one-year-ago release page and adjust for whether we have a major release,
 a new Unicode version, etc.
@@ -190,6 +201,23 @@ like a Migration Issues section etc.
 Ask everyone on the team to add stuff & details.
 
 Once the page has been created and merged, consider editing online on GitHub.
+
+#### Release candidate download pages
+
+On release candidate day, update the download page: Version numbers, dates, tags, links.
+
+Also update:
+- The [main download page](https://unicode-org.github.io/icu/download/): Insert a “Release Candidate” section before the “Latest Release”.
+- The [main docs page](https://unicode-org.github.io/icu/): same
+
+#### Release day download pages
+
+On release day, update the download page: Version numbers, dates, tags, links.
+
+Also update:
+- The [main download page](https://unicode-org.github.io/icu/download/)
+- The [main docs page](https://unicode-org.github.io/icu/)
+- The [ICU Sites page](https://icu.unicode.org/)
 
 ### Maintenance release
 
