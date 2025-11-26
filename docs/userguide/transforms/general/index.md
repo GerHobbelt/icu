@@ -121,7 +121,7 @@ script, such as converting Icelandic THORN (þ) to th.
 ## Transliterator Identifiers
 
 Transliterators are not created directly using C++ or Java constructors.
-Instead, the are created by giving an **identifier**—a name string in a specific
+Instead, they are created by giving an **identifier**—a name string in a specific
 format—to one of the Transliterator factory methods, such as
 `Transliterator.getInstance()` (Java) or `Transliterator::createInstance()`. The
 following are some examples of identifiers:
@@ -137,7 +137,7 @@ in detail. Throughout this section, it is important to distinguish between
 **identifiers** and the **actual transforms** that they refer to. All actual
 transforms are named by well-formed identifiers, but not all well-formed
 identifiers refer to actual transforms. An analogy is C++ method names. I can
-write the syntactially well-formed method name "void
+write the syntactically well-formed method name "void
 Cursor::getPosition(Position& pos)", but whether or not this refers to an actual
 method in an actual class is a different matter.
 
@@ -178,7 +178,7 @@ equivalent to "Any-Hex/Java".
 
 ### Filtered IDs
 
-A filtered IDs is a basic IDs constrained by a filter. For example, to specify a
+A filtered ID is a basic ID constrained by a filter. For example, to specify a
 transform that converts only ASCII vowels to uppercase, use the ID:
 
 ```
@@ -195,7 +195,7 @@ that removes non-spacing marks from input text.
 patterns of the form `"\p{Lu}"` cannot be used directly; instead they must be
 enclosed, e.g. `"[\p{Lu}]"`.*
 
-### Inverses
+### Inverse Transforms
 
 Any transform ID can be modified to form an "inverse" ID. This is the ID of a
 related transform that performs an inverse operation. For basic IDs, this is
@@ -231,7 +231,7 @@ reversal.*
 
 The second caveat with inverses has to do with existence. Although any ID can be
 inverted, this does not guarantee that the inverse ID actually exists. For
-example, if I create a custom translitertor `Latin-Antarean` and register it with
+example, if I create a custom transliterator `Latin-Antarean` and register it with
 the system, I can then pass the string "Latin-Antarean" to `createInstance()` or
 `getInstance()` to get that transform. If I then ask for its inverse, however, the
 request will fail, since I have not created and registered "Antarean-Latin" with
@@ -242,7 +242,7 @@ registered transform.*
 
 ### Custom Inverses
 
-Consider the transforms "Any-Lower" and "Any-Upper": It is convenient to
+Consider the transforms "Any-Lower" and "Any-Upper": it is convenient to
 associate these as inverses of one another. However, using the standard
 procedure for ID inversion on "Any-Lower" yields "Lower-Any", which is not what
 we want. To override the standard ID inversion, the inverse ID can be explicitly
@@ -642,7 +642,7 @@ the same style as the text it is replacing, so that style information is not
 lost. With a replaceable interface to HTML or XML, even higher level structure
 can be preserved.
 
-The positions parameter contains information about the range of text that should
+The `positions` parameter contains information about the range of text that should
 be transliterated, plus the possibly larger range of text that can serve as
 context.
 
@@ -776,8 +776,8 @@ rules:
 ```
 
 *For a real space in the rules, place quotes around it. For a real backslash,
-either double it \, or quote it '\'. For a real single quote, double it '',
-or place a backslash before it \'. Each of the following means the same thing:*
+either double it `\\`, or quote it `'\'`. For a real single quote, double it `''`,
+or place a backslash before it `\'`. Each of the following means the same thing:*
 
 ```
 'can''t go'
