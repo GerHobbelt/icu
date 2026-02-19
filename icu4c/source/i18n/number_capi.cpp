@@ -381,6 +381,9 @@ usnumf_formatInt64(
         return;
     }
     auto localResult = formatter->fFormatter.formatInt64(value, *ec);
+    if (U_FAILURE(*ec)) {
+        return;
+    }
     result->setTo(std::move(localResult)); 
 }
 
